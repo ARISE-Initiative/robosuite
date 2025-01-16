@@ -407,6 +407,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.C_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.C_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.C_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.C_rownnz</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_colind"><code class="docutils literal notranslate"><span class="pre">MjData.D_colind</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_diag"><code class="docutils literal notranslate"><span class="pre">MjData.D_diag</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.D_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.D_rownnz</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.act"><code class="docutils literal notranslate"><span class="pre">MjData.act</span></code></a></li>
@@ -534,6 +535,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_colind"><code class="docutils literal notranslate"><span class="pre">MjData.moment_colind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.moment_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.moment_rownnz</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nA"><code class="docutils literal notranslate"><span class="pre">MjData.nA</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nJ"><code class="docutils literal notranslate"><span class="pre">MjData.nJ</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.narena"><code class="docutils literal notranslate"><span class="pre">MjData.narena</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nbuffer"><code class="docutils literal notranslate"><span class="pre">MjData.nbuffer</span></code></a></li>
@@ -555,7 +557,6 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qHDiagInv"><code class="docutils literal notranslate"><span class="pre">MjData.qHDiagInv</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLD"><code class="docutils literal notranslate"><span class="pre">MjData.qLD</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLDiagInv"><code class="docutils literal notranslate"><span class="pre">MjData.qLDiagInv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLDiagSqrtInv"><code class="docutils literal notranslate"><span class="pre">MjData.qLDiagSqrtInv</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLU"><code class="docutils literal notranslate"><span class="pre">MjData.qLU</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qM"><code class="docutils literal notranslate"><span class="pre">MjData.qM</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qacc"><code class="docutils literal notranslate"><span class="pre">MjData.qacc</span></code></a></li>
@@ -1572,6 +1573,11 @@ The properties without docstrings are defined in mujoco source code from <a clas
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.D_diag">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">D_diag</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.D_diag" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.D_rowadr">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">D_rowadr</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.D_rowadr" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -2565,6 +2571,11 @@ so we explicitly expose this as a property</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.nA">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nA</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.nA" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.nJ">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nJ</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.nJ" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -2667,11 +2678,6 @@ so we explicitly expose this as a property</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.qLDiagInv">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">qLDiagInv</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.qLDiagInv" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="robosuite.utils.binding_utils.MjData.qLDiagSqrtInv">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">qLDiagSqrtInv</span></span><a class="headerlink" href="#robosuite.utils.binding_utils.MjData.qLDiagSqrtInv" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -6289,7 +6295,7 @@ specified to define a global goal position</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="robosuite.utils.input_utils.choose_robots">
-<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_robots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude_bimanual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_humanoids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_robots" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">robosuite.utils.input_utils.</span></span><span class="sig-name descname"><span class="pre">choose_robots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exclude_bimanual</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_humanoids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude_single_arm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.utils.input_utils.choose_robots" title="Link to this definition">#</a></dt>
 <dd><p>Prints out robot options, and returns the requested robot. Restricts options to single-armed robots if
 &#64;exclude_bimanual is set to True (False by default). Restrict options to humanoids if &#64;use_humanoids is set to True (Flase by default).</p>
 <dl class="field-list simple">
@@ -9853,6 +9859,7 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.C_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.C_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.C_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.C_rownnz</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_colind"><code class="docutils literal notranslate"><span class="pre">MjData.D_colind</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_diag"><code class="docutils literal notranslate"><span class="pre">MjData.D_diag</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.D_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.D_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.D_rownnz</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.act"><code class="docutils literal notranslate"><span class="pre">MjData.act</span></code></a></li>
@@ -9980,6 +9987,7 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_colind"><code class="docutils literal notranslate"><span class="pre">MjData.moment_colind</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_rowadr"><code class="docutils literal notranslate"><span class="pre">MjData.moment_rowadr</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.moment_rownnz"><code class="docutils literal notranslate"><span class="pre">MjData.moment_rownnz</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nA"><code class="docutils literal notranslate"><span class="pre">MjData.nA</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nJ"><code class="docutils literal notranslate"><span class="pre">MjData.nJ</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.narena"><code class="docutils literal notranslate"><span class="pre">MjData.narena</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.nbuffer"><code class="docutils literal notranslate"><span class="pre">MjData.nbuffer</span></code></a></li>
@@ -10001,7 +10009,6 @@ between 0 and 1.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qHDiagInv"><code class="docutils literal notranslate"><span class="pre">MjData.qHDiagInv</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLD"><code class="docutils literal notranslate"><span class="pre">MjData.qLD</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLDiagInv"><code class="docutils literal notranslate"><span class="pre">MjData.qLDiagInv</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLDiagSqrtInv"><code class="docutils literal notranslate"><span class="pre">MjData.qLDiagSqrtInv</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qLU"><code class="docutils literal notranslate"><span class="pre">MjData.qLU</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qM"><code class="docutils literal notranslate"><span class="pre">MjData.qM</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.utils.binding_utils.MjData.qacc"><code class="docutils literal notranslate"><span class="pre">MjData.qacc</span></code></a></li>
