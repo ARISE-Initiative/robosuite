@@ -24,7 +24,7 @@ class Keyboard(Device):
 
         self._reset_state = 0
         self._enabled = False
-        self._pos_step = 0.05
+        self._pos_step = 0.001
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -121,29 +121,29 @@ class Keyboard(Device):
 
             # controls for moving orientation
             elif key.char == "z":
-                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
+                drot = rotation_matrix(angle=0.001 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
-                self.raw_drotation[1] -= 0.1 * self.rot_sensitivity
+                self.raw_drotation[1] -= 0.001 * self.rot_sensitivity
             elif key.char == "x":
-                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
+                drot = rotation_matrix(angle=-0.001 * self.rot_sensitivity, direction=[1.0, 0.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates x
-                self.raw_drotation[1] += 0.1 * self.rot_sensitivity
+                self.raw_drotation[1] += 0.001 * self.rot_sensitivity
             elif key.char == "t":
-                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
+                drot = rotation_matrix(angle=0.001 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
-                self.raw_drotation[0] += 0.1 * self.rot_sensitivity
+                self.raw_drotation[0] += 0.001 * self.rot_sensitivity
             elif key.char == "g":
-                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
+                drot = rotation_matrix(angle=-0.001 * self.rot_sensitivity, direction=[0.0, 1.0, 0.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates y
-                self.raw_drotation[0] -= 0.1 * self.rot_sensitivity
+                self.raw_drotation[0] -= 0.001 * self.rot_sensitivity
             elif key.char == "c":
-                drot = rotation_matrix(angle=0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
+                drot = rotation_matrix(angle=0.001 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
-                self.raw_drotation[2] += 0.1 * self.rot_sensitivity
+                self.raw_drotation[2] += 0.001 * self.rot_sensitivity
             elif key.char == "v":
-                drot = rotation_matrix(angle=-0.1 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
+                drot = rotation_matrix(angle=-0.001 * self.rot_sensitivity, direction=[0.0, 0.0, 1.0])[:3, :3]
                 self.rotation = self.rotation.dot(drot)  # rotates z
-                self.raw_drotation[2] -= 0.1 * self.rot_sensitivity
+                self.raw_drotation[2] -= 0.001 * self.rot_sensitivity
 
         except AttributeError as e:
             pass

@@ -208,8 +208,8 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
             # Flip x
             drotation[0] = -drotation[0]
         # Scale rotation for teleoperation (tuned for IK)
-        drotation *= 10
-        dpos *= 5
+        drotation *= 1
+        dpos *= 1
         # relative rotation of desired from current eef orientation
         # map to quat
         drotation = T.mat2quat(T.euler2mat(drotation))
@@ -233,9 +233,10 @@ def input2action(device, robot, active_arm="right", env_configuration=None):
     elif controller.name == "OSC_POSE":
         # Flip z
         drotation[2] = -drotation[2]
-        # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
-        drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
-        dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
+        # # Scale rotation for teleoperation (tuned for OSC) -- gains tuned for each device
+        # drotation = drotation * 1.5 if isinstance(device, Keyboard) else drotation * 50
+        # dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
+        dpos = dpos * 1 if isinstance(device, Keyboard) else dpos * 125
     elif controller.name == "OSC_POSITION":
         dpos = dpos * 75 if isinstance(device, Keyboard) else dpos * 125
     else:
