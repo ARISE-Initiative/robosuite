@@ -99,9 +99,10 @@ import argparse
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_controller_config
+from robosuite.controllers import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
+from scipy.spatial.transform import Rotation as R
 
 if __name__ == "__main__":
 
@@ -131,7 +132,8 @@ if __name__ == "__main__":
 
     # Get controller config
     controller_config = load_controller_config(default_controller=controller_name)
-
+    # controller_config["control_delta"] = False
+    
     # Create argument configuration
     config = {
         "env_name": args.environment,
@@ -177,6 +179,7 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
+    CNT = 0
     while True:
         # Reset the environment
         obs = env.reset()
@@ -235,7 +238,26 @@ if __name__ == "__main__":
             elif rem_action_dim < 0:
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
+                
+            if np.any(action[:6]!=0):
+                print(f"action:{action}")
+                pre_pos = obs['robot0_eef_pos']
+                print(f"obs_before:{obs['robot0_eef_quat']}")
+                CNT = 3
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            # print("----------------")
+            # print(obs["robot0_eef_pos"])
+            # ee_mat = R.from_quat(obs["robot0_eef_quat"]).as_matrix()
+            # print(ee_mat)
+            # print("*********************")
+
             env.render()
+            
+            if CNT>0:
+                CNT -= 1
+                if CNT <= 3:
+                    print(f"CNT:{CNT}")
+                    print(f"obs:{obs['robot0_eef_pos']}")
+                    print(f"obs:{obs['robot0_eef_quat']}")
