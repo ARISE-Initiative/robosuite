@@ -242,7 +242,9 @@ if __name__ == "__main__":
             if np.any(action[:6]!=0):
                 print(f"action:{action}")
                 pre_pos = obs['robot0_eef_pos']
+                pre_rpy = R.from_quat(obs['robot0_eef_quat']).as_euler('xyz', degrees=False)
                 print(f"obs_before:{obs['robot0_eef_quat']}")
+                print(f"obs_before:{pre_rpy}")
                 CNT = 3
 
             # Step through the simulation and render
@@ -261,3 +263,8 @@ if __name__ == "__main__":
                     print(f"CNT:{CNT}")
                     print(f"obs:{obs['robot0_eef_pos']}")
                     print(f"obs:{obs['robot0_eef_quat']}")
+                    pre_rpy = R.from_quat(obs['robot0_eef_quat']).as_euler('xyz', degrees=False)
+                    print(f"obs:{pre_rpy}")
+                    if CNT==0:
+                        print("----------------------------------")
+5
