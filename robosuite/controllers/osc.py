@@ -220,35 +220,6 @@ class OperationalSpaceController(Controller):
         # Update state
         self.update()
         
-        #
-        set_pos = self.ee_pos + action[:3]
-        T_local_global = np.array(
-            [
-                [0,  1, 0],
-                [-1, 0, 0],
-                [0,  0, 1]
-            ],dtype=float
-        )
-        cur_ee_rpy_global = R.from_matrix(self.ee_ori_mat@T_local_global.T).as_euler("xyz", degrees=False)
-        set_rpy_global = action[3:6] + cur_ee_rpy_global
-        set_mat_gloabl = R.from_euler("xyz", set_rpy_global, degrees=False).as_matrix()
-        set_mat_local = set_mat_gloabl@T_local_global
-        set_ori = set_mat_local
-        
-        
-        if np.any(action[:6]!=0):
-            print(f"ee_pos:{self.ee_pos}")
-            ee_quat = R.from_matrix(self.ee_ori_mat).as_quat()
-            print(f"ee_quat(local):{ee_quat}")
-            ee_quat_gloabl = R.from_matrix(self.ee_ori_mat@T_local_global.T).as_quat()
-            print(f"ee_quat(global):{ee_quat_gloabl}")
-            
-            print(f"set_pos:{set_pos}")
-            set_quat = R.from_matrix(set_mat_gloabl).as_quat()
-            print(f"set_quat(global):{set_quat}")
-            set_rpy = R.from_quat(set_quat).as_euler('xyz', degrees=False)
-            print(f"set_rpy(global):{set_rpy}")
-
         # Parse action based on the impedance mode, and update kp / kd as necessary
         if self.impedance_mode == "variable":
             damping_ratio, kp, delta = action[:6], action[6:12], action[12:]
