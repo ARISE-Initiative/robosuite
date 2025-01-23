@@ -331,20 +331,16 @@ class IKSolverMink:
 
                 input_poses = np.array(input_poses)
                 input_pos = input_poses[:, :3, 3]
-                input_quat_wxyz = np.array([
-                    np.roll(T.mat2quat(pose[:3, :3]), 1)
-                    for pose in input_poses
-                ])
+                input_quat_wxyz = np.array([np.roll(T.mat2quat(pose[:3, :3]), 1) for pose in input_poses])
 
             elif self.input_type == "delta":
                 # For deltas, only rotate the vectors from base to world frame
                 input_pos = np.array([base_ori @ pos for pos in input_pos])
 
                 # Transform rotation deltas using rotation matrices
-                input_quat_wxyz = np.array([
-                    np.roll(T.mat2quat(base_ori @ T.quat2mat(np.roll(quat, -1))), 1)
-                    for quat in input_quat_wxyz
-                ])
+                input_quat_wxyz = np.array(
+                    [np.roll(T.mat2quat(base_ori @ T.quat2mat(np.roll(quat, -1))), 1) for quat in input_quat_wxyz]
+                )
         elif self.input_ref_frame == "eef":
             raise NotImplementedError("Input reference frame 'eef' not yet implemented")
 
