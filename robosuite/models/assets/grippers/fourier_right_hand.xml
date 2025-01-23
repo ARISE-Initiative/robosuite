@@ -78,10 +78,10 @@
   </asset>
 
   <worldbody>
-    <body name="right_hand" pos="0 0 0" quat="0.707107 -0.707107 0 0">
+    <body name="right_hand" pos="0 0 0" quat="0.5 -0.5 -0.5 0.5">
       <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0" type="sphere" group="1"/>
       <!-- <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/> -->
-      <body name="eef" pos="0 0 0" quat="0.5 0.5 0.5 -0.5">
+      <body name="eef" pos="0 0 0" quat="0.707107 0.707107 0 0">
           <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 1 0 1" type="sphere" group="2"/>
           <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
           <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
