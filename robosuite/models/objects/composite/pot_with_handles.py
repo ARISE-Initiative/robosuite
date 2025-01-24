@@ -169,7 +169,7 @@ class PotWithHandlesObject(CompositeObject):
             [-(self.body_half_size[1] - self.thickness / 2), 0, self.body_half_size[1] - self.thickness / 2, 0]
         )
         w_vals = np.array(
-            [self.body_half_size[1], self.body_half_size[0], self.body_half_size[1], self.body_half_size[0]]
+            [self.body_half_size[0], self.body_half_size[1], self.body_half_size[0], self.body_half_size[1]]
         )
         r_vals = np.array([np.pi / 2, 0, -np.pi / 2, np.pi])
         for i, (x, y, w, r) in enumerate(zip(x_off, y_off, w_vals, r_vals)):
