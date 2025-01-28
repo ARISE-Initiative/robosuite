@@ -7,6 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
+from robosuite.controllers import JointPositionController, JointVelocityController, JointTorqueController
 
 
 class FixedBaseRobot(Robot):
@@ -149,8 +150,22 @@ class FixedBaseRobot(Robot):
         for part_name, applied_action in applied_action_dict.items():
             applied_action_low = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 0]
             applied_action_high = self.sim.model.actuator_ctrlrange[self._ref_actuators_indexes_dict[part_name], 1]
-            applied_action = np.clip(applied_action, applied_action_low, applied_action_high)
-            self.sim.data.ctrl[self._ref_actuators_indexes_dict[part_name]] = applied_action
+            actuator_indexes = self._ref_actuators_indexes_dict[part_name]
+            actuator_gears = self.sim.model.actuator_gear[actuator_indexes, 0]
+
+            part_controllers = self.composite_controller.get_controller(part_name)
+            if (
+                isinstance(part_controllers, JointPositionController)
+                or isinstance(part_controllers, JointVelocityController)
+                or isinstance(part_controllers, JointTorqueController)
+            ):
+                # select only the joints that are actuated
+                actuated_joint_indexes = self._ref_actuator_to_joint_id[actuator_indexes]
+                applied_action = applied_action[actuated_joint_indexes]
+
+            applied_action = np.clip(applied_action / actuator_gears, applied_action_low, applied_action_high)
+            self.sim.data.ctrl[actuator_indexes] = applied_action
+
 
         if policy_step:
             # Update proprioceptive values
