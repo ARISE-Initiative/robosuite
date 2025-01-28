@@ -7,7 +7,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
 from robosuite.robots.robot import Robot
-from robosuite.controllers import JointPositionController, JointVelocityController, JointTorqueController
+from robosuite.controllers.parts.generic import JointPositionController, JointVelocityController, JointTorqueController
 
 
 class FixedBaseRobot(Robot):
