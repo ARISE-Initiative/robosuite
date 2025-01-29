@@ -6,8 +6,8 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
+from robosuite.controllers.parts.generic import JointPositionController, JointTorqueController, JointVelocityController
 from robosuite.robots.robot import Robot
-from robosuite.controllers.parts.generic import JointPositionController, JointVelocityController, JointTorqueController
 
 
 class FixedBaseRobot(Robot):
@@ -119,6 +119,15 @@ class FixedBaseRobot(Robot):
             self.eef_site_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_site"])
             self.eef_cylinder_id[arm] = self.sim.model.site_name2id(self.gripper[arm].important_sites["grip_cylinder"])
 
+        self._ref_actuator_to_joint_id = np.ones(self.sim.model.nu).astype(np.int32) * (-1)
+        for part_name, actuator_ids in self._ref_actuators_indexes_dict.items():
+            self._ref_actuator_to_joint_id[actuator_ids] = np.array(
+                [
+                    self._ref_joints_indexes_dict[part_name].index(self.sim.model.actuator_trnid[i, 0])
+                    for i in actuator_ids
+                ]
+            )
+
     def control(self, action, policy_step=False):
         """
         Actuate the robot with the
@@ -165,7 +174,6 @@ class FixedBaseRobot(Robot):
 
             applied_action = np.clip(applied_action / actuator_gears, applied_action_low, applied_action_high)
             self.sim.data.ctrl[actuator_indexes] = applied_action
-
 
         if policy_step:
             # Update proprioceptive values

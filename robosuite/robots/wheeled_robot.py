@@ -6,9 +6,9 @@ import numpy as np
 
 import robosuite.utils.transform_utils as T
 from robosuite.controllers import composite_controller_factory
+from robosuite.controllers.parts.generic import JointPositionController, JointTorqueController, JointVelocityController
 from robosuite.robots.mobile_robot import MobileRobot
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
-from robosuite.controllers.parts.generic import JointPositionController, JointVelocityController, JointTorqueController
 
 
 class WheeledRobot(MobileRobot):
