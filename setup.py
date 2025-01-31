@@ -33,7 +33,7 @@ setup(
     author="Yuke Zhu",
     url="https://github.com/ARISE-Initiative/robosuite",
     author_email="yukez@cs.utexas.edu",
-    version="1.5.1",
+    version="1.5.2",
     long_description=long_description,
     long_description_content_type="text/markdown",
 )
