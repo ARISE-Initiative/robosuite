@@ -1,6 +1,7 @@
 """
 opencv renderer class.
 """
+
 import cv2
 import numpy as np
 

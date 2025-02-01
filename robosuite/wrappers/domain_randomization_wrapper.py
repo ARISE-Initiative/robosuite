@@ -2,6 +2,7 @@
 This file implements a wrapper for facilitating domain randomization over
 robosuite environments.
 """
+
 import mujoco
 import numpy as np
 

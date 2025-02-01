@@ -5,6 +5,7 @@ By default, this visualizes all sites possible for the environment. Visualizatio
 for a given environment can be found by calling `get_visualization_settings()`, and can
 be set individually by calling `set_visualization_setting(setting, visible)`.
 """
+
 import xml.etree.ElementTree as ET
 from copy import deepcopy
 

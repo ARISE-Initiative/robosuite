@@ -1,4 +1,4 @@
-""" Exports a USD file corresponding to the collected trajectory.
+"""Exports a USD file corresponding to the collected trajectory.
 
 The USD (Universal Scene Description) file format allows users to save
 trajectories such that they can be rendered in external renderers such
@@ -8,8 +8,9 @@ Start the animation in your renderer to view the full trajectory.
 
 ***IMPORTANT***: If you are using mujoco version 3.1.1, please make sure
 that you also have numpy < 2 installed in your environment. Failure to do
-so may result in incorrect renderings. 
+so may result in incorrect renderings.
 """
+
 import argparse
 
 import mujoco

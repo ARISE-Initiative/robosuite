@@ -1,6 +1,7 @@
 """
 Rethink's Generic Mount (Officially used on Sawyer).
 """
+
 import numpy as np
 
 from robosuite.models.bases.mount_model import MountModel

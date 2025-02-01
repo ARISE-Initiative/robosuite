@@ -290,7 +290,6 @@ class PotWithHandlesObject(CompositeObject):
 
     @property
     def handle_distance(self):
-
         """
         Calculates how far apart the handles are
 

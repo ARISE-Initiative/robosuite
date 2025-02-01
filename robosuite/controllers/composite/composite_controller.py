@@ -200,7 +200,7 @@ class HybridMobileBase(CompositeController):
         A helper function that creates the action vector given a dictionary
         """
         full_action_vector = np.zeros(self.action_limits[0].shape)
-        for (part_name, action_vector) in action_dict.items():
+        for part_name, action_vector in action_dict.items():
             if part_name not in self._action_split_indexes:
                 ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                 continue
@@ -349,7 +349,7 @@ class WholeBody(CompositeController):
 
     def create_action_vector(self, action_dict: Dict[str, np.ndarray]) -> np.ndarray:
         full_action_vector = np.zeros(self.action_limits[0].shape)
-        for (part_name, action_vector) in action_dict.items():
+        for part_name, action_vector in action_dict.items():
             if part_name not in self._whole_body_controller_action_split_indexes:
                 ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                 continue
