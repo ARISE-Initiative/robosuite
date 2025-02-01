@@ -207,13 +207,13 @@ class KeyboardHandler:
         elif len(self.active_robot.arms) == 2:
             robot = self.active_arm
             if self.active_arm == "right":
-                self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes[: self.num_joints]] = (
-                    self.current_joints_pos
-                )
+                self.env.sim.data.qpos[
+                    self.active_robot._ref_joint_pos_indexes[: self.num_joints]
+                ] = self.current_joints_pos
             else:  # left arm case
-                self.env.sim.data.qpos[self.active_robot._ref_joint_pos_indexes[self.num_joints :]] = (
-                    self.current_joints_pos
-                )
+                self.env.sim.data.qpos[
+                    self.active_robot._ref_joint_pos_indexes[self.num_joints :]
+                ] = self.current_joints_pos
         else:
             raise ValueError("number of arms must be 1 or 2")
         # Print out current joint positions to user
