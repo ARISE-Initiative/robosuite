@@ -1,6 +1,7 @@
 """
 Numba utils.
 """
+
 import numba
 
 import robosuite.macros as macros

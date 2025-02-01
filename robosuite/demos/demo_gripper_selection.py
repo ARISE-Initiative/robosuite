@@ -2,6 +2,7 @@
 This script shows you how to select gripper for an environment.
 This is controlled by gripper_type keyword argument.
 """
+
 import time
 
 import numpy as np

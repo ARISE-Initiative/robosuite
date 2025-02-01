@@ -1,6 +1,7 @@
 """
 Defines the base class of all grippers
 """
+
 import numpy as np
 
 import robosuite.utils.transform_utils as T

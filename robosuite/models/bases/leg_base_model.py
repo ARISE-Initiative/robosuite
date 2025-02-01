@@ -1,6 +1,7 @@
 """
 Defines the base class of all mobile bases
 """
+
 from xml.etree import ElementTree as ET
 
 import numpy as np

@@ -119,7 +119,7 @@ def choose_robots(exclude_bimanual=False, use_humanoids=False, exclude_single_ar
     if exclude_single_arm:
         robots = set()
     else:
-        robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e", "SpotWithArmFloating"}
+        robots = {"Sawyer", "Panda", "Jaco", "Kinova3", "IIWA", "UR5e", "SpotWithArmFloating", "XArm7"}
 
     # Add Baxter if bimanual robots are not excluded
     if not exclude_bimanual:

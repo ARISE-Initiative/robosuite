@@ -2,7 +2,6 @@
 Collection of Buffer objects with general functionality
 """
 
-
 import numpy as np
 
 

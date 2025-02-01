@@ -1,6 +1,7 @@
 """
 Gripper with 140mm Jaw width from Robotiq (has two fingers).
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

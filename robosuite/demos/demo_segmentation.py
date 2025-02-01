@@ -1,6 +1,7 @@
 """
 Play random actions in an environment and render a video that demonstrates segmentation.
 """
+
 import argparse
 import colorsys
 import json

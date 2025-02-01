@@ -166,7 +166,7 @@ class Device(metaclass=abc.ABCMeta):
         ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
 
         # clip actions between -1 and 1
-        for (k, v) in ac_dict.items():
+        for k, v in ac_dict.items():
             if "abs" not in k:
                 ac_dict[k] = np.clip(v, -1, 1)
 
