@@ -57,4 +57,5 @@ jobs:
       run: |
         export PYOPENGL_PLATFORM="osmesa"
         export MUJOCO_GL="osmesa"
+        export NUMBA_DISABLE_JIT=1
         pytest
