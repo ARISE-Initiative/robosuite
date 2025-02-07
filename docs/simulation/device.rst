@@ -30,6 +30,14 @@ SpaceMouse Device
 
   .. automethod:: get_controller_state
   .. automethod:: run
-  .. autoproperty:: control
-  .. autoproperty:: control_gripper
+  .. automethod:: control
+  .. automethod:: control_gripper
+  .. automethod:: _display_controls
+
+MjGUI Device
+------------
+.. autoclass:: robosuite.devices.mjgui.MJGUI
+
+  .. automethod:: get_controller_state
+  .. automethod:: input2action
   .. automethod:: _display_controls

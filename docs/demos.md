@@ -135,11 +135,7 @@ Furthermore, please choose environment specifics with the following arguments:
 
 * `--environment`: Task to perform, e.g., `Lift`, `TwoArmPegInHole`, `NutAssembly`, etc.
 
-* `--robots`: Robot(s) with which to perform the task. Can be any in
-        {`Panda`, `Sawyer`, `IIWA`, `Jaco`, `Kinova3`, `UR5e`, `Baxter`}. Note that the environments include sanity
-        checks, such that a `TwoArm...` environment will only accept either a 2-tuple of robot names or a single
-        bimanual robot name, according to the specified configuration (see below), and all other environments will
-        only accept a single single-armed robot name
+* `--robots`: Robot(s) with which to perform the task, e.g., `Tiago`, `Panda`, `GR1`, `Sawyer`, etc. Note that the environments include sanity checks, such that a `TwoArm...` environment will not accept configurations with a single, one-armed robot.
 
 * `--config`: Exclusively applicable and only should be specified for `TwoArm...` environments. Specifies the robot
         configuration desired for the task when two robots are inputted. Options are {`parallel` and `opposed`}
@@ -152,14 +148,6 @@ Furthermore, please choose environment specifics with the following arguments:
                 each other, facing each other from opposite directions. Expects a 2-tuple of robot names
                 to be specified in the `--robots` argument.
 
-* `--arm`: Exclusively applicable and only should be specified for `TwoArm...` environments. Specifies which of the
-        multiple arm eef's to control. The other (passive) arm will remain stationary. Options are {`right`, `left`}
-        (from the point of view of the robot(s) facing against the viewer direction)
-
-* `--switch-on-click`: Exclusively applicable and only should be specified for `TwoArm...` environments. If enabled,
-        will switch the current arm being controlled every time the gripper input is pressed
-
-* `--toggle-camera-on-click`: If enabled, gripper input presses will cycle through the available camera angles
 
 Examples:
 * For normal single-arm environment:
@@ -168,7 +156,7 @@ $ python demo_device_control.py --environment PickPlaceCan --robots Sawyer
 ```
 * For two-arm bimanual environment:
 ```
-$ python demo_device_control.py --environment TwoArmLift --robots Baxter --config bimanual --arm left
+$ python demo_device_control.py --environment TwoArmLift --robots Tiago
 ```
 * For two-arm multi single-arm robot environment:
 ```
@@ -186,7 +174,7 @@ The `demo_renderers.py` script shows how to use different renderers with the sim
 ```sh
 $ python demo_renderers.py --renderer default
 ```
-The `--renderer` flag can be set to `mujoco` or `default(default)
+The `--renderer` flag can be set to `mujoco` or `default`
 
 ### Exporting to USD
 Exporting to USD allows users to render **robosuite** trajectories in external renderers such as NVIDIA Omniverse and Blender. In order to export to USD you must install the required dependencies for the exporter.

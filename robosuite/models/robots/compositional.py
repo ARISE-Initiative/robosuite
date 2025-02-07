@@ -87,7 +87,7 @@ class PandaDexRH(Panda):
 
     @property
     def gripper_mount_quat_offset(self):
-        return {"right": [0.5, -0.5, 0.5, 0.5]}
+        return {"right": [-0.5, 0.5, 0.5, -0.5]}
 
 
 class PandaDexLH(Panda):
@@ -101,4 +101,4 @@ class PandaDexLH(Panda):
 
     @property
     def gripper_mount_quat_offset(self):
-        return {"right": [0.5, -0.5, 0.5, 0.5]}
+        return {"right": [0.5, -0.5, 0.5, -0.5]}

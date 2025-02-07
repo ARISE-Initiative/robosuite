@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    robosuite.renderers.context
+   robosuite.renderers.mjviewer
 
 Submodules
 ----------
