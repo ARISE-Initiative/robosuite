@@ -1,6 +1,7 @@
 """
 6-DoF gripper with its open/close variant
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

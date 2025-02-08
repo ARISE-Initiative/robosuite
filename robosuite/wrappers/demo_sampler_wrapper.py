@@ -1,7 +1,7 @@
 """
 This file contains a wrapper for sampling environment states
-from a set of demonstrations on every reset. The main use case is for 
-altering the start state distribution of training episodes for 
+from a set of demonstrations on every reset. The main use case is for
+altering the start state distribution of training episodes for
 learning RL policies.
 """
 

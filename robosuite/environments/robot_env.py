@@ -345,7 +345,7 @@ class RobotEnv(MujocoEnv):
             # Create sensor information
             sensors = []
             names = []
-            for (cam_name, cam_w, cam_h, cam_d, cam_segs) in zip(
+            for cam_name, cam_w, cam_h, cam_d, cam_segs in zip(
                 self.camera_names,
                 self.camera_widths,
                 self.camera_heights,

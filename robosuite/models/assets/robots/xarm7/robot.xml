@@ -1,0 +1,102 @@
+<mujoco model="xarm7">
+  <compiler angle="radian" autolimits="true"/>
+
+  <option integrator="implicitfast"/>
+
+  <asset>
+    <material name="white" rgba="1 1 1 1"/>
+    <material name="gray" rgba="0.753 0.753 0.753 1"/>
+    <material name="black" rgba="0.149 0.149 0.149 1"/>
+
+    <mesh name="link_base" file="meshes/link_base.stl"/>
+    <mesh name="link1" file="meshes/link1.stl"/>
+    <mesh name="link2" file="meshes/link2.stl"/>
+    <mesh name="link3" file="meshes/link3.stl"/>
+    <mesh name="link4" file="meshes/link4.stl"/>
+    <mesh name="link5" file="meshes/link5.stl"/>
+    <mesh name="link6" file="meshes/link6.stl"/>
+    <mesh name="link7" file="meshes/link7.stl"/>
+    <mesh name="end_tool" file="meshes/end_tool.stl"/>
+  </asset>
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      <!-- robot view -->
+      <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
+      <!-- <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/> -->
+      <!-- mount attached here -->
+
+      <inertial pos="-0.021131 -0.0016302 0.056488" quat="0.696843 0.20176 0.10388 0.680376" mass="0.88556"
+        diaginertia="0.00382023 0.00335282 0.00167725"/>
+      <geom mesh="link_base" type="mesh" material="white" group="1"/>
+      <body name="link1" pos="0 0 0.267">
+	<site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+        <inertial pos="-0.0002 0.02905 -0.01233" quat="0.978953 -0.202769 -0.00441617 -0.0227264" mass="2.382"
+          diaginertia="0.00569127 0.00533384 0.00293865"/>
+        <joint name="joint1" axis="0 0 1" range="-6.28319 6.28319" frictionloss="1" damping="0.1"/>
+        <geom mesh="link1" type="mesh" material="white" group="1"/>
+        <body name="link2" quat="1 -1 0 0">
+          <inertial pos="0.00022 -0.12856 0.01735" quat="0.50198 0.86483 -0.00778841 0.00483285" mass="1.869"
+            diaginertia="0.00959898 0.00937717 0.00201315"/>
+          <joint name="joint2" axis="0 0 1" frictionloss="1" range="-2.059 2.0944" damping="0.1"/>
+          <geom mesh="link2" type="mesh" material="white" group="1"/>
+          <body name="link3" pos="0 -0.293 0" quat="1 1 0 0">
+            <inertial pos="0.0466 -0.02463 -0.00768" quat="0.913819 0.289775 0.281481 -0.0416455" mass="1.6383"
+              diaginertia="0.00351721 0.00294089 0.00195868"/>
+            <joint name="joint3" axis="0 0 1" range="-6.28319 6.28319" frictionloss="1" damping="0.1"/>
+            <geom mesh="link3" type="mesh" material="white" group="1"/>
+            <body name="link4" pos="0.0525 0 0" quat="1 1 0 0">
+              <inertial pos="0.07047 -0.11575 0.012" quat="0.422108 0.852026 -0.126025 0.282832" mass="1.7269"
+                diaginertia="0.00657137 0.00647948 0.00186763"/>
+              <joint name="joint4" axis="0 0 1" frictionloss="1" range="-0.19198 3.927" damping="0.1"/>
+              <geom mesh="link4" type="mesh" material="white" group="1"/>
+              <body name="link5" pos="0.0775 -0.3425 0" quat="1 1 0 0">
+                <inertial pos="-0.00032 0.01604 -0.026" quat="0.999311 -0.0304457 0.000577067 0.0212082" mass="1.3203"
+                  diaginertia="0.00534729 0.00499076 0.0013489"/>
+                <joint name="joint5" axis="0 0 1" range="-6.28319 6.28319" frictionloss="1" damping="0.1"/>
+                <geom mesh="link5" type="mesh" material="white" group="1"/>
+                <body name="link6" quat="1 1 0 0">
+                  <inertial pos="0.06469 0.03278 0.02141" quat="-0.217672 0.772419 0.16258 0.574069" mass="1.325"
+                    diaginertia="0.00245421 0.00221646 0.00107273"/>
+                  <joint name="joint6" axis="0 0 1" frictionloss="1" range="-1.69297 3.14159" damping="0.01"/>
+                  <geom mesh="link6" type="mesh" material="white" group="1"/>
+                  <body name="link7" pos="0.076 0.097 0" quat="1 -1 0 0">
+                    <inertial pos="0 -0.00677 -0.01098" quat="0.487612 0.512088 -0.512088 0.487612" mass="0.17"
+                      diaginertia="0.000132176 9.3e-05 5.85236e-05"/>
+                    <joint name="joint7" axis="0 0 1" range="-6.28319 6.28319" frictionloss="1" damping="0.01"/>
+                    <!-- <geom material="gray" mesh="end_tool"/> -->
+
+		    <body name="right_hand" pos="0.0 0.0 -0.027" quat="0 0 0 1">
+			<!-- This sites were added for visualization. They are all standardized between models-->
+			<!-- Position mimics the gripper attachment point (right_hand) -->
+			<!--  Y-axis should be perpendicular to grasping motion, and Z-axis should point out of the robot eef -->
+
+			<!--  Values here must be tuned manually -->
+			<site name="ee" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 1" type="sphere" group="1"/>
+			<site name="ee_x" pos="0 0 0" size="0.005 .1"  quat="0.707105 0.707108 0 0 " rgba="1 0 0 0" type="cylinder" />
+			<site name="ee_z" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0 0.707108" rgba="0 0 1 0" type="cylinder" />
+			<site name="ee_y" pos="0 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0 " rgba="0 1 0 0" type="cylinder" />
+			<!-- This camera points out from the eef. -->
+			<camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+			<!-- to add gripper -->
+		    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Physical limits of the actuator. -->
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint1" name="torq_j1"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint2" name="torq_j2"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint3" name="torq_j3"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint4" name="torq_j4"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint5" name="torq_j5"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint6" name="torq_j6"/>
+    <motor ctrllimited="true" ctrlrange="-80.0 80.0" joint="joint7" name="torq_j7"/>
+  </actuator>
+</mujoco>

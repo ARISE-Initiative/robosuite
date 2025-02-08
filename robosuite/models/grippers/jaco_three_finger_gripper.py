@@ -1,6 +1,7 @@
 """
 Gripper for Kinova's Jaco robot arm (has three fingers).
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

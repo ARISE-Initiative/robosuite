@@ -1,5 +1,5 @@
 """
-Convenience script to make a video out of initial environment 
+Convenience script to make a video out of initial environment
 configurations. This can be a useful debugging tool to understand
 what different sampled environment configurations look like.
 """

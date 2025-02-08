@@ -1,6 +1,7 @@
 """
 Omron LD-60 Mobile Base.
 """
+
 import numpy as np
 
 from robosuite.models.bases.mobile_base_model import MobileBaseModel

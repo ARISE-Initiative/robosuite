@@ -1,6 +1,7 @@
 """
 Gripper without fingers to wipe a surface
 """
+
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 

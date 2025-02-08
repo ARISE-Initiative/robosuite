@@ -1,6 +1,7 @@
 """
 Gripper with 11-DoF controlling three fingers and its open/close variant.
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

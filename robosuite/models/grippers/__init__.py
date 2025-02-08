@@ -14,6 +14,7 @@ from .bd_gripper import BDGripper
 from .null_gripper import NullGripper
 from .inspire_hands import InspireLeftHand, InspireRightHand
 from .fourier_hands import FourierLeftHand, FourierRightHand
+from .xarm7_gripper import XArm7Gripper
 
 GRIPPER_MAPPING = {
     "RethinkGripper": RethinkGripper,
@@ -30,6 +31,7 @@ GRIPPER_MAPPING = {
     "InspireRightHand": InspireRightHand,
     "FourierLeftHand": FourierLeftHand,
     "FourierRightHand": FourierRightHand,
+    "XArm7Gripper": XArm7Gripper,
     None: NullGripper,
 }
 

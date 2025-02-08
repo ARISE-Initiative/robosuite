@@ -110,7 +110,6 @@ class MujocoObject(MujocoModel):
         raise NotImplementedError
 
     def _get_object_subtree(self):
-
         """
         Returns a ET.Element
         It is a <body/> subtree that defines all collision and / or visualization related fields
@@ -560,7 +559,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         # scale bodies
         body_pairs = self._get_elements(obj, "body")
-        for (_, elem) in body_pairs:
+        for _, elem in body_pairs:
             b_pos = elem.get("pos")
             if b_pos is not None:
                 b_pos = string_to_array(b_pos) * self._scale
@@ -568,7 +567,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         # scale joints
         joint_pairs = self._get_elements(obj, "joint")
-        for (_, elem) in joint_pairs:
+        for _, elem in joint_pairs:
             j_pos = elem.get("pos")
             if j_pos is not None:
                 j_pos = string_to_array(j_pos) * self._scale
@@ -576,7 +575,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         # scale sites
         site_pairs = self._get_elements(self.worldbody, "site")
-        for (_, elem) in site_pairs:
+        for _, elem in site_pairs:
             s_pos = elem.get("pos")
             if s_pos is not None:
                 s_pos = string_to_array(s_pos) * self._scale
