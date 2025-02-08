@@ -2,18 +2,19 @@
 
 ## Version 1.5.1
 
+- **Bug Fixes**:  
+  - Fixed segmentation demo, part controller demo, demo renderer, joint and actuator issues, equality removal, and orientation mismatch in Fourier hands.  
+
 - **Documentation Updates**:  
   - Updated `basicusage.md`, overview page, demo docs, teleop usage info, devices, and related docs.  
   - Added a CI doc update workflow and `.nojekyll` fix.  
   - Simplified composite controller keywords and updated robots section and task images.  
 
-- **Bug Fixes**:  
-  - Fixed segmentation demo, part controller demo, demo renderer, joint and actuator issues, equality removal, and orientation mismatch in Fourier hands.  
-
 - **Features/Enhancements**:  
   - Added GymWrapper support for both `gym` and `gymnasium` with `dict_obs`.  
-  - Updated DexMimicGen assets and included a default whole-body Mink IK config.  
-  - Improved CI to check all tests and print video save paths in demo recordings.  
+  - Updated DexMimicGen assets and added a default whole-body Mink IK config.  
+  - Improved CI to check all tests and print video save paths in demo recordings. 
+  - Add GR1 and spot robot to `demo_random_actions.py` script.
 
 - **Miscellaneous**:  
   - Added troubleshooting for SpaceMouse failures and terminated `mjviewer` on resets.  
