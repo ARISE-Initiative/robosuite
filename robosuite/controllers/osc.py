@@ -267,7 +267,7 @@ class OperationalSpaceController(Controller):
         )
 
         if self.interpolator_pos is not None:
-            self.interpolator_pos.set_goal(self.goal_pos)
+            self.interpolator_pos.set_goal(np.array(self.goal_pos))
 
         if self.interpolator_ori is not None:
             self.ori_ref = np.array(self.ee_ori_mat)  # reference is the current orientation at start

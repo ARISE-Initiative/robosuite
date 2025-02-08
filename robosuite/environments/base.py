@@ -11,6 +11,9 @@ from robosuite.renderers.base import load_renderer_config
 from robosuite.utils import OpenCVRenderer, SimulationError, XMLError
 from robosuite.utils.binding_utils import MjRenderContextOffscreen, MjSim
 
+import robosuite.utils.transform_utils as T
+import copy
+
 REGISTERED_ENVS = {}
 
 
@@ -150,6 +153,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # check if viewer has get observations method and set a flag for future use.
         self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
+        
+        # custom control
+        self.old_gripper_state = -1
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
@@ -379,6 +385,64 @@ class MujocoEnv(metaclass=EnvMeta):
             raise ValueError("executing action in terminated episode")
 
         self.timestep += 1
+        
+        # #  custom control
+        # T_local_global = np.array(
+        #     [
+        #         [0,  1, 0],
+        #         [-1, 0, 0],
+        #         [0,  0, 1]
+        #     ],dtype=float
+        # )
+        # CONTROL_ERROR = 1e-3
+        # MAX_STEPS = 600
+        
+        # step_cnt = 0
+        # cur_ee_pos = self._observables['robot0_eef_pos'].obs
+        # cur_ee_quat = self._observables['robot0_eef_quat'].obs
+        # cur_ee_mat = T.quat2mat(cur_ee_quat)
+        # cur_ee_mat_local = cur_ee_mat@T_local_global
+        # cur_ee_quat_local = T.mat2quat(cur_ee_mat_local)
+        # cur_pose1 = np.array([*cur_ee_pos, *cur_ee_quat_local])
+        # cur_pose2 = np.array([*cur_ee_pos, *(cur_ee_quat_local*-1)])
+        
+        # target_pose = np.array([*action[:3], *T.axisangle2quat(action[3:6])])
+        
+        # cur_pose_error = min(np.linalg.norm(target_pose - cur_pose1),np.linalg.norm(target_pose - cur_pose2))
+        
+        # policy_step = True
+        # action_copy = copy.deepcopy(action)
+        # # action_copy[-1] = self.old_gripper_state
+        # while cur_pose_error > CONTROL_ERROR or step_cnt < int(self.control_timestep / self.model_timestep):
+        #     self.sim.forward()
+        #     self._pre_action(action_copy, policy_step)
+        #     self.sim.step()
+        #     self._update_observables()
+        #     policy_step = False
+        #     #
+        #     step_cnt += 1
+        #     # update current error
+        #     cur_ee_pos = self._observables['robot0_eef_pos'].obs
+        #     cur_ee_quat = self._observables['robot0_eef_quat'].obs
+        #     cur_ee_mat = T.quat2mat(cur_ee_quat)
+        #     cur_ee_mat_local = cur_ee_mat@T_local_global
+        #     cur_ee_quat_local = T.mat2quat(cur_ee_mat_local)
+        #     cur_pose1 = np.array([*cur_ee_pos, *cur_ee_quat_local])
+        #     cur_pose2 = np.array([*cur_ee_pos, *(cur_ee_quat_local*-1)])
+        #     cur_pose_error = min(np.linalg.norm(target_pose - cur_pose1),np.linalg.norm(target_pose - cur_pose2))
+            
+        #     if step_cnt >= MAX_STEPS:
+        #         break
+        #     pass
+        
+        # # self.sim.forward()
+        # # self._pre_action(action, True)
+        # # self.sim.step()
+        # # self._update_observables()
+        # # step_cnt += 1
+        # # self.old_gripper_state = action[-1]
+        
+        # self.cur_time += self.model_timestep*step_cnt
 
         # Since the env.step frequency is slower than the mjsim timestep frequency, the internal controller will output
         # multiple torque commands in between new high level action commands. Therefore, we need to denote via
@@ -397,6 +461,9 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
+        
+        
+
 
         reward, done, info = self._post_action(action)
 
