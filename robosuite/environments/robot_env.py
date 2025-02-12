@@ -345,7 +345,7 @@ class RobotEnv(MujocoEnv):
             # Create sensor information
             sensors = []
             names = []
-            for (cam_name, cam_w, cam_h, cam_d, cam_segs) in zip(
+            for cam_name, cam_w, cam_h, cam_d, cam_segs in zip(
                 self.camera_names,
                 self.camera_widths,
                 self.camera_heights,
@@ -523,7 +523,7 @@ class RobotEnv(MujocoEnv):
 
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
-            robot.reset(deterministic=self.deterministic_reset)
+            robot.reset(deterministic=self.deterministic_reset, rng=self.rng)
             self._action_dim += robot.action_dim
 
         # Update cameras if appropriate
