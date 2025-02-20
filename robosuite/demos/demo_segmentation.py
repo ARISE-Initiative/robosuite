@@ -57,17 +57,16 @@ if __name__ == "__main__":
     parser.add_argument("--video-path", type=str, default="/tmp/video.mp4", help="Path to video file")
     parser.add_argument("--random-colors", action="store_true", help="Radnomize segmentation colors")
     parser.add_argument("--segmentation-level", type=str, default="element", help="instance, class, or element")
+    parser.add_argument("--env-name", type=str, default="TwoArmHandover", help="Environment name")
+    parser.add_argument("--camera", type=str, default="frontview", help="Camera name")
     args = parser.parse_args()
 
     # Create dict to hold options that will be passed to env creation call
     options = {}
 
     # Choose environment and add it to options
-    options["env_name"] = "TwoArmHandover"
+    options["env_name"] = args.env_name
     options["robots"] = ["Panda", "Panda"]
-
-    # Choose camera
-    camera = "frontview"
 
     # Choose segmentation type
     segmentation_level = args.segmentation_level  # Options are {instance, class, element}
@@ -80,7 +79,7 @@ if __name__ == "__main__":
         ignore_done=True,
         use_camera_obs=True,
         control_freq=20,
-        camera_names=camera,
+        camera_names=args.camera,
         camera_segmentations=segmentation_level,
         camera_heights=512,
         camera_widths=512,
@@ -98,7 +97,7 @@ if __name__ == "__main__":
         action = 0.5 * np.random.uniform(low, high)
         obs, reward, done, _ = env.step(action)
 
-        video_img = obs[f"{camera}_segmentation_{segmentation_level}"].squeeze(-1)[::-1]
+        video_img = obs[f"{args.camera}_segmentation_{segmentation_level}"].squeeze(-1)[::-1]
         np.savetxt("/tmp/seg_{}.txt".format(i), video_img, fmt="%.2f")
         video_img = segmentation_to_rgb(video_img, args.random_colors)
         video_writer.append_data(video_img)

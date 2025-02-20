@@ -1,9 +1,39 @@
+import xml.etree.ElementTree as ET
 from copy import deepcopy
+
+import mujoco
 
 from robosuite.models.objects import MujocoObject
 from robosuite.models.robots import RobotModel
 from robosuite.models.world import MujocoWorldBase
 from robosuite.utils.mjcf_utils import get_ids
+
+
+def get_subtree_geom_ids_by_group(model: mujoco.MjModel, body_id: int, group: int) -> list[int]:
+    """Get all geoms belonging to a subtree starting at a given body, filtered by group.
+
+    Args:
+        model: MuJoCo model.
+        body_id: ID of body where subtree starts.
+        group: Group ID to filter geoms.
+
+    Returns:
+        A list containing all subtree geom ids in the specified group.
+
+    Adapted from https://github.com/kevinzakka/mink/blob/main/mink/utils.py
+    """
+
+    def gather_geoms(body_id: int) -> list[int]:
+        geoms: list[int] = []
+        geom_start = model.body_geomadr[body_id]
+        geom_end = geom_start + model.body_geomnum[body_id]
+        geoms.extend(geom_id for geom_id in range(geom_start, geom_end) if model.geom_group[geom_id] == group)
+        children = [i for i in range(model.nbody) if model.body_parentid[i] == body_id]
+        for child_id in children:
+            geoms.extend(gather_geoms(child_id))
+        return geoms
+
+    return gather_geoms(body_id)
 
 
 class Task(MujocoWorldBase):
@@ -106,15 +136,32 @@ class Task(MujocoWorldBase):
         for robot in self.mujoco_robots:
             models += [robot] + robot.models
 
+        worldbody = self.mujoco_arena.root.find("worldbody")
+        exclude_bodies = ["table"]
+        top_level_bodies = [
+            body.attrib.get("name")
+            for body in worldbody.findall("body")
+            if body.attrib.get("name") not in exclude_bodies
+        ]
+        models.extend(top_level_bodies)
+
         # Parse all mujoco models from robots and objects
         for model in models:
-            # Grab model class name and visual IDs
-            cls = str(type(model)).split("'")[1].split(".")[-1]
-            inst = model.name
-            id_groups = [
-                get_ids(sim=sim, elements=model.visual_geoms + model.contact_geoms, element_type="geom"),
-                get_ids(sim=sim, elements=model.sites, element_type="site"),
-            ]
+            if isinstance(model, str):
+                body_name = model
+                visual_group_number = 1
+                body_id = sim.model.body_name2id(body_name)
+                inst, cls = body_name, body_name
+                geom_ids = get_subtree_geom_ids_by_group(sim.model, body_id, visual_group_number)
+                id_groups = [geom_ids, []]
+            else:
+                # Grab model class name and visual IDs
+                cls = str(type(model)).split("'")[1].split(".")[-1]
+                inst = model.name
+                id_groups = [
+                    get_ids(sim=sim, elements=model.visual_geoms + model.contact_geoms, element_type="geom"),
+                    get_ids(sim=sim, elements=model.sites, element_type="site"),
+                ]
             group_types = ("geom", "site")
             ids_to_instances = (self._geom_ids_to_instances, self._site_ids_to_instances)
             ids_to_classes = (self._geom_ids_to_classes, self._site_ids_to_classes)
