@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 
-class OpenCVRenderer:
+class OpenCVViewer:
     def __init__(self, sim):
         # TODO: update this appropriately - need to get screen dimensions
         self.width = 1280
@@ -19,7 +19,7 @@ class OpenCVRenderer:
         self._has_window = False
         self.keypress_callback = None
 
-    def set_camera(self, camera_id=None, camera_name=None):
+    def set_camera(self, camera_id=None, camera_name=None, width=None, height=None):
         """
         Set the camera view to the specified camera ID.
 
@@ -31,6 +31,12 @@ class OpenCVRenderer:
         # enforce exactly one arg
         assert (camera_id is not None) or (camera_name is not None)
         assert (camera_id is None) or (camera_name is None)
+
+        # set width and height
+        if width is not None:
+            self.width = width
+        if height is not None:
+            self.height = height
 
         if camera_id is not None:
             if isinstance(camera_id, int):
