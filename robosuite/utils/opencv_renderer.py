@@ -1,9 +1,10 @@
 """
 opencv renderer class.
 """
-import numpy as np
-import cv2
 import platform
+
+import cv2
+import numpy as np
 
 
 class OpenCVRenderer:
@@ -46,7 +47,7 @@ class OpenCVRenderer:
             self.sim.render(camera_name=cam_name, height=self.height, width=self.width)[..., ::-1]
             for cam_name in self.camera_names
         ]
-        im = np.concatenate(im, axis=1) # concatenate horizontally
+        im = np.concatenate(im, axis=1)  # concatenate horizontally
 
         # write frame to window
         im = np.flip(im, axis=0)
