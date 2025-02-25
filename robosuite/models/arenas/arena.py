@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List, Union
 
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import (
@@ -171,7 +172,7 @@ class Arena(MujocoXML):
         # Return all found pairs
         return elem_pairs
 
-    def set_scale(self, scale, obj_name: str = None):
+    def set_scale(self, scale: Union[float, List[float]], obj_name: str):
         """
         Scales each geom, mesh, site, and body under obj_name.
         Called during initialization but can also be used externally
@@ -181,6 +182,8 @@ class Arena(MujocoXML):
             obj_name Name of root object to apply.
         """
         obj = self.worldbody.find(f"./body[@name='{obj_name}']")
+        if obj is None:
+            raise ValueError(f"Object {obj_name} not found in arena; cannot set scale.")
         self.object_scales[obj.get("name")] = scale
 
         # scale geoms
