@@ -171,15 +171,16 @@ class Arena(MujocoXML):
         # Return all found pairs
         return elem_pairs
 
-    def set_scale(self, scale, obj):
+    def set_scale(self, scale, obj_name: str = None):
         """
-        Scales each geom, mesh, site, and body.
+        Scales each geom, mesh, site, and body under obj_name.
         Called during initialization but can also be used externally
 
         Args:
             scale (float or list of floats): Scale factor (1 or 3 dims)
-            obj (ET.Element) Root object to apply. Defaults to root object of model
+            obj_name Name of root object to apply.
         """
+        obj = self.worldbody.find(f"./body[@name='{obj_name}']")
         self.object_scales[obj.get("name")] = scale
 
         # scale geoms
