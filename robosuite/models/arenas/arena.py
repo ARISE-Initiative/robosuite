@@ -1,5 +1,6 @@
-import numpy as np
 from typing import List, Union
+
+import numpy as np
 
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import (
