@@ -146,9 +146,11 @@ class HammerObject(CompositeObject):
             geom_types="cylinder" if self.handle_shape == "cylinder" else "box",
             geom_locations=(0, 0, 0),
             geom_quats=(1, 0, 0, 0),
-            geom_sizes=np.array([self.handle_radius, self.handle_length / 2.0])
-            if self.handle_shape == "cylinder"
-            else np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0]),
+            geom_sizes=(
+                np.array([self.handle_radius, self.handle_length / 2.0])
+                if self.handle_shape == "cylinder"
+                else np.array([self.handle_radius, self.handle_radius, self.handle_length / 2.0])
+            ),
             geom_names="handle",
             geom_rgbas=None if self.use_texture else self.rgba_handle,
             geom_materials="wood_mat" if self.use_texture else None,

@@ -1,6 +1,7 @@
 """
 Dexterous hands for GR1 robot.
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

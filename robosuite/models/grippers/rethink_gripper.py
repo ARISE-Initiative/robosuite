@@ -1,6 +1,7 @@
 """
 Gripper with two fingers for Rethink Robots.
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel

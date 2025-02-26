@@ -1,6 +1,7 @@
 """
 Defines the base class of all mounts
 """
+
 from typing import Dict, List
 
 import numpy as np

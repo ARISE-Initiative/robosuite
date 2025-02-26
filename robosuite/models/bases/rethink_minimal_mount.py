@@ -1,6 +1,7 @@
 """
 Rethink's Alternative Mount (Officially used on Baxter).
 """
+
 import numpy as np
 
 from robosuite.models.bases.mount_model import MountModel

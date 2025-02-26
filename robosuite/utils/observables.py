@@ -30,6 +30,7 @@ def sensor(modality):
     Returns:
         function: decorator function
     """
+
     # Define standard decorator (with no args)
     def decorator(func):
         # Add modality attribute

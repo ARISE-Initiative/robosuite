@@ -1,6 +1,7 @@
 """
 Defines GripperTester that is used to test the physical properties of various grippers
 """
+
 import xml.etree.ElementTree as ET
 
 import numpy as np
