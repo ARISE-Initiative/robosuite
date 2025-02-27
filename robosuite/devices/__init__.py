@@ -3,6 +3,7 @@ from .keyboard import Keyboard
 
 try:
     from .spacemouse import SpaceMouse
+    from .dualsense import DualSense
 except ImportError as e:
     print("Exception!", e)
     print(
