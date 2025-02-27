@@ -184,7 +184,9 @@ class Arena(MujocoXML):
         """
         obj = self.worldbody.find(f"./body[@name='{obj_name}']")
         if obj is None:
-            raise ValueError(f"Object {obj_name} not found in arena; cannot set scale.")
+            bodies = self.worldbody.findall("./body")
+            body_names = [body.get("name") for body in bodies if body.get("name") is not None]
+            raise ValueError(f"Object {obj_name} not found in arena; cannot set scale. Available objects: {body_names}")
         self.object_scales[obj.get("name")] = scale
 
         # scale geoms
