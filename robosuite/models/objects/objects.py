@@ -206,7 +206,6 @@ class MujocoObject(MujocoModel):
                 s_size = array_to_string(s_size_np)
                 elem.set("size", s_size)
 
-
     def _get_geoms(self, root, _parent=None):
         """
         Helper function to recursively search through element tree starting at @root and returns
