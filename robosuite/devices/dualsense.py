@@ -34,23 +34,27 @@ from robosuite.utils.transform_utils import rotation_matrix
 
 
 class ConnectionType(IntFlag):
-    BT = 0x0
     USB = 0x1
-    UNKNOWN = 0x2
+    BT01 = 0x2
+    BT31 = 0x4
+    UNKNOWN = 0x8
 
     @classmethod
     def to_string(cls, value) -> str:
         if value & cls.UNKNOWN:
             return "Unknown"
-        if value & cls.BT:
-            return "Bluetooth"
+        if value & cls.BT01:
+            return "Bluetooth 01"
+        if value & cls.BT31:
+            return "Bluetooth 31"
         if value & cls.USB:
             return "USB"
         return "Unknown"
 
 
 USB_REPORT_LENGTH = 64
-BT_REPORT_LENGTH = 78
+BT_REPORT31_LENGTH = 78
+BT_REPORT01_LENGTH = 10
 AxisSpec = namedtuple("AxisSpec", ["channel", "byte1", "byte2", "scale"])
 DUALSENSE_AXIS_LIST = ["LX", "LY", "RX", "RY", "L2_Trigger", "R2_Trigger"]
 DUALSENSE_BTN_LIST = [
@@ -195,7 +199,7 @@ class DualSense(Device):
         self,
         env,
         vendor_id=macros.DUALSENSE_VENDOR_ID,
-        product_id=macros.DUALSENSE_PRODUCT_IDs[0],
+        product_id=macros.DUALSENSE_PRODUCT_ID,
         pos_sensitivity=1.0,
         rot_sensitivity=1.0,
         reverse_xy=False,
@@ -222,6 +226,14 @@ class DualSense(Device):
         self.input_report_length = -1
         self.output_report_length = -1
         self.connection_type = self._check_connection_type()
+        # By default, bluetooth-connected DualSense only sends input report 0x01 which omits motion and touchpad data.
+        # Reading feature report 0x05 causes it to start sending input report 0x31.
+        # Note: The Gamepad API will do this for us if it enumerates the gamepad.Other applications like Steam may have also done this already.
+        if self.connection_type == ConnectionType.BT01:
+            self.device.get_feature_report(0x05, BT_REPORT31_LENGTH)
+            self.connection_type = ConnectionType.BT31
+            self.input_report_length = BT_REPORT31_LENGTH
+            self.output_report_length = BT_REPORT31_LENGTH
         print("DualSense Connection type: %s" % ConnectionType.to_string(self.connection_type))
         print("")
         print(
@@ -309,44 +321,15 @@ class DualSense(Device):
             self.input_report_length = USB_REPORT_LENGTH
             self.output_report_length = USB_REPORT_LENGTH
             return ConnectionType.USB
-        elif dummy_report_length == BT_REPORT_LENGTH:
-            self.input_report_length = BT_REPORT_LENGTH
-            self.output_report_length = BT_REPORT_LENGTH
-            return ConnectionType.BT
+        elif dummy_report_length == BT_REPORT01_LENGTH:
+            self.input_report_length = BT_REPORT01_LENGTH
+            self.output_report_length = BT_REPORT01_LENGTH
+            return ConnectionType.BT01
+        elif dummy_report_length == BT_REPORT31_LENGTH:
+            self.input_report_length = BT_REPORT31_LENGTH
+            self.output_report_length = BT_REPORT31_LENGTH
+            return ConnectionType.BT31
         return ConnectionType.UNKNOWN
-
-    def _parse_report_bytes(self, state_bytes: bytearray):
-        new_state = DSState()
-        # states 0 is always 1
-        new_state.LX = state_bytes[1] - 128
-        new_state.LY = state_bytes[2] - 128
-        new_state.RX = state_bytes[3] - 128
-        new_state.RY = state_bytes[4] - 128
-        new_state.L2_Trigger = state_bytes[5]
-        new_state.R2_Trigger = state_bytes[6]
-
-        # state 7 always increments -> not used anywhere
-
-        buttonState = state_bytes[8]
-        new_state.Triangle = (buttonState & (1 << 7)) != 0
-        new_state.Circle = (buttonState & (1 << 6)) != 0
-        new_state.Cross = (buttonState & (1 << 5)) != 0
-        new_state.Square = (buttonState & (1 << 4)) != 0
-
-        # dpad
-        dpad_state = buttonState & 0x0F
-        new_state.setDPadState(dpad_state)
-
-        misc = state_bytes[9]
-        new_state.L1 = (misc & (1 << 0)) != 0
-        new_state.R1 = (misc & (1 << 1)) != 0
-        new_state.L2 = (misc & (1 << 2)) != 0
-        new_state.R2 = (misc & (1 << 3)) != 0
-        # new_state.share = (misc & (1 << 4)) != 0
-        # new_state.options = (misc & (1 << 5)) != 0
-        new_state.L3 = (misc & (1 << 6)) != 0
-        new_state.R3 = (misc & (1 << 7)) != 0
-        return new_state
 
     def _check_btn_changed(self, btn_name: str):
         """
@@ -368,15 +351,22 @@ class DualSense(Device):
         while True:
             d = self.device.read(self.input_report_length)
             if d is not None and self._enabled:
-                # the reports for BT and USB are structured the same,
-                # but there is one more byte at the start of the bluetooth report.
-                # We drop that byte, so that the format matches up again.
-                report_bytes: bytearray = (
-                    bytearray(d)[1:] if self.connection_type == ConnectionType.BT else bytearray(d)
-                )
+                report_bytes = bytearray(d)
                 self.report_bytes = report_bytes
                 self.last_state = self.state
-                self.state = self._parse_report_bytes(report_bytes)
+
+                if self.connection_type == ConnectionType.USB:
+                    self.state = parse_usb_report(self, report_bytes)
+                elif self.connection_type == ConnectionType.BT01:
+                    # report id 0x01
+                    assert report_bytes[0] == 0x01
+                    self.state = parse_bt01_report(report_bytes)
+                    # report id 0x31
+                elif self.connection_type == ConnectionType.BT31:
+                    assert report_bytes[0] == 0x31
+                    self.state = parse_bt31_report(report_bytes)
+                else:
+                    raise NotImplementedError(f"Connection type {self.connection_type} not supported")
                 self.x = scale_to_control(self.state.LX if not self.reverse_xy else self.state.LY)
                 self.y = scale_to_control(self.state.LY if not self.reverse_xy else self.state.LX)
                 self.roll = scale_to_control(self.state.RX if not self.reverse_xy else self.state.RY)
@@ -482,6 +472,110 @@ class DualSense(Device):
         drotation = np.clip(drotation, -1, 1)
 
         return dpos, drotation
+
+
+def parse_usb_report(state_bytes: bytearray) -> DSState:
+    new_state = DSState()
+    # states 0 is always 1
+    new_state.LX = state_bytes[1] - 128
+    new_state.LY = state_bytes[2] - 128
+    new_state.RX = state_bytes[3] - 128
+    new_state.RY = state_bytes[4] - 128
+    new_state.L2_Trigger = state_bytes[5]
+    new_state.R2_Trigger = state_bytes[6]
+
+    # state 7 always increments -> not used anywhere
+
+    buttonState = state_bytes[8]
+    new_state.Triangle = (buttonState & (1 << 7)) != 0
+    new_state.Circle = (buttonState & (1 << 6)) != 0
+    new_state.Cross = (buttonState & (1 << 5)) != 0
+    new_state.Square = (buttonState & (1 << 4)) != 0
+
+    # dpad
+    dpad_state = buttonState & 0x0F
+    new_state.setDPadState(dpad_state)
+
+    misc = state_bytes[9]
+    new_state.L1 = (misc & (1 << 0)) != 0
+    new_state.R1 = (misc & (1 << 1)) != 0
+    new_state.L2 = (misc & (1 << 2)) != 0
+    new_state.R2 = (misc & (1 << 3)) != 0
+    # new_state.share = (misc & (1 << 4)) != 0
+    # new_state.options = (misc & (1 << 5)) != 0
+    new_state.L3 = (misc & (1 << 6)) != 0
+    new_state.R3 = (misc & (1 << 7)) != 0
+    return new_state
+
+
+def parse_bt01_report(state_bytes: bytearray) -> DSState:
+    # states 0 is always 0x01
+    assert len(state_bytes) == BT_REPORT01_LENGTH
+    assert state_bytes[0] == 0x01
+    new_state = DSState()
+    new_state.LX = state_bytes[1] - DUALSENSE_STICK_Neutral
+    new_state.LY = state_bytes[2] - DUALSENSE_STICK_Neutral
+    new_state.RX = state_bytes[3] - DUALSENSE_STICK_Neutral
+    new_state.RY = state_bytes[4] - DUALSENSE_STICK_Neutral
+    new_state.L2_Trigger = state_bytes[8]
+    new_state.R2_Trigger = state_bytes[9]
+
+    buttonState = state_bytes[5]
+    new_state.Square = (buttonState & (1 << 4)) != 0
+    new_state.Cross = (buttonState & (1 << 5)) != 0
+    new_state.Circle = (buttonState & (1 << 6)) != 0
+    new_state.Triangle = (buttonState & (1 << 7)) != 0
+
+    # dpad
+    dpad_state = buttonState & 0x0F
+    new_state.setDPadState(dpad_state)
+
+    misc = state_bytes[6]
+    new_state.L1 = (misc & (1 << 0)) != 0
+    new_state.R1 = (misc & (1 << 1)) != 0
+    new_state.L2 = (misc & (1 << 2)) != 0
+    new_state.R2 = (misc & (1 << 3)) != 0
+    # new_state.share = (misc & (1 << 4)) != 0
+    # new_state.options = (misc & (1 << 5)) != 0
+    new_state.L3 = (misc & (1 << 6)) != 0
+    new_state.R3 = (misc & (1 << 7)) != 0
+    return new_state
+
+
+def parse_bt31_report(state_bytes: bytearray) -> DSState:
+    # states 0 is always 0x31
+    assert len(state_bytes) == BT_REPORT31_LENGTH
+    assert state_bytes[0] == 0x31
+    new_state = DSState()
+    new_state.LX = state_bytes[2] - DUALSENSE_STICK_Neutral
+    new_state.LY = state_bytes[3] - DUALSENSE_STICK_Neutral
+    new_state.RX = state_bytes[4] - DUALSENSE_STICK_Neutral
+    new_state.RY = state_bytes[5] - DUALSENSE_STICK_Neutral
+    new_state.L2_Trigger = state_bytes[6]
+    new_state.R2_Trigger = state_bytes[7]
+
+    # state 7 always increments -> not used anywhere
+
+    buttonState = state_bytes[9]
+    new_state.Triangle = (buttonState & (1 << 7)) != 0
+    new_state.Circle = (buttonState & (1 << 6)) != 0
+    new_state.Cross = (buttonState & (1 << 5)) != 0
+    new_state.Square = (buttonState & (1 << 4)) != 0
+
+    # dpad
+    dpad_state = buttonState & 0x0F
+    new_state.setDPadState(dpad_state)
+
+    misc = state_bytes[10]
+    new_state.L1 = (misc & (1 << 0)) != 0
+    new_state.R1 = (misc & (1 << 1)) != 0
+    new_state.L2 = (misc & (1 << 2)) != 0
+    new_state.R2 = (misc & (1 << 3)) != 0
+    # new_state.share = (misc & (1 << 4)) != 0
+    # new_state.options = (misc & (1 << 5)) != 0
+    new_state.L3 = (misc & (1 << 6)) != 0
+    new_state.R3 = (misc & (1 << 7)) != 0
+    return new_state
 
 
 if __name__ == "__main__":
