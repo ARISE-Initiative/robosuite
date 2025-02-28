@@ -7,12 +7,9 @@ In particular, we assume you are using a DualSense Wireless by default.
 
 import threading
 import time
-from collections import namedtuple
 from enum import IntFlag
-from typing import List
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
 
 from robosuite import make
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
@@ -26,7 +23,6 @@ except ModuleNotFoundError as exc:
         "requirements with `pip install -r requirements-extra.txt`"
     ) from exc
 
-from pynput.keyboard import Controller, Key, Listener
 
 import robosuite.macros as macros
 from robosuite.devices import Device
@@ -55,7 +51,6 @@ class ConnectionType(IntFlag):
 USB_REPORT_LENGTH = 64
 BT_REPORT31_LENGTH = 78
 BT_REPORT01_LENGTH = 10
-AxisSpec = namedtuple("AxisSpec", ["channel", "byte1", "byte2", "scale"])
 DUALSENSE_AXIS_LIST = ["LX", "LY", "RX", "RY", "L2_Trigger", "R2_Trigger"]
 DUALSENSE_BTN_LIST = [
     "Triangle",
