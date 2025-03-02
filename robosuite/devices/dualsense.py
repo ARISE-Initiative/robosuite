@@ -182,12 +182,14 @@ class DualSense(Device):
     You can look up its vendor/product id from this method.
 
     You can test your DualSense in https://hardwaretester.com/gamepad and https://nondebug.github.io/dualsense/dualsense-explorer.html
+    DualSense HID protocol refer to https://github.com/nondebug/dualsense
 
     Args:
         env (RobotEnv): The environment which contains the robot(s) to control
                         using this device.
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
+        reverse_xy (bool): Whether to reverse the effect of the x and y axes of the joystick. It is used to handle the case that the left/right and front/back sides of the view are opposite to the LX and LY of the joystick(Push LX up but the robot move left in your view)
     """
 
     def __init__(
@@ -232,7 +234,7 @@ class DualSense(Device):
         print("DualSense Connection type: %s" % ConnectionType.to_string(self.connection_type))
         print("")
         print(
-            "PS: You can set `reverse_xy` to True if the left and right sides of the view are opposite to the LX and LY of the joystick."
+            "PS: You can modify `reverse_xy` if the left/right and front/back sides of the view are opposite to the LX and LY of the joystick(Push LX up but the robot move left in your view)."
         )
 
         self.reverse_xy = reverse_xy
@@ -310,6 +312,17 @@ class DualSense(Device):
         self._enabled = True
 
     def _check_connection_type(self):
+        """
+        Get the connection type of the DualSense controller.
+        ConnectionType:
+        - USB: DualSense connected via USB
+        - BT01: DualSense connected via Bluetooth, sends input report id 0x01
+        - BT31: DualSense connected via Bluetooth, sends input report id 0x31
+        - UNKNOWN: Unknown connection type
+
+        Returns:
+            ConnectionType: connection type(USB, BT01, BT31, UNKNOWN)
+        """
         dummy_report = self.device.read(100)
         dummy_report_length = len(dummy_report)
         if dummy_report_length == USB_REPORT_LENGTH:

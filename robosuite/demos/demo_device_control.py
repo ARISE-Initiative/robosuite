@@ -155,6 +155,12 @@ if __name__ == "__main__":
         type=int,
         help="Sleep when simluation runs faster than specified frame rate; 20 fps is real time.",
     )
+    parser.add_argument(
+        "--reverse_xy",
+        type=bool,
+        default=False,
+        help="(DualSense Only)Reverse the effect of the x and y axes of the joystick.It is used to handle the case that the left/right and front/back sides of the view are opposite to the LX and LY of the joystick(Push LX up but the robot move left in your view)",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -220,14 +226,14 @@ if __name__ == "__main__":
             env=env,
             pos_sensitivity=args.pos_sensitivity,
             rot_sensitivity=args.rot_sensitivity,
-            reverse_xy=True,
+            reverse_xy=args.reverse_xy,
         )
     elif args.device == "mjgui":
         from robosuite.devices.mjgui import MJGUI
 
         device = MJGUI(env=env)
     else:
-        raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
+        raise Exception("Invalid device choice: choose either 'keyboard', 'dualsene' or 'spacemouse'.")
 
     while True:
         # Reset the environment
