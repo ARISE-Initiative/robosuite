@@ -1,6 +1,6 @@
 # I/O Devices
 
-Devices are used to read user input and teleoperate simulated robots in real-time. This is achieved by either using a keyboard or a [SpaceMouse](https://www.3dconnexion.com/spacemouse_compact/en/), and whose teleoperation capabilities can be demonstrated with the [demo_device_control.py](../demos.html#teleoperation) script. More generally, we support any interface that implements the [Device](../simulation/device) abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.
+Devices are used to read user input and teleoperate simulated robots in real-time. This is achieved by either using a keyboard, a [SpaceMouse](https://www.3dconnexion.com/spacemouse_compact/en/) or a [DualSense](https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/) joystick, and whose teleoperation capabilities can be demonstrated with the [demo_device_control.py](../demos.html#teleoperation) script. More generally, we support any interface that implements the [Device](../simulation/device) abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.
 
 ## Keyboard
 
@@ -19,10 +19,10 @@ Note that the rendering window must be active for these commands to work.
 |        o-p          |                 rotate (yaw)               |
 |        y-h          |                rotate (pitch)              |
 |        e-r          |                 rotate (roll)              |
-|         b           |     toggle arm/base mode (if appli cable)  |
+|         b           |     toggle arm/base mode (if applicable)  |
 |         s           |  switch active arm (if multi-armed robot)  |
 |         =           | switch active robot (if multi-robot env)   |
-|        ESC          |                    quit                    |
+|       Ctrl+C           |                    quit                    |
 
 
 ## 3Dconnexion SpaceMouse
@@ -38,8 +38,29 @@ We support the use of a [SpaceMouse](https://www.3dconnexion.com/spacemouse_comp
 |   Move mouse laterally    |  move arm horizontally in x-y plane   |
 |   Move mouse vertically   |          move arm vertically          |
 | Twist mouse about an axis | rotate arm about a corresponding axis |
-|      ESC (keyboard)       |                 quit                  |
+|           b               |  toggle arm/base mode (if applicable) |
+|           s               |  switch active arm (if multi-armed robot)  |
+|           =               |  switch active robot (if multi-robot environment)   |
+|      Ctrl+C (keyboard)    |                 quit                  |
 
+## Sony DualSense
+
+we support the use of a [Sony DualSense](https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/) as well.
+
+**Sony DualSense controls**
+
+|          Control             |                Command                |
+| :--------------------------- | :------------------------------------ |
+|       Square button          |           reset simulation            |
+|    Circle button (hold)      |             close gripper             |
+|      Move LX/LY Stick        |  move arm horizontally in x-y plane   |
+|   Press L2 Trigger with or without L1 button   |          move arm vertically          |
+|   Move RX/RY Stick           |  rotate arm about x/y axis (roll/pitch)   |
+|   Press R2 Trigger with or without R1 button   |          rotate arm about z axis (yaw)          |
+|      Triangle button         |           toggle arm/base mode (if applicable)             |
+|   Left/Right Direction Pad   |   switch active arm (if multi-armed robot)  |
+|    Up/Down Direction Pad     |    switch active robot (if multi-robot environment)  |
+|      Ctrl+C (keyboard)       |                 quit                  |
 
 ## Mujoco GUI Device
 
