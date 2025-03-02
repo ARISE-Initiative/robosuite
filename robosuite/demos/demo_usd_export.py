@@ -1,4 +1,4 @@
-""" Exports a USD file corresponding to the collected trajectory.
+"""Exports a USD file corresponding to the collected trajectory.
 
 The USD (Universal Scene Description) file format allows users to save
 trajectories such that they can be rendered in external renderers such
@@ -8,8 +8,9 @@ Start the animation in your renderer to view the full trajectory.
 
 ***IMPORTANT***: If you are using mujoco version 3.1.1, please make sure
 that you also have numpy < 2 installed in your environment. Failure to do
-so may result in incorrect renderings. 
+so may result in incorrect renderings.
 """
+
 import argparse
 
 import mujoco
@@ -26,21 +27,68 @@ if mujoco.__version__ == "3.1.1" and np.__version__[0] == "2":
     ROBOSUITE_DEFAULT_LOGGER.warning("If using mujoco==3.1.1, please use numpy < 2 for rendering with USD.")
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
-    parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument(
-        "--config", type=str, default="default", help="Specified environment configuration if necessary"
+        "--robots",
+        nargs="+",
+        type=str,
+        default="Panda",
+        help="Which robot(s) to use in the env",
     )
-    parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
-    parser.add_argument("--camera", type=str, default="agentview", help="Which camera to use for collecting demos")
-    parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
-    parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
-    parser.add_argument("--controller", type=str, default="BASIC", help="Choice of controller. Can be 'ik' or 'osc'")
+    parser.add_argument(
+        "--config",
+        type=str,
+        default="default",
+        help="Specified environment configuration if necessary",
+    )
+    parser.add_argument(
+        "--arm",
+        type=str,
+        default="right",
+        help="Which arm to control (eg bimanual) 'right' or 'left'",
+    )
+    parser.add_argument(
+        "--camera",
+        type=str,
+        default="agentview",
+        help="Which camera to use for collecting demos",
+    )
+    parser.add_argument(
+        "--switch-on-grasp",
+        action="store_true",
+        help="Switch gripper control on gripper action",
+    )
+    parser.add_argument(
+        "--toggle-camera-on-grasp",
+        action="store_true",
+        help="Switch camera angle on gripper action",
+    )
+    parser.add_argument(
+        "--controller",
+        type=str,
+        default="BASIC",
+        help="Choice of controller. Can be 'ik' or 'osc'",
+    )
     parser.add_argument("--device", type=str, default="keyboard")
-    parser.add_argument("--pos-sensitivity", type=float, default=1.0, help="How much to scale position user inputs")
-    parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
+    parser.add_argument(
+        "--pos-sensitivity",
+        type=float,
+        default=1.0,
+        help="How much to scale position user inputs",
+    )
+    parser.add_argument(
+        "--rot-sensitivity",
+        type=float,
+        default=1.0,
+        help="How much to scale rotation user inputs",
+    )
+    parser.add_argument(
+        "--reverse_xy",
+        type=bool,
+        default=False,
+        help="(DualSense Only)Reverse the effect of the x and y axes of the joystick.It is used to handle the case that the left/right and front/back sides of the view are opposite to the LX and LY of the joystick(Push LX up but the robot move left in your view)",
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -87,14 +135,31 @@ if __name__ == "__main__":
     if args.device == "keyboard":
         from robosuite.devices import Keyboard
 
-        device = Keyboard(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = Keyboard(
+            env=env,
+            pos_sensitivity=args.pos_sensitivity,
+            rot_sensitivity=args.rot_sensitivity,
+        )
         env.viewer.add_keypress_callback(device.on_press)
     elif args.device == "spacemouse":
         from robosuite.devices import SpaceMouse
 
-        device = SpaceMouse(env=env, pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+        device = SpaceMouse(
+            env=env,
+            pos_sensitivity=args.pos_sensitivity,
+            rot_sensitivity=args.rot_sensitivity,
+        )
+    elif args.device == "dualsense":
+        from robosuite.devices import DualSense
+
+        device = DualSense(
+            env=env,
+            pos_sensitivity=args.pos_sensitivity,
+            rot_sensitivity=args.rot_sensitivity,
+            reverse_xy=args.reverse_xy,
+        )
     else:
-        raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
+        raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse' or 'dualsense'.")
 
     env.reset()
     cam_id = 0
