@@ -3,10 +3,15 @@ Driver class for Keyboard controller.
 """
 
 import numpy as np
-from pynput.keyboard import Controller, Key, Listener
 
 from robosuite.devices import Device
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.utils.transform_utils import rotation_matrix
+
+try:
+    from pynput.keyboard import Key, Listener
+except ImportError as e:
+    ROBOSUITE_DEFAULT_LOGGER.error(f"Failed to import pynput. Error: {e}.")
 
 
 class Keyboard(Device):
