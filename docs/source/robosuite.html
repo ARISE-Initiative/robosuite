@@ -718,8 +718,8 @@ document.write(`
 </li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.renderers.mjviewer.html">robosuite.renderers.mjviewer package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#module-robosuite.renderers.mjviewer.mjviewer_renderer">robosuite.renderers.mjviewer.mjviewer_renderer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#module-robosuite.renderers.mjviewer">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#robosuite-renderers-mjviewer-mjviewer-renderer-module">robosuite.renderers.mjviewer.mjviewer_renderer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.renderers.mjviewer.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -873,6 +873,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.actuator_moment"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_moment</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.actuator_velocity"><code class="docutils literal notranslate"><span class="pre">MjData.actuator_velocity</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.bind"><code class="docutils literal notranslate"><span class="pre">MjData.bind</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.bind_scalar"><code class="docutils literal notranslate"><span class="pre">MjData.bind_scalar</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body"><code class="docutils literal notranslate"><span class="pre">MjData.body</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_xmat"><code class="docutils literal notranslate"><span class="pre">MjData.body_xmat</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_xpos"><code class="docutils literal notranslate"><span class="pre">MjData.body_xpos</span></code></a></li>
@@ -1105,6 +1106,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.actuator_trntype"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_trntype</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.actuator_user"><code class="docutils literal notranslate"><span class="pre">MjModel.actuator_user</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.bind"><code class="docutils literal notranslate"><span class="pre">MjModel.bind</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.bind_scalar"><code class="docutils literal notranslate"><span class="pre">MjModel.bind_scalar</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body"><code class="docutils literal notranslate"><span class="pre">MjModel.body</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_bvhadr"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhadr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_bvhnum"><code class="docutils literal notranslate"><span class="pre">MjModel.body_bvhnum</span></code></a></li>
@@ -1215,8 +1217,14 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_gap"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_gap</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_group"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_group</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_internal"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_internal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_interp"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_interp</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_margin"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_margin</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_matid"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_matid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_node"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_node</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_node0"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_node0</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_nodeadr"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_nodeadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_nodebodyid"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_nodebodyid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_nodenum"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_nodenum</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_priority"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_priority</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_radius"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_radius</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.flex_rgba"><code class="docutils literal notranslate"><span class="pre">MjModel.flex_rgba</span></code></a></li>
@@ -1360,6 +1368,15 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_normaladr"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_normaladr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_normalnum"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_normalnum</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_pathadr"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_pathadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polyadr"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polyadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polymap"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polymap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polymapadr"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polymapadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polymapnum"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polymapnum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polynormal"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polynormal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polynum"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polynum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polyvert"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polyvert</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polyvertadr"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polyvertadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_polyvertnum"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_polyvertnum</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_pos"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_pos</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_quat"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_quat</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mesh_scale"><code class="docutils literal notranslate"><span class="pre">MjModel.mesh_scale</span></code></a></li>
@@ -1417,6 +1434,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexelemdata"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexelemdata</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexelemedge"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexelemedge</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexevpair"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexevpair</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexnode"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexnode</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexshelldata"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexshelldata</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflextexcoord"><code class="docutils literal notranslate"><span class="pre">MjModel.nflextexcoord</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexvert"><code class="docutils literal notranslate"><span class="pre">MjModel.nflexvert</span></code></a></li>
@@ -1433,6 +1451,9 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshface"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshface</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshgraph"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshgraph</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshnormal"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshnormal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshpoly"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshpoly</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshpolymap"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshpolymap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshpolyvert"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshpolyvert</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshtexcoord"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshtexcoord</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmeshvert"><code class="docutils literal notranslate"><span class="pre">MjModel.nmeshvert</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nmocap"><code class="docutils literal notranslate"><span class="pre">MjModel.nmocap</span></code></a></li>
@@ -1871,16 +1892,7 @@ document.write(`
 <li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.observables.sensor"><code class="docutils literal notranslate"><span class="pre">sensor()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.opencv_renderer">robosuite.utils.opencv_renderer module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.opencv_renderer.OpenCVRenderer"><code class="docutils literal notranslate"><span class="pre">OpenCVRenderer</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.opencv_renderer.OpenCVRenderer.add_keypress_callback"><code class="docutils literal notranslate"><span class="pre">OpenCVRenderer.add_keypress_callback()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.opencv_renderer.OpenCVRenderer.close"><code class="docutils literal notranslate"><span class="pre">OpenCVRenderer.close()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.opencv_renderer.OpenCVRenderer.render"><code class="docutils literal notranslate"><span class="pre">OpenCVRenderer.render()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.opencv_renderer.OpenCVRenderer.set_camera"><code class="docutils literal notranslate"><span class="pre">OpenCVRenderer.set_camera()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#robosuite-utils-opencv-renderer-module">robosuite.utils.opencv_renderer module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="robosuite.utils.html#module-robosuite.utils.placement_samplers">robosuite.utils.placement_samplers module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.placement_samplers.ObjectPositionSampler"><code class="docutils literal notranslate"><span class="pre">ObjectPositionSampler</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.placement_samplers.ObjectPositionSampler.add_objects"><code class="docutils literal notranslate"><span class="pre">ObjectPositionSampler.add_objects()</span></code></a></li>
