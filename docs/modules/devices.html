@@ -413,6 +413,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard">Keyboard</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse">3Dconnexion SpaceMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sony-dualsense">Sony DualSense</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-gui-device">Mujoco GUI Device</a></li>
 </ul>
             </nav>
@@ -427,7 +428,7 @@ document.write(`
                   
   <section id="i-o-devices">
 <h1>I/O Devices<a class="headerlink" href="#i-o-devices" title="Link to this heading">#</a></h1>
-<p>Devices are used to read user input and teleoperate simulated robots in real-time. This is achieved by either using a keyboard or a <a class="reference external" href="https://www.3dconnexion.com/spacemouse_compact/en/">SpaceMouse</a>, and whose teleoperation capabilities can be demonstrated with the <a class="reference external" href="../demos.html#teleoperation">demo_device_control.py</a> script. More generally, we support any interface that implements the <a class="reference internal" href="../simulation/device.html"><span class="doc">Device</span></a> abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.</p>
+<p>Devices are used to read user input and teleoperate simulated robots in real-time. This is achieved by either using a keyboard, a <a class="reference external" href="https://www.3dconnexion.com/spacemouse_compact/en/">SpaceMouse</a> or a <a class="reference external" href="https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/">DualSense</a> joystick, and whose teleoperation capabilities can be demonstrated with the <a class="reference external" href="../demos.html#teleoperation">demo_device_control.py</a> script. More generally, we support any interface that implements the <a class="reference internal" href="../simulation/device.html"><span class="doc">Device</span></a> abstract base class. In order to support your own custom device, simply subclass this base class and implement the required methods.</p>
 <section id="keyboard">
 <h2>Keyboard<a class="headerlink" href="#keyboard" title="Link to this heading">#</a></h2>
 <p>We support keyboard input through the OpenCV2 window created by the mujoco renderer.</p>
@@ -471,7 +472,7 @@ document.write(`
 </tr>
 <tr>
 <td style="text-align: left;">b</td>
-<td style="text-align: left;">toggle arm/base mode (if appli cable)</td>
+<td style="text-align: left;">toggle arm/base mode (if applicable)</td>
 </tr>
 <tr>
 <td style="text-align: left;">s</td>
@@ -482,7 +483,7 @@ document.write(`
 <td style="text-align: left;">switch active robot (if multi-robot env)</td>
 </tr>
 <tr>
-<td style="text-align: left;">ESC</td>
+<td style="text-align: left;">Ctrl+C</td>
 <td style="text-align: left;">quit</td>
 </tr>
 </tbody>
@@ -520,7 +521,73 @@ document.write(`
 <td style="text-align: left;">rotate arm about a corresponding axis</td>
 </tr>
 <tr>
-<td style="text-align: left;">ESC (keyboard)</td>
+<td style="text-align: left;">b</td>
+<td style="text-align: left;">toggle arm/base mode (if applicable)</td>
+</tr>
+<tr>
+<td style="text-align: left;">s</td>
+<td style="text-align: left;">switch active arm (if multi-armed robot)</td>
+</tr>
+<tr>
+<td style="text-align: left;">=</td>
+<td style="text-align: left;">switch active robot (if multi-robot environment)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ctrl+C (keyboard)</td>
+<td style="text-align: left;">quit</td>
+</tr>
+</tbody>
+</table></section>
+<section id="sony-dualsense">
+<h2>Sony DualSense<a class="headerlink" href="#sony-dualsense" title="Link to this heading">#</a></h2>
+<p>we support the use of a <a class="reference external" href="https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/">Sony DualSense</a> as well.</p>
+<p><strong>Sony DualSense controls</strong></p>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th style="text-align: left;">Control</th>
+<th style="text-align: left;">Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Square button</td>
+<td style="text-align: left;">reset simulation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Circle button (hold)</td>
+<td style="text-align: left;">close gripper</td>
+</tr>
+<tr>
+<td style="text-align: left;">Move LX/LY Stick</td>
+<td style="text-align: left;">move arm horizontally in x-y plane</td>
+</tr>
+<tr>
+<td style="text-align: left;">Press L2 Trigger with or without L1 button</td>
+<td style="text-align: left;">move arm vertically</td>
+</tr>
+<tr>
+<td style="text-align: left;">Move RX/RY Stick</td>
+<td style="text-align: left;">rotate arm about x/y axis (roll/pitch)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Press R2 Trigger with or without R1 button</td>
+<td style="text-align: left;">rotate arm about z axis (yaw)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Triangle button</td>
+<td style="text-align: left;">toggle arm/base mode (if applicable)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Left/Right Direction Pad</td>
+<td style="text-align: left;">switch active arm (if multi-armed robot)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Up/Down Direction Pad</td>
+<td style="text-align: left;">switch active robot (if multi-robot environment)</td>
+</tr>
+<tr>
+<td style="text-align: left;">Ctrl+C (keyboard)</td>
 <td style="text-align: left;">quit</td>
 </tr>
 </tbody>
@@ -598,6 +665,7 @@ On Mac: <code class="docutils literal notranslate"><span class="pre">fn</span></
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#keyboard">Keyboard</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dconnexion-spacemouse">3Dconnexion SpaceMouse</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sony-dualsense">Sony DualSense</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mujoco-gui-device">Mujoco GUI Device</a></li>
 </ul>
   </nav></div>

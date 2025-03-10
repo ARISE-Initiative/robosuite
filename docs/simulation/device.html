@@ -440,6 +440,18 @@ document.write(`
 </li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dualsense-device">DualSense Device</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense"><code class="docutils literal notranslate"><span class="pre">DualSense</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.get_controller_state"><code class="docutils literal notranslate"><span class="pre">DualSense.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.run"><code class="docutils literal notranslate"><span class="pre">DualSense.run()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control"><code class="docutils literal notranslate"><span class="pre">DualSense.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control_gripper"><code class="docutils literal notranslate"><span class="pre">DualSense.control_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense._display_controls"><code class="docutils literal notranslate"><span class="pre">DualSense._display_controls()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense._check_connection_type"><code class="docutils literal notranslate"><span class="pre">DualSense._check_connection_type()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#mjgui-device">MjGUI Device</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI"><code class="docutils literal notranslate"><span class="pre">MJGUI</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.mjgui.MJGUI.get_controller_state"><code class="docutils literal notranslate"><span class="pre">MJGUI.get_controller_state()</span></code></a></li>
@@ -462,7 +474,7 @@ document.write(`
                   
   <section id="device">
 <h1>Device<a class="headerlink" href="#device" title="Link to this heading">#</a></h1>
-<p>Devices allow for direct real-time interfacing with the MuJoCo simulation. The currently supported devices are <code class="docutils literal notranslate"><span class="pre">Keyboard</span></code>. <code class="docutils literal notranslate"><span class="pre">SpaceMouse</span></code> and <code class="docutils literal notranslate"><span class="pre">MjGUI</span></code>.</p>
+<p>Devices allow for direct real-time interfacing with the MuJoCo simulation. The currently supported devices are <code class="docutils literal notranslate"><span class="pre">Keyboard</span></code>. <code class="docutils literal notranslate"><span class="pre">SpaceMouse</span></code>. <code class="docutils literal notranslate"><span class="pre">DualSense</span></code> and <code class="docutils literal notranslate"><span class="pre">MjGUI</span></code>.</p>
 <section id="base-device">
 <h2>Base Device<a class="headerlink" href="#base-device" title="Link to this heading">#</a></h2>
 <dl class="py class">
@@ -541,6 +553,87 @@ start receiving commands.</p>
 <dt class="sig sig-object py" id="robosuite.devices.spacemouse.SpaceMouse._display_controls">
 <span class="sig-name descname"><span class="pre">_display_controls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.spacemouse.SpaceMouse._display_controls" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dualsense-device">
+<h2>DualSense Device<a class="headerlink" href="#dualsense-device" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">DualSense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense" title="Link to this definition">#</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.get_controller_state">
+<span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.get_controller_state" title="Link to this definition">#</a></dt>
+<dd><p>Grabs the current state of the 3D mouse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing dpos, orn, unmodified orn, grasp, and reset</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.run" title="Link to this definition">#</a></dt>
+<dd><p>Listener method that keeps pulling new messages.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.control">
+<span class="sig-name descname"><span class="pre">control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control" title="Link to this definition">#</a></dt>
+<dd><p>Grabs current pose of DualSense</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>6-DoF control value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.control_gripper">
+<span class="sig-name descname"><span class="pre">control_gripper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control_gripper" title="Link to this definition">#</a></dt>
+<dd><p>Maps internal states into gripper commands.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Whether we’re using single click and hold or not</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense._display_controls">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_display_controls</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense._display_controls" title="Link to this definition">#</a></dt>
+<dd><p>Method to pretty print controls.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense._check_connection_type">
+<span class="sig-name descname"><span class="pre">_check_connection_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense._check_connection_type" title="Link to this definition">#</a></dt>
+<dd><p>Get the connection type of the DualSense controller.
+ConnectionType:
+- USB: DualSense connected via USB
+- BT01: DualSense connected via Bluetooth, sends input report id 0x01
+- BT31: DualSense connected via Bluetooth, sends input report id 0x31
+- UNKNOWN: Unknown connection type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>connection type(USB, BT01, BT31, UNKNOWN)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="../source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType" title="robosuite.devices.dualsense.ConnectionType">ConnectionType</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -647,6 +740,18 @@ from the controller itself.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse.control_gripper"><code class="docutils literal notranslate"><span class="pre">SpaceMouse.control_gripper()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.spacemouse.SpaceMouse._display_controls"><code class="docutils literal notranslate"><span class="pre">SpaceMouse._display_controls()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#dualsense-device">DualSense Device</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense"><code class="docutils literal notranslate"><span class="pre">DualSense</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.get_controller_state"><code class="docutils literal notranslate"><span class="pre">DualSense.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.run"><code class="docutils literal notranslate"><span class="pre">DualSense.run()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control"><code class="docutils literal notranslate"><span class="pre">DualSense.control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control_gripper"><code class="docutils literal notranslate"><span class="pre">DualSense.control_gripper()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense._display_controls"><code class="docutils literal notranslate"><span class="pre">DualSense._display_controls()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense._check_connection_type"><code class="docutils literal notranslate"><span class="pre">DualSense._check_connection_type()</span></code></a></li>
 </ul>
 </li>
 </ul>

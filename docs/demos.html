@@ -545,6 +545,11 @@ RSS 2018
 This current implementation only supports macOS (Linux support can be added).
 Download and install the <a class="reference external" href="https://www.3dconnexion.com/service/drivers.html">driver</a> before running the script.</p>
 </li>
+<li><p><strong>DualSense</strong>
+We use the DualSense joystick from <a class="reference external" href="https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/">DualSense</a> to control the end-effector of the robot. The joystick provides 6-DoF control commands.</p>
+<p><strong>Note:</strong>
+Make sure <code class="docutils literal notranslate"><span class="pre">hidapi</span></code> can detect your DualSense in your computer. In Linux, you may add udev rules in <code class="docutils literal notranslate"><span class="pre">/etc/udev/rules.d</span></code> to get access to the device without root privilege. For the rules content you can refer to <a class="reference external" href="https://codeberg.org/fabiscafe/game-devices-udev">game-device-udev</a>.</p>
+</li>
 <li><p><strong>Mujoco GUI</strong>
 The Mujoco GUI provides a graphical user interface for viewing and interacting with a mujoco simulation. We use the GUI and a mouse to drag and drop mocap bodies, whose
 poses are tracked by a controller. More specifically, once the mujoco GUI is loaded from running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">demo_device_control.py</span></code>, you first need to hit the <Tab> key to reach the interactive mujoco viewer state. Then, you should double click on

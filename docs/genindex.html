@@ -426,6 +426,8 @@ document.write(`
 </li>
       <li><a href="modeling/arena.html#robosuite.models.arenas.multi_table_arena.MultiTableArena._add_table">_add_table() (robosuite.models.arenas.multi_table_arena.MultiTableArena method)</a>
 </li>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense._check_connection_type">_check_connection_type() (robosuite.devices.dualsense.DualSense method)</a>
+</li>
       <li><a href="simulation/environment.html#robosuite.environments.manipulation.manipulation_env.ManipulationEnv._check_grasp">_check_grasp() (robosuite.environments.manipulation.manipulation_env.ManipulationEnv method)</a>
 </li>
       <li><a href="simulation/environment.html#robosuite.environments.robot_env.RobotEnv._check_robot_configuration">_check_robot_configuration() (robosuite.environments.robot_env.RobotEnv method)</a>
@@ -440,9 +442,11 @@ document.write(`
         <li><a href="simulation/robot.html#robosuite.robots.robot.Robot._create_base_sensors">(robosuite.robots.robot.Robot method)</a>
 </li>
       </ul></li>
-      <li><a href="simulation/device.html#robosuite.devices.keyboard.Keyboard._display_controls">_display_controls() (robosuite.devices.keyboard.Keyboard method)</a>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense._display_controls">_display_controls() (robosuite.devices.dualsense.DualSense static method)</a>
 
       <ul>
+        <li><a href="simulation/device.html#robosuite.devices.keyboard.Keyboard._display_controls">(robosuite.devices.keyboard.Keyboard method)</a>
+</li>
         <li><a href="simulation/device.html#robosuite.devices.mjgui.MJGUI._display_controls">(robosuite.devices.mjgui.MJGUI static method)</a>
 </li>
         <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse._display_controls">(robosuite.devices.spacemouse.SpaceMouse method)</a>
@@ -474,10 +478,10 @@ document.write(`
 </li>
       <li><a href="simulation/robot.html#robosuite.robots.robot.Robot._hand_vel">_hand_vel (robosuite.robots.robot.Robot property)</a>
 </li>
-      <li><a href="modeling/robot_model.html#robosuite.models.robots.robot_model.RobotModel._horizontal_radius">_horizontal_radius (robosuite.models.robots.robot_model.RobotModel property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modeling/robot_model.html#robosuite.models.robots.robot_model.RobotModel._horizontal_radius">_horizontal_radius (robosuite.models.robots.robot_model.RobotModel property)</a>
+</li>
       <li><a href="modeling/robot_model.html#robosuite.models.bases.robot_base_model.RobotBaseModel._important_geoms">_important_geoms (robosuite.models.bases.robot_base_model.RobotBaseModel property)</a>
 
       <ul>
@@ -940,10 +944,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_geomnum">body_geomnum (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_gravcomp">body_gravcomp (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_id2name">body_id2name() (robosuite.utils.binding_utils.MjModel method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_inertia">body_inertia (robosuite.utils.binding_utils.MjModel property)</a>
@@ -1037,6 +1041,10 @@ document.write(`
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.xml_objects.BreadObject">BreadObject (class in robosuite.models.objects.xml_objects)</a>
 </li>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.xml_objects.BreadVisualObject">BreadVisualObject (class in robosuite.models.objects.xml_objects)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType.BT01">BT01 (robosuite.devices.dualsense.ConnectionType attribute)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType.BT31">BT31 (robosuite.devices.dualsense.ConnectionType attribute)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.buffers.Buffer">Buffer (class in robosuite.utils.buffers)</a>
 </li>
@@ -1192,10 +1200,10 @@ document.write(`
         <li><a href="source/robosuite.renderers.html#robosuite.renderers.base.Renderer.close">(robosuite.renderers.base.Renderer method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.close_renderer">close_renderer() (robosuite.environments.base.MujocoEnv method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeBodyObject">CompositeBodyObject (class in robosuite.models.objects.generated_objects)</a>
 </li>
       <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.CompositeController">CompositeController (class in robosuite.controllers.composite.composite_controller)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController">[1]</a>
@@ -1220,6 +1228,8 @@ document.write(`
         <li><a href="modeling/arena.html#robosuite.models.arenas.wipe_arena.WipeArena.configure_location">(robosuite.models.arenas.wipe_arena.WipeArena method)</a>, <a href="source/robosuite.models.arenas.html#robosuite.models.arenas.wipe_arena.WipeArena.configure_location">[1]</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType">ConnectionType (class in robosuite.devices.dualsense)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.log_utils.ConsoleFormatter">ConsoleFormatter (class in robosuite.utils.log_utils)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.contact">contact (robosuite.utils.binding_utils.MjData property)</a>
@@ -1242,9 +1252,13 @@ document.write(`
         <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject.contact_geoms">(robosuite.models.objects.objects.MujocoObject property)</a>
 </li>
       </ul></li>
-      <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.control">control() (robosuite.devices.spacemouse.SpaceMouse method)</a>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.control">control (robosuite.devices.dualsense.DualSense property)</a>
+</li>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense.control">control() (robosuite.devices.dualsense.DualSense method)</a>
 
       <ul>
+        <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.control">(robosuite.devices.spacemouse.SpaceMouse method)</a>
+</li>
         <li><a href="source/robosuite.robots.html#robosuite.robots.fixed_base_robot.FixedBaseRobot.control">(robosuite.robots.fixed_base_robot.FixedBaseRobot method)</a>
 </li>
         <li><a href="simulation/robot.html#robosuite.robots.legged_robot.LeggedRobot.control">(robosuite.robots.legged_robot.LeggedRobot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.control">[1]</a>
@@ -1256,8 +1270,14 @@ document.write(`
         <li><a href="simulation/robot.html#robosuite.robots.wheeled_robot.WheeledRobot.control">(robosuite.robots.wheeled_robot.WheeledRobot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.wheeled_robot.WheeledRobot.control">[1]</a>
 </li>
       </ul></li>
-      <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.control_gripper">control_gripper() (robosuite.devices.spacemouse.SpaceMouse method)</a>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.control_gripper">control_gripper (robosuite.devices.dualsense.DualSense property)</a>
 </li>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense.control_gripper">control_gripper() (robosuite.devices.dualsense.DualSense method)</a>
+
+      <ul>
+        <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.control_gripper">(robosuite.devices.spacemouse.SpaceMouse method)</a>
+</li>
+      </ul></li>
       <li><a href="simulation/controller.html#robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits">control_limits (robosuite.controllers.parts.arm.ik.InverseKinematicsController property)</a>, <a href="source/robosuite.controllers.parts.arm.html#robosuite.controllers.parts.arm.ik.InverseKinematicsController.control_limits">[1]</a>
 
       <ul>
@@ -1531,6 +1551,10 @@ document.write(`
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.door.Door">Door (class in robosuite.environments.manipulation.door)</a>
 </li>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.xml_objects.DoorObject">DoorObject (class in robosuite.models.objects.xml_objects)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DSState">DSState (class in robosuite.devices.dualsense)</a>
+</li>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense">DualSense (class in robosuite.devices.dualsense)</a>, <a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense">[1]</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.DynamicsModder.dynamics_parameters">dynamics_parameters (robosuite.utils.mjmod.DynamicsModder property)</a>
 </li>
@@ -2069,6 +2093,8 @@ document.write(`
       <li><a href="simulation/device.html#robosuite.devices.device.Device.get_controller_state">get_controller_state() (robosuite.devices.device.Device method)</a>, <a href="source/robosuite.devices.html#robosuite.devices.device.Device.get_controller_state">[1]</a>
 
       <ul>
+        <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense.get_controller_state">(robosuite.devices.dualsense.DualSense method)</a>, <a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.get_controller_state">[1]</a>
+</li>
         <li><a href="simulation/device.html#robosuite.devices.keyboard.Keyboard.get_controller_state">(robosuite.devices.keyboard.Keyboard method)</a>
 </li>
         <li><a href="simulation/device.html#robosuite.devices.mjgui.MJGUI.get_controller_state">(robosuite.devices.mjgui.MJGUI method)</a>, <a href="source/robosuite.devices.html#robosuite.devices.mjgui.MJGUI.get_controller_state">[1]</a>
@@ -3072,6 +3098,8 @@ document.write(`
 </li>
         <li><a href="source/robosuite.devices.html#module-robosuite.devices.device">robosuite.devices.device</a>
 </li>
+        <li><a href="source/robosuite.devices.html#module-robosuite.devices.dualsense">robosuite.devices.dualsense</a>
+</li>
         <li><a href="source/robosuite.devices.html#module-robosuite.devices.keyboard">robosuite.devices.keyboard</a>
 </li>
         <li><a href="source/robosuite.devices.html#module-robosuite.devices.mjgui">robosuite.devices.mjgui</a>
@@ -3837,6 +3865,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.parena">parena (robosuite.utils.binding_utils.MjData property)</a>
 </li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.parse_bt01_report">parse_bt01_report() (in module robosuite.devices.dualsense)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.parse_bt31_report">parse_bt31_report() (in module robosuite.devices.dualsense)</a>
+</li>
       <li><a href="source/robosuite.renderers.html#robosuite.renderers.base_parser.BaseParser.parse_cameras">parse_cameras() (robosuite.renderers.base_parser.BaseParser method)</a>
 </li>
       <li><a href="source/robosuite.renderers.html#robosuite.renderers.base_parser.BaseParser.parse_geometries">parse_geometries() (robosuite.renderers.base_parser.BaseParser method)</a>
@@ -3846,6 +3878,8 @@ document.write(`
       <li><a href="source/robosuite.renderers.html#robosuite.renderers.base_parser.BaseParser.parse_meshes">parse_meshes() (robosuite.renderers.base_parser.BaseParser method)</a>
 </li>
       <li><a href="source/robosuite.renderers.html#robosuite.renderers.base_parser.BaseParser.parse_textures">parse_textures() (robosuite.renderers.base_parser.BaseParser method)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.parse_usb_report">parse_usb_report() (in module robosuite.devices.dualsense)</a>
 </li>
       <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.part_controllers">part_controllers (robosuite.robots.robot.Robot property)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.part_controllers">[1]</a>
 </li>
@@ -3857,10 +3891,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.models.objects.group.html#robosuite.models.objects.group.transport.TransportGroup.payload_quat">payload_quat (robosuite.models.objects.group.transport.TransportGroup property)</a>
 </li>
-      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.pbase">pbase (robosuite.utils.binding_utils.MjData property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.pbase">pbase (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="modeling/arena.html#robosuite.models.arenas.pegs_arena.PegsArena">PegsArena (class in robosuite.models.arenas.pegs_arena)</a>, <a href="source/robosuite.models.arenas.html#robosuite.models.arenas.pegs_arena.PegsArena">[1]</a>
 </li>
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace">PickPlace (class in robosuite.environments.manipulation.pick_place)</a>
@@ -4336,6 +4370,13 @@ document.write(`
 
       <ul>
         <li><a href="source/robosuite.devices.html#module-robosuite.devices.device">module</a>
+</li>
+      </ul></li>
+      <li>
+    robosuite.devices.dualsense
+
+      <ul>
+        <li><a href="source/robosuite.devices.html#module-robosuite.devices.dualsense">module</a>
 </li>
       </ul></li>
       <li>
@@ -5338,8 +5379,12 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.log_utils.rs_assert">rs_assert() (in module robosuite.utils.log_utils)</a>
 </li>
-      <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.run">run() (robosuite.devices.spacemouse.SpaceMouse method)</a>
+      <li><a href="simulation/device.html#robosuite.devices.dualsense.DualSense.run">run() (robosuite.devices.dualsense.DualSense method)</a>, <a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.run">[1]</a>
+
+      <ul>
+        <li><a href="simulation/device.html#robosuite.devices.spacemouse.SpaceMouse.run">(robosuite.devices.spacemouse.SpaceMouse method)</a>
 </li>
+      </ul></li>
       <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.CompositeController.run_controller">run_controller() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.run_controller">[1]</a>
 
       <ul>
@@ -5418,6 +5463,8 @@ document.write(`
         <li><a href="simulation/controller.html#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.scale_action">(robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController method)</a>, <a href="source/robosuite.controllers.parts.mobile_base.html#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.scale_action">[1]</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.scale_to_control">scale_to_control() (in module robosuite.devices.dualsense)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.sensor">sensor (robosuite.utils.binding_utils.MjData property)</a>
 
       <ul>
@@ -5597,6 +5644,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.TextureModder.set_texture">set_texture() (robosuite.utils.mjmod.TextureModder method)</a>
 </li>
       <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.set_xml_processor">set_xml_processor() (robosuite.environments.base.MujocoEnv method)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DSState.setDPadState">setDPadState() (robosuite.devices.dualsense.DSState method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -5801,6 +5850,8 @@ document.write(`
       <li><a href="simulation/device.html#robosuite.devices.device.Device.start_control">start_control() (robosuite.devices.device.Device method)</a>, <a href="source/robosuite.devices.html#robosuite.devices.device.Device.start_control">[1]</a>
 
       <ul>
+        <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.start_control">(robosuite.devices.dualsense.DualSense method)</a>
+</li>
         <li><a href="source/robosuite.devices.html#robosuite.devices.mjgui.MJGUI.start_control">(robosuite.devices.mjgui.MJGUI method)</a>
 </li>
       </ul></li>
@@ -5956,6 +6007,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.timer">timer (robosuite.utils.binding_utils.MjData property)</a>
 </li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType.to_string">to_string() (robosuite.devices.dualsense.ConnectionType class method)</a>
+</li>
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.tool_hang.ToolHang">ToolHang (class in robosuite.environments.manipulation.tool_hang)</a>
 </li>
       <li><a href="modeling/mujoco_model.html#robosuite.models.base.MujocoModel.top_offset">top_offset (robosuite.models.base.MujocoModel property)</a>, <a href="source/robosuite.models.html#robosuite.models.base.MujocoModel.top_offset">[1]</a>
@@ -6106,6 +6159,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.transform_utils.unit_vector">unit_vector() (in module robosuite.utils.transform_utils)</a>
 </li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType.UNKNOWN">UNKNOWN (robosuite.devices.dualsense.ConnectionType attribute)</a>
+</li>
       <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.unset_ep_meta">unset_ep_meta() (robosuite.environments.base.MujocoEnv method)</a>
 </li>
       <li><a href="source/robosuite.wrappers.html#robosuite.wrappers.wrapper.Wrapper.unwrapped">unwrapped (robosuite.wrappers.wrapper.Wrapper property)</a>
@@ -6175,6 +6230,8 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="source/robosuite.models.robots.manipulators.html#robosuite.models.robots.manipulators.ur5e_robot.UR5e">UR5e (class in robosuite.models.robots.manipulators.ur5e_robot)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.ConnectionType.USB">USB (robosuite.devices.dualsense.ConnectionType attribute)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.userdata">userdata (robosuite.utils.binding_utils.MjData property)</a>
 </li>
