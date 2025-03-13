@@ -137,7 +137,7 @@ class Task(MujocoWorldBase):
             models += [robot] + robot.models
 
         worldbody = self.mujoco_arena.root.find("worldbody")
-        exclude_bodies = ["table"]
+        exclude_bodies = ["table", "left_eef_target", "right_eef_target"]
         top_level_bodies = [
             body.attrib.get("name")
             for body in worldbody.findall("body")
