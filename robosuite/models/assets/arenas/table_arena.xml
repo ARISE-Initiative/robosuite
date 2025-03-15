@@ -15,6 +15,14 @@
     <!-- added table texture and material for domain randomization -->
     <texture  name="textable" builtin="flat" height="512" width="512" rgb1="0.5 0.5 0.5" rgb2="0.5 0.5 0.5"/>
     <material name="table_mat" texture="textable" />
+        <!-- storage area for table -->
+      <texture file="../textures/cloth.png" type="cube" name="tex-storage"/>
+      <material name="storage" reflectance="0.8" shininess="0.8" texrepeat="1 1" texture="tex-storage" />
+
+    <texture file="../textures/light-wood.png" type="2d" name="tex-light-wood"/>
+    <texture file="../textures/dark-wood.png" type="2d" name="tex-dark-wood"/>
+    <material name="light-wood" reflectance="0" texrepeat="15 15" texture="tex-light-wood" texuniform="true"/>
+    <material name="dark-wood" reflectance="0" texrepeat="5 5" texture="tex-dark-wood" texuniform="true"/>
 
   </asset>
   <worldbody>
@@ -31,7 +39,26 @@
     <body name="table" pos="0 0 0.4">
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" group="0" name="table_collision" friction="1 0.005 0.0001"/>
       <geom pos="0 0 0" size="0.4 0.4 0.4" type="box" conaffinity="0" contype="0" group="1" name="table_visual" material="table_ceramic"/>
+
+        <!-- <geom pos="-0.225 0.0 0.0" size="0.175 0.4 0.026" type="box" conaffinity="0" contype="0" group="1" name="table_visual2" material="storage" friction="0.6 0.005 0.0001"/> -->
+
       <site pos="0 0 0.4" name="table_top" size="0.001 0.001 0.001" rgba="0 0 0 0"/>
+
+      <!--
+        <body name="bin" pos="-0.25 -0.175 0.0">
+        <geom pos="0 0 0.02" size="0.1 0.15 0.02" type="box" group="0" friction="1 0.005 0.0001"/>
+        <geom pos="0 0 0.02" material="light-wood" size="0.1 0.15 0.02" type="box" conaffinity="0" contype="0" group="1"/>
+        <geom pos="0 0.15 0.05" size="0.11 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0 0.15 0.05" size="0.11 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
+        <geom pos="0 -0.15 0.05" size="0.11 0.01 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0 -0.15 0.05" size="0.11 0.01 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
+        <geom pos="0.1 0 0.05" size="0.01 0.15 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="0.1 0 0.05" size="0.01 0.15 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
+        <geom pos="-0.1 0 0.05" size="0.01 0.15 0.05" type="box" group="0" friction="1 0.005 0.0001" rgba="0 0 1 1"/>
+        <geom pos="-0.1 0 0.05" size="0.01 0.15 0.05" type="box" conaffinity="0" contype="0" group="1" material="light-wood"/>
+      </body>
+      -->
+
       <!-- Legs (visual only) -->
       <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg1_visual" material="table_legs_metal"/>
       <geom pos="0 0 0" size="0.05 0.1" type="cylinder" conaffinity="0" contype="0" group="1" name="table_leg2_visual" material="table_legs_metal"/>

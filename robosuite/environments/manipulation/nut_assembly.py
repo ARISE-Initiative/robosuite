@@ -210,6 +210,16 @@ class NutAssembly(SingleArmEnv):
         # object placement initializer
         self.placement_initializer = placement_initializer
 
+        self.eef_bounds = np.array([
+            [-0.26, -0.29, 0.80],
+            [0.23, 0.29, 1.00]
+        ])
+
+        self.data_eef_bounds = np.array([
+            [-0.24, -0.29, 0.80],
+            [0.23, 0.29, 1.0]
+        ])
+
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
@@ -378,6 +388,25 @@ class NutAssembly(SingleArmEnv):
             res = True
         return res
 
+    def _initialize_objects(self, nut_names):
+        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
+        if self.placement_initializer is None:
+            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
+                self.placement_initializer.append_sampler(
+                    sampler=UniformRandomSampler(
+                        name=f"{nut_name}Sampler",
+                        x_range=[-0.115, -0.11],
+                        y_range=default_y_range,
+                        rotation=[2 * np.pi / 3, 4 * np.pi / 3],
+                        rotation_axis="z",
+                        ensure_object_boundary_in_range=False,
+                        ensure_valid_placement=True,
+                        reference_pos=self.table_offset,
+                        z_offset=0.02,
+                    )
+                )
+
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
@@ -400,25 +429,12 @@ class NutAssembly(SingleArmEnv):
 
         # define nuts
         self.nuts = []
+        self.pnp_objs = self.objs = self.nuts
+        self.push_objs = []
         nut_names = ("SquareNut", "RoundNut")
 
-        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
-        if self.placement_initializer is None:
-            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
-            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
-                self.placement_initializer.append_sampler(
-                    sampler=UniformRandomSampler(
-                        name=f"{nut_name}Sampler",
-                        x_range=[-0.115, -0.11],
-                        y_range=default_y_range,
-                        rotation=None,
-                        rotation_axis="z",
-                        ensure_object_boundary_in_range=False,
-                        ensure_valid_placement=True,
-                        reference_pos=self.table_offset,
-                        z_offset=0.02,
-                    )
-                )
+        self._initialize_objects(nut_names)
+
         # Reset sampler before adding any new samplers / objects
         self.placement_initializer.reset()
 
@@ -456,6 +472,7 @@ class NutAssembly(SingleArmEnv):
         # Additional object references from this env
         self.obj_body_id = {}
         self.obj_geom_id = {}
+        self.obj_body_ids = []
 
         self.table_body_id = self.sim.model.body_name2id("table")
         self.peg1_body_id = self.sim.model.body_name2id("peg1")
@@ -463,6 +480,7 @@ class NutAssembly(SingleArmEnv):
 
         for nut in self.nuts:
             self.obj_body_id[nut.name] = self.sim.model.body_name2id(nut.root_body)
+            self.obj_body_ids.append(self.obj_body_id[nut.name])
             self.obj_geom_id[nut.name] = [self.sim.model.geom_name2id(g) for g in nut.contact_geoms]
 
         # information of objects
@@ -470,6 +488,16 @@ class NutAssembly(SingleArmEnv):
 
         # keep track of which objects are on their corresponding pegs
         self.objects_on_pegs = np.zeros(len(self.nuts))
+
+    @property
+    def obj_positions(self):
+        return [np.array(self.sim.data.body_xpos[self.obj_body_id[nut_name]])
+                for nut_name in self.nuts]
+
+    @property
+    def obj_quats(self):
+        return [T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
+                for nut_name in self.nuts]
 
     def _setup_observables(self):
         """
@@ -513,6 +541,27 @@ class NutAssembly(SingleArmEnv):
                 enableds += [using_nut] * 4
                 actives += [using_nut] * 4
                 self.nut_id_to_sensors[i] = nut_sensor_names
+
+            @sensor(modality=modality)
+            def nut_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.obj_body_id[nut_name]])
+
+            @sensor(modality=modality)
+            def nut_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut_name]], to="xyzw")
+
+            @sensor(modality=modality)
+            def obj_pos(obs_cache):
+                return np.array(self.obj_positions).flatten()
+
+            @sensor(modality=modality)
+            def obj_quat(obs_cache):
+                return np.array(self.obj_quats).flatten()
+
+            # sensors.extend([obj_pos, obj_quat])
+            # names.extend(["obj_pos", "obj_quat"])
+            # enableds.extend([True, True])
+            # actives.extend([True, True])
 
             if self.single_object_mode == 1:
                 # This is randomly sampled object, so we need to include object id as observation
@@ -677,6 +726,63 @@ class NutAssembly(SingleArmEnv):
                 target_type="site",
             )
 
+    @property
+    def _has_gripper_contact(self):
+        return np.linalg.norm(self.robots[0].ee_force) > 20
+
+    def _get_skill_info(self):
+        nuts = self.nuts
+        nut_pos_list = []
+        peg_pos_list = []
+        lift_pos_list = []
+        offset_len = 0.065
+        for nut in nuts:
+            nut_axis_angle = T.quat2axisangle(T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut.name]], to="xyzw"))[2]
+            offset_pos = np.array([offset_len * np.cos(nut_axis_angle), offset_len * np.sin(nut_axis_angle), 0.])
+            nut_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[nut.name]]) + offset_pos
+            if nut.name == 'SquareNut':
+                peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id]) + offset_pos
+            elif nut.name == 'RoundNut':
+                peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id]) + offset_pos
+            else:
+                raise NotImplementedError
+            peg_pos[2] = 0.85
+            lift_pos = peg_pos.copy()
+            lift_pos[2] = 0.95
+            nut_pos_list.append(nut_pos)
+            peg_pos_list.append(peg_pos)
+            lift_pos_list.append(lift_pos)
+
+        # info['src_pos'] = [nut_pos]
+        # info['lift_pos'] = [lift_pos]
+        # info['target_pos'] = [peg_pos]
+
+        pos_info = {}
+
+        pos_info['interact'] = nut_pos_list + peg_pos_list + lift_pos_list  # interaction positions
+        pos_info['obj'] = nut_pos_list + peg_pos_list  # object positions
+
+        pos_info['grasp'] = nut_pos_list  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = lift_pos_list + peg_pos_list  # reach target positions
+        pos_info['place'] = peg_pos_list
+        
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = False
+        for nut_id in range(len(nuts)):
+            nut = nuts[nut_id]
+            if self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in nut.contact_geoms]):
+                eef_pos = np.array(self.robots[0].sim.data.site_xpos[self.robots[0].eef_site_id])
+                if np.linalg.norm(eef_pos - nut_pos_list[nut_id]) < 0.015:
+                    info['grasped_obj'] = True
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info
+
 
 class NutAssemblySingle(NutAssembly):
     """
@@ -696,6 +802,69 @@ class NutAssemblySquare(NutAssembly):
     def __init__(self, **kwargs):
         assert "single_object_mode" not in kwargs and "nut_type" not in kwargs, "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="square", **kwargs)
+        self.eef_bounds = np.array([
+            [-0.26, -0.01, 0.80],
+            [0.23, 0.29, 1.00]
+        ])
+
+        self.data_eef_bounds = np.array([
+            [-0.24, -0., 0.80],
+            [0.23, 0.29, 1.0]
+        ])
+
+    def _initialize_objects(self, nut_names):
+        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
+        if self.placement_initializer is None:
+            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
+                self.placement_initializer.append_sampler(
+                    sampler=UniformRandomSampler(
+                        name=f"{nut_name}Sampler",
+                        x_range=[-0.115, -0.11],
+                        y_range=default_y_range,
+                        rotation=None,
+                        rotation_axis="z",
+                        ensure_object_boundary_in_range=False,
+                        ensure_valid_placement=True,
+                        reference_pos=self.table_offset,
+                        z_offset=0.02,
+                    )
+                )
+
+    def _get_skill_info(self):
+        nut = self.nuts[0]
+        nut_axis_angle = T.quat2axisangle(T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[self.nuts[0].name]], to="xyzw"))[2]
+        offset_len = 0.06
+        offset_pos = np.array([offset_len * np.cos(nut_axis_angle), offset_len * np.sin(nut_axis_angle), 0.])
+        nut_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[nut.name]]) + offset_pos
+        peg_pos = np.array(self.sim.data.body_xpos[self.peg1_body_id]) + offset_pos
+        peg_pos[2] = 0.85
+        lift_pos = peg_pos.copy()
+        lift_pos[2] = 0.95
+
+        # info['src_pos'] = [nut_pos]
+        # info['lift_pos'] = [lift_pos]
+        # info['target_pos'] = [peg_pos]
+
+        pos_info = {}
+
+        pos_info['interact'] = [nut_pos, peg_pos, lift_pos]  # interaction positions
+        pos_info['obj'] = [nut_pos, peg_pos]  # object positions
+
+        pos_info['grasp'] = [nut_pos]  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = [lift_pos, peg_pos]  # reach target positions
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = [
+            self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in nut.contact_geoms])]
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info
 
 
 class NutAssemblyRound(NutAssembly):
@@ -706,3 +875,93 @@ class NutAssemblyRound(NutAssembly):
     def __init__(self, **kwargs):
         assert "single_object_mode" not in kwargs and "nut_type" not in kwargs, "invalid set of arguments"
         super().__init__(single_object_mode=2, nut_type="round", **kwargs)
+        self.eef_bounds = np.array([
+            [-0.26, -0.29, 0.80],
+            [0.23, 0.01, 1.00]
+        ])
+
+        self.data_eef_bounds = np.array([
+            [-0.24, -0.29, 0.80],
+            [0.23, 0., 1.0]
+        ])
+
+    def _initialize_objects(self, nut_names):
+        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
+        if self.placement_initializer is None:
+            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
+                self.placement_initializer.append_sampler(
+                    sampler=UniformRandomSampler(
+                        name=f"{nut_name}Sampler",
+                        x_range=[-0.115, -0.11],
+                        y_range=default_y_range,
+                        rotation=None,
+                        rotation_axis="z",
+                        ensure_object_boundary_in_range=False,
+                        ensure_valid_placement=True,
+                        reference_pos=self.table_offset,
+                        z_offset=0.02,
+                    )
+                )
+
+    def _get_skill_info(self):
+        nut = self.nuts[1]
+        nut_axis_angle = T.quat2axisangle(T.convert_quat(self.sim.data.body_xquat[self.obj_body_id[nut.name]], to="xyzw"))[2]
+        offset_len = 0.065
+        offset_pos = np.array([offset_len * np.cos(nut_axis_angle), offset_len * np.sin(nut_axis_angle), 0.])
+        nut_pos = np.array(self.sim.data.body_xpos[self.obj_body_id[nut.name]]) + offset_pos
+        peg_pos = np.array(self.sim.data.body_xpos[self.peg2_body_id]) + offset_pos
+        peg_pos[2] = 0.85
+        lift_pos = peg_pos.copy()
+        lift_pos[2] = 0.95
+
+        # info['src_pos'] = [nut_pos]
+        # info['lift_pos'] = [lift_pos]
+        # info['target_pos'] = [peg_pos]
+
+        pos_info = {}
+
+        pos_info['interact'] = [nut_pos, peg_pos, lift_pos]  # interaction positions
+        pos_info['obj'] = [nut_pos, peg_pos]  # object positions
+
+        pos_info['grasp'] = [nut_pos]  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = [lift_pos, peg_pos]  # reach target positions
+        pos_info['place'] = [peg_pos]
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = [
+            self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in nut.contact_geoms])]
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info
+
+
+class NutAssemblyRoundSmallInit(NutAssemblyRound):
+    """
+    Easier version of task with smaller initial randomization - place one round nut into its peg.
+    """
+
+    def _initialize_objects(self, nut_names):
+        # Create default (SequentialCompositeSampler) sampler if it has not already been specified
+        if self.placement_initializer is None:
+            self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
+            for nut_name, default_y_range in zip(nut_names, ([0.11, 0.225], [-0.225, -0.11])):
+                self.placement_initializer.append_sampler(
+                    sampler=UniformRandomSampler(
+                        name=f"{nut_name}Sampler",
+                        x_range=[-0.115, -0.11],
+                        y_range=default_y_range,
+                        rotation=[np.pi / 2, np.pi / 2 * 3],
+                        rotation_axis="z",
+                        ensure_object_boundary_in_range=False,
+                        ensure_valid_placement=True,
+                        reference_pos=self.table_offset,
+                        z_offset=0.02,
+                    )
+                )
+

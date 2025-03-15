@@ -1,6 +1,6 @@
 <mujoco model="milk-visual">
   <asset>
-    <mesh file="meshes/milk.stl" name="milk_mesh" scale="0.9 0.9 0.9"/>
+    <mesh file="meshes/milk.stl" name="milk_mesh" scale="1.0 0.8 0.6"/>
   </asset>
   <worldbody>
     <body>

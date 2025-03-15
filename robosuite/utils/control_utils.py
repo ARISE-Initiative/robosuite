@@ -184,7 +184,7 @@ def set_goal_orientation(delta, current_orientation, orientation_limit=None, set
             )
 
         # Convert to euler angles for clipping
-        euler = trans.mat2euler(goal_orientation)
+        euler = trans.mat2euler(goal_orientation, axes="rxyz")
 
         # Clip euler angles according to specified limits
         limited = False

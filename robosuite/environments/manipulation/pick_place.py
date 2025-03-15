@@ -194,6 +194,7 @@ class PickPlace(SingleArmEnv):
         renderer="mujoco",
         renderer_config=None,
     ):
+        self.table_offset = np.array((0, 0, table_full_size[-1]))
         # task settings
         self.single_object_mode = single_object_mode
         self.object_to_id = {"milk": 0, "bread": 1, "cereal": 2, "can": 3}
@@ -220,6 +221,14 @@ class PickPlace(SingleArmEnv):
 
         # whether to use ground-truth object states
         self.use_object_obs = use_object_obs
+
+        self.eef_bounds = np.array([[-0.08, -0.44, 0.82],
+                                    [0.30, 0.42, 1.08]])
+
+        self.data_eef_bounds = np.array([[-0.08, -0.44, 0.82],
+                                         [0.30, 0.42, 1.08]])
+
+        self.lift_height = 1.05
 
         super().__init__(
             robots=robots,
@@ -488,7 +497,8 @@ class PickPlace(SingleArmEnv):
         # store some arena attributes
         self.bin_size = mujoco_arena.table_full_size
 
-        self.objects = []
+        self.pnp_objs = self.objects = []
+        self.push_objs = []
         self.visual_objects = []
         for vis_obj_cls, obj_name in zip(
             (MilkVisualObject, BreadVisualObject, CerealVisualObject, CanVisualObject),
@@ -765,6 +775,59 @@ class PickPlace(SingleArmEnv):
                 target_type="body",
             )
 
+    @property
+    def _has_gripper_contact(self):
+        return np.linalg.norm(self.robots[0].ee_force) > 20
+
+    def _get_skill_info(self):
+        pnp_obj_pos_list = []
+        for obj in self.pnp_objs:
+            if obj.name == "Milk":
+                pnp_obj_pos_list.append(self.sim.data.body_xpos[[self.obj_body_id[obj.name]]] + [0, 0, 0.055])
+            elif obj.name == "Bread":
+                pnp_obj_pos_list.append(self.sim.data.body_xpos[[self.obj_body_id[obj.name]]] + [0, 0, 0])
+            elif obj.name == 'Cereal':
+                pnp_obj_pos_list.append(self.sim.data.body_xpos[[self.obj_body_id[obj.name]]] + [0, 0, 0.05])
+            elif obj.name == 'Can':
+                pnp_obj_pos_list.append(self.sim.data.body_xpos[[self.obj_body_id[obj.name]]] + [0, 0, 0.01])
+            else:
+                raise NotImplementedError
+
+        place_pos_list = []
+        for bin_id in range(4):
+            bin_x = self.bin2_pos[0]
+            bin_y = self.bin2_pos[1]
+            if bin_id == 0 or bin_id == 2:
+                bin_x -= self.bin_size[0] / 4
+            else:
+                bin_x += self.bin_size[0] / 4
+            if bin_id < 2:
+                bin_y -= self.bin_size[1] / 4
+            else:
+                bin_y += self.bin_size[1] / 4
+            place_pos_list.append(np.array([bin_x, bin_y, 0.98]))
+
+        pos_info = {}
+
+        # pos_info['interact'] = [nut_pos, peg_pos, lift_pos]  # interaction positions
+        # pos_info['obj'] = [nut_pos, peg_pos]  # object positions
+
+        pos_info['grasp'] = pnp_obj_pos_list  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = None
+        pos_info['place'] = place_pos_list
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = [
+            self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in obj.contact_geoms]) for obj in self.pnp_objs]
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info
+
 
 class PickPlaceSingle(PickPlace):
     """
@@ -785,6 +848,29 @@ class PickPlaceMilk(PickPlace):
     def __init__(self, **kwargs):
         assert "single_object_mode" not in kwargs and "object_type" not in kwargs, "invalid set of arguments"
         super().__init__(single_object_mode=2, object_type="milk", **kwargs)
+
+    def _get_skill_info(self):
+        pnp_obj_pos_list = [self.sim.data.body_xpos[[self.obj_body_id[active_obj.name]]] + [0, 0, 0.045] for active_obj in self.pnp_objs]
+
+        pos_info = {}
+
+        place_pos_list = [np.array([self.bin2_pos[0] - self.bin_size[0] / 4, self.bin2_pos[1] - self.bin_size[1] / 4, 0.98])]
+
+        pos_info['grasp'] = pnp_obj_pos_list  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = None
+        pos_info['place'] = place_pos_list
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = [
+            self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in obj.contact_geoms]) for obj in self.pnp_objs]
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info
 
 
 class PickPlaceBread(PickPlace):
@@ -814,4 +900,31 @@ class PickPlaceCan(PickPlace):
 
     def __init__(self, **kwargs):
         assert "single_object_mode" not in kwargs and "object_type" not in kwargs, "invalid set of arguments"
+
+        self.eef_bounds = np.array([[-0.08, -0.44, 0.86],
+                                    [0.30, 0.42, 1.23]])
+
+        self.data_eef_bounds = np.array([[-0.08, -0.44, 0.86],
+                                        [0.30, 0.42, 1.23]])
         super().__init__(single_object_mode=2, object_type="can", **kwargs)
+
+    def _get_skill_info(self):
+        pnp_obj_pos_list = [self.sim.data.body_xpos[[self.obj_body_id[active_obj.name]]] + [0, 0, 0.01] for active_obj in self.pnp_objs]
+
+        pos_info = {}
+
+        pos_info['grasp'] = pnp_obj_pos_list  # grasp target positions
+        pos_info['push'] = []  # push target positions
+        pos_info['reach'] = None
+        pos_info['place'] = None
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        info['grasped_obj'] = [
+            self._check_grasp(gripper=self.robots[0].gripper, object_geoms=[g for g in obj.contact_geoms]) for obj in self.pnp_objs]
+
+        info['gripper_contact'] = self._has_gripper_contact
+
+        return info

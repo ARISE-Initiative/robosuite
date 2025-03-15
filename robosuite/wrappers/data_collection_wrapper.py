@@ -120,6 +120,7 @@ class DataCollectionWrapper(Wrapper):
             states=np.array(self.states),
             action_infos=self.action_infos,
             env=env_name,
+            success=self.env._check_success()
         )
         self.states = []
         self.action_infos = []

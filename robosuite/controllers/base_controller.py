@@ -101,6 +101,15 @@ class Controller(object, metaclass=abc.ABCMeta):
         """
         self.new_update = True
 
+    def inverse_scale_action(self, action):
+        if self.action_scale is None:
+            self.action_scale = abs(
+                self.output_max - self.output_min) / abs(self.input_max - self.input_min)
+            self.action_output_transform = (self.output_max + self.output_min) / 2.0
+            self.action_input_transform = (self.input_max + self.input_min) / 2.0
+        original_action = (action - self.action_output_transform) / self.action_scale + self.action_input_transform
+        return original_action
+
     def scale_action(self, action):
         """
         Clips @action to be within self.input_min and self.input_max, and then re-scale the values to be within
@@ -121,7 +130,7 @@ class Controller(object, metaclass=abc.ABCMeta):
         transformed_action = (action - self.action_input_transform) * self.action_scale + self.action_output_transform
 
         return transformed_action
-
+    
     def update(self, force=False):
         """
         Updates the state of the robot arm, including end effector pose / orientation / velocity, joint pos/vel,
