@@ -1,7 +1,7 @@
 <mujoco model="can">
   <asset>
     <mesh file="meshes/can.msh" name="can_mesh"/>
-    <texture file="../textures/soda.png" name="tex-can" type="2d"/>
+    <texture file="../textures/can.png" name="tex-can" type="2d"/>
     <material name="coke" reflectance="0.7" texrepeat="5 5" texture="tex-can" texuniform="true"/>
   </asset>
   <worldbody>

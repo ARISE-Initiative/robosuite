@@ -1,10 +1,9 @@
-import math
-
-import numpy as np
-
-import robosuite.utils.transform_utils as T
 from robosuite.controllers.base_controller import Controller
 from robosuite.utils.control_utils import *
+import robosuite.utils.transform_utils as T
+import numpy as np
+import math
+
 
 # Supported impedance modes
 IMPEDANCE_MODES = {"fixed", "variable", "variable_kp"}
@@ -153,6 +152,12 @@ class OperationalSpaceController(Controller):
         self.output_max = self.nums2array(output_max, self.control_dim)
         self.output_min = self.nums2array(output_min, self.control_dim)
 
+        self.dummy_control_dims = np.intersect1d(
+            np.where(self.output_min == 0.0)[0],
+            np.where(self.output_max == 0.0)[0]
+        )
+        self.control_dim -= len(self.dummy_control_dims)
+
         # kp kd
         self.kp = self.nums2array(kp, 6)
         self.kd = 2 * np.sqrt(self.kp) * damping_ratio
@@ -199,6 +204,30 @@ class OperationalSpaceController(Controller):
         self.relative_ori = np.zeros(3)
         self.ori_ref = None
 
+    def get_global_euler_from_ori_ac(self, ori_ac):
+        norm_euler = np.clip(ori_ac, -1, 1)
+        # find ori dims that are dummy dims
+        dcd = self.dummy_control_dims
+        dummy_ori_dims = dcd[np.where(dcd >= 3)] - 3
+        for d in dummy_ori_dims:
+            norm_euler = np.insert(norm_euler, d, 0.0)
+
+        limits = self.orientation_limits
+        if limits is None:
+            limits = [[-np.pi] * 3, [np.pi] * 3]
+        limits = np.array(limits)
+        limits = limits % (2 * np.pi)  ### convert to range between 0 and 2pi
+        for d in range(3):
+            if limits[0][d] == limits[1][d]:
+                limits[1][d] += 2 * np.pi
+            if limits[0][d] > limits[1][d]:
+                limits[1][d] += (2 * np.pi)
+
+        # normalize from (-1, 1) to (0, 1)
+        norm_euler = (norm_euler + 1) / 2
+        low, high = limits[0], limits[1]
+        return low + (high - low) * norm_euler
+
     def set_goal(self, action, set_pos=None, set_ori=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -230,6 +259,11 @@ class OperationalSpaceController(Controller):
             self.kd = 2 * np.sqrt(self.kp)  # critically damped
         else:  # This is case "fixed"
             delta = action
+
+        for d in self.dummy_control_dims:
+            delta = np.insert(delta, d, 0.0)
+
+        input_set_ori_is_None = (set_ori is None)
 
         # If we're using deltas, interpret actions as such
         if self.use_delta:
@@ -264,7 +298,13 @@ class OperationalSpaceController(Controller):
         self.goal_pos = set_goal_position(
             scaled_delta[:3], self.ee_pos, position_limit=self.position_limits, set_pos=set_pos
         )
-
+        # print("goal orn", self.goal_ori)
+        # print(self.sim.model.site_name2id(self.eef_name))
+        # print("site pos", self.sim.data.site_xpos[self.sim.model.site_name2id(self.eef_name)])
+        # print("site mat", self.sim.data.site_xmat[self.sim.model.site_name2id(self.eef_name)].reshape([3, 3]))
+        # print("body pos", self.sim.data.site_xpos[4])
+        # print("body mat", self.sim.data.get_body_xmat('robot0_right_hand'))
+        # print("body quat", T.convert_quat(self.sim.data.get_body_xquat('robot0_right_hand'), to="xyzw"))
         if self.interpolator_pos is not None:
             self.interpolator_pos.set_goal(self.goal_pos)
 
@@ -398,14 +438,17 @@ class OperationalSpaceController(Controller):
                 - (np.array) minimum action values
                 - (np.array) maximum action values
         """
+        input_min = np.delete(self.input_min, self.dummy_control_dims)
+        input_max = np.delete(self.input_max, self.dummy_control_dims)
+
         if self.impedance_mode == "variable":
-            low = np.concatenate([self.damping_ratio_min, self.kp_min, self.input_min])
-            high = np.concatenate([self.damping_ratio_max, self.kp_max, self.input_max])
+            low = np.concatenate([self.damping_ratio_min, self.kp_min, input_min])
+            high = np.concatenate([self.damping_ratio_max, self.kp_max, input_max])
         elif self.impedance_mode == "variable_kp":
-            low = np.concatenate([self.kp_min, self.input_min])
-            high = np.concatenate([self.kp_max, self.input_max])
+            low = np.concatenate([self.kp_min, input_min])
+            high = np.concatenate([self.kp_max, input_max])
         else:  # This is case "fixed"
-            low, high = self.input_min, self.input_max
+            low, high = input_min, input_max
         return low, high
 
     @property

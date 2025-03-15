@@ -180,6 +180,15 @@ class Lift(SingleArmEnv):
         # object placement initializer
         self.placement_initializer = placement_initializer
 
+        self.eef_bounds = np.array([
+                [-0.15, -0.05, 0.80],
+                [0.07, 0.06, 1.04]
+            ])
+        self.task_config = {
+            'num_pnp_objs': 1,
+            'num_push_objs': 0
+        }
+
         super().__init__(
             robots=robots,
             env_configuration=env_configuration,
@@ -301,7 +310,8 @@ class Lift(SingleArmEnv):
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
-
+        self.pnp_objs = self.grasp_objs = [self.cube]
+        self.push_objs = []
         # Create placement initializer
         if self.placement_initializer is not None:
             self.placement_initializer.reset()
@@ -336,6 +346,9 @@ class Lift(SingleArmEnv):
 
         # Additional object references from this env
         self.cube_body_id = self.sim.model.body_name2id(self.cube.root_body)
+        self.pnp_obj_body_ids = self.grasp_obj_body_ids = [self.cube_body_id]
+        self.push_obj_body_ids = []
+
 
     def _setup_observables(self):
         """
@@ -354,22 +367,23 @@ class Lift(SingleArmEnv):
 
             # cube-related observables
             @sensor(modality=modality)
-            def cube_pos(obs_cache):
+            def obj_pos(obs_cache):
                 return np.array(self.sim.data.body_xpos[self.cube_body_id])
 
             @sensor(modality=modality)
-            def cube_quat(obs_cache):
+            def obj_quat(obs_cache):
                 return convert_quat(np.array(self.sim.data.body_xquat[self.cube_body_id]), to="xyzw")
 
             @sensor(modality=modality)
-            def gripper_to_cube_pos(obs_cache):
+            def object_centric(obs_cache):
                 return (
                     obs_cache[f"{pf}eef_pos"] - obs_cache["cube_pos"]
                     if f"{pf}eef_pos" in obs_cache and "cube_pos" in obs_cache
                     else np.zeros(3)
                 )
 
-            sensors = [cube_pos, cube_quat, gripper_to_cube_pos]
+            # sensors = [cube_pos, cube_quat, gripper_to_cube_pos]
+            sensors = [obj_pos, obj_quat, object_centric]
             names = [s.__name__ for s in sensors]
 
             # Create observables
@@ -397,6 +411,41 @@ class Lift(SingleArmEnv):
             # Loop through all objects and reset their positions
             for obj_pos, obj_quat, obj in object_placements.values():
                 self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
+
+    @property
+    def obj_positions(self):
+        pnp_obj_positions = [
+            self.sim.data.body_xpos[self.pnp_obj_body_ids[i]].copy()
+            for i in range(self.task_config['num_pnp_objs'])
+        ]
+        push_obj_positions = [
+            self.sim.data.body_xpos[self.push_obj_body_ids[i]].copy()
+            for i in range(self.task_config['num_push_objs'])
+        ]
+        return pnp_obj_positions + push_obj_positions
+
+    def _get_skill_info(self):
+        pos_info = dict(
+            grasp=[],
+            push=[],
+            reach=[],
+        )
+
+        obj_positions = self.obj_positions
+        num_pnp_objs = self.task_config['num_pnp_objs']
+
+        pnp_objs = obj_positions[:num_pnp_objs]
+        push_objs = obj_positions[num_pnp_objs:]
+
+
+        pos_info['grasp'] += pnp_objs
+        pos_info['push'] += push_objs
+
+        info = {}
+        for k in pos_info:
+            info[k + '_pos'] = pos_info[k]
+
+        return info
 
     def visualize(self, vis_settings):
         """
