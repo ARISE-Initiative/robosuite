@@ -65,6 +65,12 @@ class Wipe(ManipulationEnv):
             For this environment, setting a value other than the default ("WipingGripper") will raise an
             AssertionError, as this environment is not meant to be used with any other alternative gripper.
 
+        base_types (None or str or list of str): type of base, used to instantiate base models from base factory.
+            Default is "default", which is the default base associated with the robot(s) the 'robots' specification.
+            None results in no base, and any other (valid) model overrides the default base. Should either be
+            single str if same base type is to be used for all robots or else it should be a list of the same
+            length as "robots" param
+
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
@@ -169,6 +175,7 @@ class Wipe(ManipulationEnv):
         env_configuration="default",
         controller_configs=None,
         gripper_types="WipingGripper",
+        base_types="default",
         initialization_noise="default",
         use_camera_obs=True,
         use_object_obs=True,
