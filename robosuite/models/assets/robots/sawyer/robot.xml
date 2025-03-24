@@ -28,10 +28,10 @@
     <material name="Mtla" specular="0.5" shininess="0.225" rgba="0.000000 0.000000 1.000000 1.000000"/>
     <material name="Mtlb" specular="0.5" shininess="0.225" rgba="0.290196 0.290196 0.290196 1.000000"/>
     <mesh name="head_0" file="obj_meshes/head/head_0.obj"/>
-    <mesh name="head_1" file="obj_meshes/head/head_1.obj"/>
+    <mesh name="head_1" file="obj_meshes/head/head_1.obj" inertia="shell"/>
     <mesh name="head_2" file="obj_meshes/head/head_2.obj"/>
     <mesh name="head_3" file="obj_meshes/head/head_3.obj"/>
-    <mesh name="head_4" file="obj_meshes/head/head_4.obj"/>
+    <mesh name="head_4" file="obj_meshes/head/head_4.obj" inertia="shell"/>
     <mesh name="head_5" file="obj_meshes/head/head_5.obj"/>
     <mesh name="head_6" file="obj_meshes/head/head_6.obj"/>
     <mesh name="head_7" file="obj_meshes/head/head_7.obj"/>
