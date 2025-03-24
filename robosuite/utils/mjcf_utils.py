@@ -670,6 +670,8 @@ def _element_filter(element, parent):
     # Check for actuator first since this is dependent on the parent element
     if parent is not None and parent.tag == "actuator":
         return "actuators"
+    elif parent is not None and parent.tag == "composite":
+        return "composite_geoms"
     elif element.tag == "joint":
         # Make sure this is not a tendon (this should not have a "joint", "joint1", or "joint2" attribute specified)
         if element.get("joint") is None and element.get("joint1") is None:
