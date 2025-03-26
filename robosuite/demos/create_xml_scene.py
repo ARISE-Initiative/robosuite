@@ -71,6 +71,6 @@ if __name__ == "__main__":
         env.sim.model._model.body_pos[body_id] = np.array(obj_pos)
         env.sim.model._model.body_quat[body_id] = np.array(obj_quat)
     
-    mujoco.mj_saveLastXML("scene_{}_{}.xml".format(options["env_name"], options["robots"]), env.sim.model._model)
+    mujoco.mj_saveLastXML("scenes/scene_{}_{}.xml".format(options["env_name"], options["robots"]), env.sim.model._model)
 
     print("Done")
