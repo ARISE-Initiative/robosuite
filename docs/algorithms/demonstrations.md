@@ -7,6 +7,8 @@ We provide teleoperation utilities that allow users to control the robots with i
 - `directory:` path to a folder for where to store the pickle file of collected demonstrations
 - `environment:` name of the environment you would like to collect the demonstrations for
 - `device:` either "keyboard" or "spacemouse" or "dualsense" or "mjgui"
+- `renderer:` Mujoco's builtin interactive viewer (mjviewer) or OpenCV viewer (mujoco)
+- `camera:` Pass multiple camera names to enable multiple views. Note that the "mujoco" renderer must be enabled when using multiple views, while "mjviewer" is not supported.
 
 See the [devices page](https://robosuite.ai/docs/modules/devices.html) for details on how to use the devices.
 

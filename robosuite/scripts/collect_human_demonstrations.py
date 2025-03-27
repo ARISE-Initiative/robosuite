@@ -237,9 +237,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--camera",
+        nargs="*",
         type=str,
         default="agentview",
-        help="Which camera to use for collecting demos",
+        help="List of camera names to use for collecting demos. Pass multiple names to enable multiple views. Note: the `mujoco` renderer must be enabled when using multiple views; `mjviewer` is not supported."
     )
     parser.add_argument(
         "--controller",
