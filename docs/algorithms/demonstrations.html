@@ -437,6 +437,8 @@ document.write(`
 <li><p><code class="docutils literal notranslate"><span class="pre">directory:</span></code> path to a folder for where to store the pickle file of collected demonstrations</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">environment:</span></code> name of the environment you would like to collect the demonstrations for</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">device:</span></code> either “keyboard” or “spacemouse” or “dualsense” or “mjgui”</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">renderer:</span></code> Mujoco’s builtin interactive viewer (mjviewer) or OpenCV viewer (mujoco)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">camera:</span></code> Pass multiple camera names to enable multiple views. Note that the “mujoco” renderer must be enabled when using multiple views, while “mjviewer” is not supported.</p></li>
 </ul>
 <p>See the <a class="reference external" href="https://robosuite.ai/docs/modules/devices.html">devices page</a> for details on how to use the devices.</p>
 </section>

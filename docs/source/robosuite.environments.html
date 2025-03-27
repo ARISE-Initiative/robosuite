@@ -617,9 +617,9 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering.</p></li>
-<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+<li><p><strong>render_camera</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
 will result in the default angle being applied, which is useful as it can be dragged / panned by
-the user using the mouse</p></li>
+the user using the mouse. When a list of strings is provided, it will render from multiple camera angles.</p></li>
 <li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes
 in camera. False otherwise.</p></li>
 <li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes
@@ -1031,9 +1031,9 @@ Specifying None will automatically create the required dict with “magnitude”
 <li><p><strong>has_renderer</strong> (<em>bool</em>) – If true, render the simulation state in
 a viewer instead of headless mode.</p></li>
 <li><p><strong>has_offscreen_renderer</strong> (<em>bool</em>) – True if using off-screen rendering</p></li>
-<li><p><strong>render_camera</strong> (<em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
+<li><p><strong>render_camera</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – Name of camera to render if <cite>has_renderer</cite> is True. Setting this value to ‘None’
 will result in the default angle being applied, which is useful as it can be dragged / panned by
-the user using the mouse</p></li>
+the user using the mouse. When a list of strings is provided, it will render from multiple camera angles.</p></li>
 <li><p><strong>render_collision_mesh</strong> (<em>bool</em>) – True if rendering collision meshes in camera. False otherwise.</p></li>
 <li><p><strong>render_visual_mesh</strong> (<em>bool</em>) – True if rendering visual meshes in camera. False otherwise.</p></li>
 <li><p><strong>render_gpu_device_id</strong> (<em>int</em>) – corresponds to the GPU device id to use for offscreen rendering.
