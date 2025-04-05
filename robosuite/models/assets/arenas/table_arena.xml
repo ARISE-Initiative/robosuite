@@ -47,5 +47,7 @@
     <camera mode="fixed" name="agentview" pos="0.5 0 1.35" quat="0.653 0.271 0.271 0.653"/>
     <!-- side view -->
     <camera mode="fixed" name="sideview" pos="-0.05651774593317116 1.2761224129427358 1.4879572214102434" quat="0.009905065491771751 0.006877963156909582 0.5912228352893879 0.806418094001364" />
+    <!-- teleop view -->
+    <camera mode="fixed" name="teleopview" pos="-0.4 0 1.6" xyaxes="0.000 -1.000 0.000 1.0 -0.00 0.6" fovy="70"/>
   </worldbody>
 </mujoco>
