@@ -172,7 +172,7 @@ class Device(metaclass=abc.ABCMeta):
 
         # clip actions between -1 and 1
         for (k, v) in ac_dict.items():
-            if "abs" not in k:
+            if "abs" not in k and "gripper" not in k:
                 ac_dict[k] = np.clip(v, -1, 1)
 
         return ac_dict
