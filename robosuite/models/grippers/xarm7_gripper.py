@@ -1,6 +1,7 @@
 """
 Gripper for UFactory's XArm7 (has two fingers).
 """
+
 import numpy as np
 
 from robosuite.models.grippers.gripper_model import GripperModel
