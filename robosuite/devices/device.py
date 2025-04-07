@@ -112,6 +112,7 @@ class Device(metaclass=abc.ABCMeta):
 
         # Get controller reference
         controller = robot.part_controllers[active_arm]
+        gripper = robot.gripper[active_arm]
         gripper_dof = robot.gripper[active_arm].dof
 
         assert controller.name in ["OSC_POSE", "JOINT_POSITION"], "only supporting OSC_POSE and JOINT_POSITION for now"
@@ -163,11 +164,15 @@ class Device(metaclass=abc.ABCMeta):
         )
         ac_dict[f"{active_arm}_abs"] = arm_action["abs"]
         ac_dict[f"{active_arm}_delta"] = arm_action["delta"]
-        ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
+
+        if hasattr(gripper, "grasp_qpos"):
+            ac_dict[f"{active_arm}_gripper"] = getattr(gripper, "grasp_qpos")[grasp]
+        else:
+            ac_dict[f"{active_arm}_gripper"] = np.array([grasp] * gripper_dof)
 
         # clip actions between -1 and 1
         for (k, v) in ac_dict.items():
-            if "abs" not in k:
+            if "abs" not in k and "gripper" not in k:
                 ac_dict[k] = np.clip(v, -1, 1)
 
         return ac_dict
