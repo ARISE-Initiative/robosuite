@@ -2,12 +2,14 @@ import os
 import pathlib
 import sys
 from contextlib import contextmanager
+from copy import deepcopy
 from typing import Dict, List, Literal, Optional, Tuple
 
 import mink
 import mujoco
 import mujoco.viewer
 import numpy as np
+import numpy.typing as npt
 from mink.configuration import Configuration
 from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
@@ -121,6 +123,18 @@ class WeightedPostureTask(mink.PostureTask):
         # breakpoint()
         return self.weights[:, np.newaxis] * J
 
+    def set_target(self, target_q: npt.ArrayLike, update_idxs: Optional[npt.ArrayLike] = None) -> None:
+        """Set the target posture.
+
+        Args:
+            target_q: Desired joint configuration.
+        """
+        if update_idxs is not None:
+            ori_target_q = deepcopy(self.target_q)
+            ori_target_q[update_idxs] = target_q
+            target_q = ori_target_q
+        super().set_target(target_q)
+
     def __repr__(self):
         """Human-readable representation of the weighted posture task."""
         return (
@@ -140,6 +154,7 @@ class IKSolverMink:
         site_names: List[str],
         robot_model: mujoco.MjModel,
         robot_joint_names: Optional[List[str]] = None,
+        others_controlled_joint_names: Optional[List[str]] = None,
         verbose: bool = False,
         input_type: Literal["absolute", "delta", "delta_pose"] = "absolute",
         input_ref_frame: Literal["world", "base", "eef"] = "world",
@@ -168,10 +183,31 @@ class IKSolverMink:
                 if self.robot_model.joint(i).type != 0
             ]  # Exclude fixed joints
 
-        self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
+        self.all_robot_qpos_indexes_in_full_model: List[int] = []
+        for i in range(self.robot_model.njnt):
+            self.all_robot_qpos_indexes_in_full_model.extend(
+                self.full_model.joint(i).qposadr[0] + np.arange(len(self.full_model.joint(i).qpos0))
+            )
+        assert len(self.all_robot_qpos_indexes_in_full_model) == self.robot_model.nq
 
-        self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
-        self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
+        self.controlled_robot_qpos_indexes: List[int] = []
+        self.controlled_robot_qpos_indexes_in_full_model: List[int] = []
+        for name in robot_joint_names:
+            self.controlled_robot_qpos_indexes.extend(
+                self.robot_model.joint(name).qposadr[0] + np.arange(len(self.robot_model.joint(name).qpos0))
+            )
+            self.controlled_robot_qpos_indexes_in_full_model.extend(
+                self.full_model.joint(name).qposadr[0] + np.arange(len(self.full_model.joint(name).qpos0))
+            )
+
+        self.others_controlled_qpos_indexes: List[int] = []
+        for name in others_controlled_joint_names:
+            self.others_controlled_qpos_indexes.extend(
+                self.robot_model.joint(name).qposadr[0] + np.arange(len(self.robot_model.joint(name).qpos0))
+            )
+
+        # self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
+        # self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
         self.site_ids = [self.robot_model.site(site_name).id for site_name in site_names]
 
         self.site_names = site_names
@@ -203,10 +239,12 @@ class IKSolverMink:
         return "IKSolverMink"
 
     def _setup_tasks(self):
-        weights = np.ones(self.robot_model.nq)
+        weights = np.ones(self.robot_model.nv)
+
         for joint_name, posture_weight in self.posture_weights.items():
-            joint_idx = self.robot_model.joint(joint_name).id
-            weights[joint_idx] = posture_weight
+            joint = self.robot_model.joint(joint_name)
+            joint_dof_idx = joint.dofadr[0] + np.arange(len(joint.jntid))
+            weights[joint_dof_idx] = posture_weight
 
         self.posture_task = WeightedPostureTask(self.robot_model, cost=0.01, weights=weights, lm_damping=2)
 
@@ -234,8 +272,8 @@ class IKSolverMink:
             se3_target = mink.SE3.from_matrix(target)
             task.set_target(se3_target)
 
-    def set_posture_target(self, posture_target: np.ndarray):
-        self.posture_task.set_target(posture_target)
+    def set_posture_target(self, posture_target: np.ndarray, update_idxs: Optional[np.ndarray] = None):
+        self.posture_task.set_target(posture_target, update_idxs=update_idxs)
 
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
@@ -263,7 +301,8 @@ class IKSolverMink:
 
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
         self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
-        self.configuration.update()
+
+        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
 
         X_src_frame_pose = src_frame_pose
         # convert src frame pose to world frame pose
@@ -294,13 +333,20 @@ class IKSolverMink:
         By updating configuration's bose to match the actual base pose (in 'world' frame),
         we're requiring our tasks' targets to be in the 'world' frame for mink.solve_ik().
         """
+
         # update configuration's base to match actual base
         self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
         self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
-        # update configuration's qpos to match actual qpos
-        self.configuration.update(
-            self.full_model_data.qpos[self.full_model_dof_ids], update_idxs=self.robot_model_dof_ids
-        )
+
+        # update configuration's qpos to match actual qpos.
+        # Note that, we update all qpos for the robot model, not just the ik-controlled joints for future whole-body control.
+        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
+
+        # use the third party qpos to update the target of the posture task
+        others_controlled_qpos = self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model][
+            self.others_controlled_qpos_indexes
+        ]
+        self.set_posture_target(others_controlled_qpos, update_idxs=self.others_controlled_qpos_indexes)
 
         input_action = input_action.reshape(len(self.site_names), -1)
         input_pos = input_action[:, : self.pos_dim]
@@ -408,8 +454,9 @@ class IKSolverMink:
 
             if self.i % 50:
                 print(f"Task errors: {task_translation_errors}")
+                print(f"Posture error: {task_errors[-1]}")
 
-        return self.configuration.data.qpos[self.robot_model_dof_ids]
+        return self.configuration.data.qpos[self.controlled_robot_qpos_indexes]
 
     def _get_task_translation_errors(self) -> List[float]:
         errors = []
@@ -430,6 +477,7 @@ class IKSolverMink:
         for task in self.hand_tasks:
             error = task.compute_error(self.configuration)
             errors.append(np.linalg.norm(error[:3]))
+        errors.append(self.posture_task.compute_error(self.configuration))
         return errors
 
 
@@ -496,6 +544,13 @@ class WholeBodyMinkIK(WholeBody):
             if part_name in self.part_controllers:
                 joint_names += self.part_controllers[part_name].joint_names
 
+        # These joints are controlled by other controllers, not this IK controller
+        others_controlled_joint_names: str = []
+        if "external_part_names" in self.composite_controller_specific_config:
+            for part_name in self.composite_controller_specific_config["external_part_names"]:
+                if part_name in self.part_controllers:
+                    others_controlled_joint_names += self.part_controllers[part_name].joint_names
+
         default_site_names: List[str] = []
         for arm in ["right", "left"]:
             if arm in self.part_controller_config:
@@ -511,6 +566,7 @@ class WholeBodyMinkIK(WholeBody):
             ),
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
+            others_controlled_joint_names=others_controlled_joint_names,
             input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
             input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
@@ -518,5 +574,5 @@ class WholeBodyMinkIK(WholeBody):
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
             hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
             hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
-            verbose=self.composite_controller_specific_config.get("ik_verbose", False),
+            verbose=self.composite_controller_specific_config.get("verbose", False),
         )
