@@ -459,3 +459,43 @@ class WholeBodyIK(WholeBody):
             input_type=self.composite_controller_specific_config.get("ik_input_type", "axis_angle"),
             debug=self.composite_controller_specific_config.get("verbose", False),
         )
+
+
+@register_composite_controller
+class HybridWholeBodyIK(WholeBodyIK):
+    name = "HYBRID_WHOLE_BODY_IK"
+
+    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
+        super().__init__(sim, robot_model, grippers)
+
+    def _init_joint_action_policy(self):
+        joint_names: str = []
+        for part_name in self.composite_controller_specific_config["actuation_part_names"]:
+            if part_name in self.part_controllers:
+                joint_names += self.part_controllers[part_name].joint_names
+            else:
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"{part_name} is not a valid part name in part_controllers." " Skipping this part for IK control."
+                )
+
+        # Compute nullspace gains, Kn.
+        Kn = get_nullspace_gains(joint_names, self.composite_controller_specific_config["nullspace_joint_weights"])
+        mocap_bodies = []
+        robot_config = {
+            "end_effector_sites": self.composite_controller_specific_config["ref_name"],
+            "joint_names": joint_names,
+            "mocap_bodies": mocap_bodies,
+            "nullspace_gains": Kn,
+        }
+        self.joint_action_policy = IKSolver(
+            model=self.sim.model._model,
+            data=self.sim.data._data,
+            robot_config=robot_config,
+            damping=self.composite_controller_specific_config.get("ik_pseudo_inverse_damping", 5e-2),
+            integration_dt=self.composite_controller_specific_config.get("ik_integration_dt", 0.1),
+            max_dq=self.composite_controller_specific_config.get("ik_max_dq", 4),
+            max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
+            input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
+            input_type=self.composite_controller_specific_config.get("ik_input_type", "axis_angle"),
+            debug=self.composite_controller_specific_config.get("verbose", False),
+        )

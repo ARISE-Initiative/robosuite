@@ -194,7 +194,7 @@ class Device(metaclass=abc.ABCMeta):
                 "delta": norm_delta,
                 "abs": abs_action,
             }
-        elif robot.composite_controller_config["type"] in ["WHOLE_BODY_MINK_IK"]:
+        elif robot.composite_controller_config["type"] in ["WHOLE_BODY_MINK_IK", "HYBRID_WHOLE_BODY_MINK_IK"]:
             ref_frame = self.env.robots[0].composite_controller.composite_controller_specific_config.get(
                 "ik_input_ref_frame", "world"
             )
