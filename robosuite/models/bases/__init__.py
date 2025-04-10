@@ -3,6 +3,7 @@ from .robot_base_model import RobotBaseModel
 from .robot_base_factory import robot_base_factory
 from .mobile_base_model import MobileBaseModel
 from .leg_base_model import LegBaseModel
+from .null_base_model import NullBaseModel
 
 from .rethink_mount import RethinkMount
 from .rethink_minimal_mount import RethinkMinimalMount
@@ -12,7 +13,7 @@ from .omron_mobile_base import OmronMobileBase
 from .null_mobile_base import NullMobileBase
 from .no_actuation_base import NoActuationBase
 from .floating_legged_base import FloatingLeggedBase
-
+from .null_base import NullBase
 from .spot_base import Spot, SpotFloating
 
 BASE_MAPPING = {
@@ -25,6 +26,7 @@ BASE_MAPPING = {
     "FloatingLeggedBase": FloatingLeggedBase,
     "Spot": Spot,
     "SpotFloating": SpotFloating,
+    "NullBase": NullBase,
 }
 
 ALL_BASES = BASE_MAPPING.keys()

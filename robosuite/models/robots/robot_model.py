@@ -5,7 +5,7 @@ import mujoco
 import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
-from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, RobotBaseModel
+from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, NullBaseModel, RobotBaseModel
 from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
@@ -137,6 +137,8 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             self.add_mobile_base(base)
         elif isinstance(base, LegBaseModel):
             self.add_leg_base(base)
+        elif isinstance(base, NullBaseModel):
+            self.add_null_base(base)
         else:
             raise ValueError("Invalid base type to add to robot!")
 
@@ -273,6 +275,21 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         self.base = leg_base
 
         # Update cameras in this model
+        self.cameras = self.get_element_names(self.worldbody, "camera")
+
+    def add_null_base(self, base: NullBaseModel):
+        """
+        Do not add any base to the robot.
+        """
+        if self.base is not None:
+            raise ValueError("Mobile base already added for this robot!")
+
+        self.base = base
+        for body in base.worldbody:
+            ele = body.find("site")
+            if ele is not None:
+                self.worldbody.append(ele)
+
         self.cameras = self.get_element_names(self.worldbody, "camera")
 
     # -------------------------------------------------------------------------------------- #
