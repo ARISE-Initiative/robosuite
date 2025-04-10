@@ -1,18 +1,33 @@
-import time
+import argparse
+import numpy as np
+import mujoco
+import robosuite as suite
 
 from robosuite.robots import MobileRobot
 from robosuite.utils.input_utils import *
+import time
 
-import mujoco
+MAX_FR = 25  # max frame rate for running simulation
 
-MAX_FR = 25  # max frame rate for running simluation
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Create an XML scene with robosuite and save the result to a file."
+    )
+    parser.add_argument(
+        '--output',
+        type=str,
+        default=None,
+        help="Path to output XML file. If not provided, a default filename is generated based on the environment and chosen robots."
+    )
+    return parser.parse_args()
 
 if __name__ == "__main__":
+    args = parse_args()
 
     # Create dict to hold options that will be passed to env creation call
     options = {}
 
-    # print welcome info
+    # Print welcome info
     print("Welcome to robosuite v{}!".format(suite.__version__))
     print(suite.__logo__)
 
@@ -40,7 +55,7 @@ if __name__ == "__main__":
     else:
         options["robots"] = choose_robots(exclude_bimanual=False, use_humanoids=True)
 
-    # initialize the task
+    # Initialize the task
     env = suite.make(
         **options,
         has_renderer=True,
@@ -56,21 +71,30 @@ if __name__ == "__main__":
         if isinstance(robot, MobileRobot):
             robot.enable_parts(legs=False, base=False)
 
+    # Run a simulation step and render the scene
     action = np.random.randn(*env.action_spec[0].shape)
     obs, reward, done, _ = env.step(action)
     env.render()
 
-    input("Press anything to continue...")
-    
-    # reload the object position to save
-    # NOTE: This is a hacky way to save the object placements. The saved scene will be different from the previously rendered scene
+    # input("Press anything to continue...")
+    time.sleep(1)
+
+    # Reload the object positions to save the updated scene state.
+    # NOTE: This is a hacky way to save the object placements. The saved scene might differ from what is rendered.
     object_placements = env.placement_initializer.sample()
     for obj_pos, obj_quat, obj in object_placements.values():
         # Get the body id for the object's root body
         body_id = env.sim.model.body_name2id(obj.root_body)
         env.sim.model._model.body_pos[body_id] = np.array(obj_pos)
         env.sim.model._model.body_quat[body_id] = np.array(obj_quat)
-    
-    mujoco.mj_saveLastXML("scenes/scene_{}_{}.xml".format(options["env_name"], options["robots"]), env.sim.model._model)
 
-    print("Done")
+    # Determine the output filename
+    if args.output:
+        filename = args.output
+    else:
+        # Default filename generated from environment and robots selection
+        filename = "scenes/scene_{}_{}.xml".format(options["env_name"], options["robots"])
+
+    mujoco.mj_saveLastXML(filename, env.sim.model._model)
+
+    print("Done. Scene saved to:", filename)
