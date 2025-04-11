@@ -10,7 +10,6 @@ import mink
 import mujoco
 import mujoco.viewer
 import numpy as np
-import numpy.typing as npt
 from mink.configuration import Configuration
 from mink.tasks.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
@@ -21,7 +20,6 @@ from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.models.robots.robot_model import RobotModel
 from robosuite.utils.binding_utils import MjSim
 from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
-from robosuite.utils.mjcf_utils import find_parent
 
 
 def update(self, q: Optional[np.ndarray] = None, update_idxs: Optional[np.ndarray] = None) -> None:
@@ -124,18 +122,6 @@ class WeightedPostureTask(mink.PostureTask):
         J = super().compute_jacobian(configuration)
         # breakpoint()
         return self.weights[:, np.newaxis] * J
-
-    def set_target(self, target_q: npt.ArrayLike, update_idxs: Optional[npt.ArrayLike] = None) -> None:
-        """Set the target posture.
-
-        Args:
-            target_q: Desired joint configuration.
-        """
-        if update_idxs is not None:
-            ori_target_q = deepcopy(self.target_q)
-            ori_target_q[update_idxs] = target_q
-            target_q = ori_target_q
-        super().set_target(target_q)
 
     def __repr__(self):
         """Human-readable representation of the weighted posture task."""
@@ -269,9 +255,6 @@ class IKSolverMink:
         for task, target in zip(self.hand_tasks, target_poses):
             se3_target = mink.SE3.from_matrix(target)
             task.set_target(se3_target)
-
-    def set_posture_target(self, posture_target: np.ndarray, update_idxs: Optional[np.ndarray] = None):
-        self.posture_task.set_target(posture_target, update_idxs=update_idxs)
 
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
