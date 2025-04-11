@@ -2,9 +2,7 @@ import os
 import pathlib
 import sys
 from contextlib import contextmanager
-from copy import deepcopy
 from typing import Dict, List, Literal, Optional, Tuple
-from xml.etree import ElementTree as ET
 
 import mink
 import mujoco
