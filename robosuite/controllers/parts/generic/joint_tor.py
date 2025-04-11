@@ -106,6 +106,9 @@ class JointTorqueController(Controller):
         self.current_torque = np.zeros(self.control_dim)  # Current torques being outputted, pre-compensation
         self.torques = None  # Torques returned every time run_controller is called
 
+        self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
+        # print(self.part_name, self.use_torque_compensation)
+
     def set_goal(self, torques):
         """
         Sets goal based on input @torques.
@@ -153,7 +156,10 @@ class JointTorqueController(Controller):
             self.current_torque = np.array(self.goal_torque)
 
         # Add gravity compensation
-        self.torques = self.current_torque + self.torque_compensation
+        if self.use_torque_compensation:
+            self.torques = self.current_torque + self.torque_compensation
+        else:
+            self.torques = self.current_torque
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()

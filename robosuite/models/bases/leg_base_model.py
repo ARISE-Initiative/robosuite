@@ -34,6 +34,15 @@ class LegBaseModel(RobotBaseModel):
                 parent_body = find_parent(self.actuator, motor)
                 parent_body.remove(motor)
                 self._actuators.remove(motor.get("name").replace(self.naming_prefix, ""))
+        for sensor in self.root.findall(".//jointpos"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
+        for sensor in self.root.findall(".//jointvel"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
+        for sensor in self.root.findall(".//jointactuatorfrc"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
 
     def _remove_free_joint(self):
         """Remove all freejoints from the model."""

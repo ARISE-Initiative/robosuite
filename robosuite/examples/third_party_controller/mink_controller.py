@@ -156,7 +156,7 @@ class IKSolverMink:
         site_names: List[str],
         robot_model: mujoco.MjModel,
         robot_joint_names: Optional[List[str]] = None,
-        base_transform_joint: Optional[str] = None,
+        # base_transform_joint: Optional[str] = None,
         # others_controlled_joint_names: Optional[List[str]] = None,
         verbose: bool = False,
         input_type: Literal["absolute", "delta", "delta_pose"] = "absolute",
@@ -217,7 +217,7 @@ class IKSolverMink:
                 self.full_model.joint(name).qposadr[0] + np.arange(len(self.full_model.joint(name).qpos0))
             )
 
-        self.base_transform_joint = base_transform_joint
+        # self.base_transform_joint = base_transform_joint
 
         # # the order of the index is determined by the order of the others_controlled_joint_names
         # self.others_controlled_qpos_indexes: List[int] = []
@@ -319,8 +319,8 @@ class IKSolverMink:
         if src_frame == dst_frame:
             return src_frame_pose
 
-        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
-        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
+        self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
+        self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
 
         self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
 
@@ -355,8 +355,8 @@ class IKSolverMink:
         """
 
         # update configuration's base to match actual base
-        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
-        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
+        self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
+        self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
 
         # update configuration's qpos to match actual qpos.
         # Note that, we update all qpos for the robot model, not just the ik-controlled joints for future whole-body control.
@@ -453,16 +453,6 @@ class IKSolverMink:
         for i, (pos, quat_wxyz) in enumerate(zip(target_pos, target_quat_wxyz)):
             targets[i][:3, 3] = pos
             targets[i][:3, :3] = T.quat2mat(np.roll(quat_wxyz, -1))
-
-        # if the robot model in IK solver does not have a free base joint, but the robot model in env has a free base joint,
-        # we need to transform the targets to the robot frame
-        if self.base_transform_joint is not None:
-            base_transform_qpos = self.full_model_data.joint(self.base_transform_joint).qpos
-            robot_base_to_world_base = T.make_pose(
-                base_transform_qpos[:3], T.quat2mat(np.roll(base_transform_qpos[3:], -1))
-            )
-            world_base_to_robot_base = np.linalg.inv(robot_base_to_world_base)
-            targets = [world_base_to_robot_base @ target for target in targets]
 
         # set target poses
         for task, target in zip(self.hand_tasks, targets):
@@ -647,6 +637,15 @@ class HybridWholeBodyMinkIK(WholeBodyMinkIK):
         for motor in root.findall(".//motor"):
             if motor.get("joint") in self.others_controlled_joint_names:
                 find_parent(root, motor).remove(motor)
+        for sensor in root.findall(".//jointpos"):
+            if sensor.get("joint") in self.others_controlled_joint_names:
+                find_parent(root, sensor).remove(sensor)
+        for sensor in root.findall(".//jointvel"):
+            if sensor.get("joint") in self.others_controlled_joint_names:
+                find_parent(root, sensor).remove(sensor)
+        for sensor in root.findall(".//jointactuatorfrc"):
+            if sensor.get("joint") in self.others_controlled_joint_names:
+                find_parent(root, sensor).remove(sensor)
         robot_model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="utf-8").decode("utf-8"))
         mujoco.MjModel.from_xml_string(env_xml_str)
         # TODO: try using spec to create the model
@@ -661,7 +660,7 @@ class HybridWholeBodyMinkIK(WholeBodyMinkIK):
             ),
             robot_model=robot_model,
             robot_joint_names=joint_names,
-            base_transform_joint=self.composite_controller_specific_config.get("base_transform_joint", None),
+            # base_transform_joint=self.composite_controller_specific_config.get("base_transform_joint", None),
             # others_controlled_joint_names=others_controlled_joint_names,
             input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
             input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
