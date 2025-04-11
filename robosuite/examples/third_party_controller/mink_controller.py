@@ -254,6 +254,9 @@ class IKSolverMink:
             se3_target = mink.SE3.from_matrix(target)
             task.set_target(se3_target)
 
+    def set_posture_target(self, posture_target: np.ndarray):
+        self.posture_task.set_target(posture_target)
+
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
         previous_idx = 0
