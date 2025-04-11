@@ -281,6 +281,9 @@ class IKSolverMink:
         if src_frame == dst_frame:
             return src_frame_pose
 
+        # Note that we should not update the model. To be fixed in the future.
+        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
         self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
         self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
 
@@ -317,6 +320,8 @@ class IKSolverMink:
         """
 
         # update configuration's base to match actual base
+        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
         self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
         self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
 
