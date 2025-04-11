@@ -156,8 +156,6 @@ class IKSolverMink:
         site_names: List[str],
         robot_model: mujoco.MjModel,
         robot_joint_names: Optional[List[str]] = None,
-        # base_transform_joint: Optional[str] = None,
-        # others_controlled_joint_names: Optional[List[str]] = None,
         verbose: bool = False,
         input_type: Literal["absolute", "delta", "delta_pose"] = "absolute",
         input_ref_frame: Literal["world", "base", "eef"] = "world",
@@ -185,20 +183,9 @@ class IKSolverMink:
                 for i in range(self.robot_model.njnt)
                 if self.robot_model.joint(i).type != 0
             ]  # Exclude fixed joints
-        else:
-            # verify robot_joint_names follow the order of the joints in the robot_model
-            jnt_idx = -1
-            for name in robot_joint_names:
-                curr_jnt_idx = self.robot_model.joint(name).dofadr[0]
-                if curr_jnt_idx < jnt_idx:
-                    raise ValueError(
-                        f"Joint names are not in the order of the joints in the robot model. Please check actuation_part_names in the composite controller config."
-                    )
-                jnt_idx = curr_jnt_idx
 
         # the order of the index is the same of model.qposadr
         self.all_robot_qpos_indexes_in_full_model: List[int] = []
-        # import ipdb; ipdb.set_trace(context=10)
         for i in range(self.robot_model.njnt):
             joint_name = self.robot_model.joint(i).name
             self.all_robot_qpos_indexes_in_full_model.extend(
@@ -216,15 +203,6 @@ class IKSolverMink:
             self.controlled_robot_qpos_indexes_in_full_model.extend(
                 self.full_model.joint(name).qposadr[0] + np.arange(len(self.full_model.joint(name).qpos0))
             )
-
-        # self.base_transform_joint = base_transform_joint
-
-        # # the order of the index is determined by the order of the others_controlled_joint_names
-        # self.others_controlled_qpos_indexes: List[int] = []
-        # for name in others_controlled_joint_names:
-        #     self.others_controlled_qpos_indexes.extend(
-        #         self.robot_model.joint(name).qposadr[0] + np.arange(len(self.robot_model.joint(name).qpos0))
-        #     )
 
         # self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
         # self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
@@ -361,13 +339,6 @@ class IKSolverMink:
         # update configuration's qpos to match actual qpos.
         # Note that, we update all qpos for the robot model, not just the ik-controlled joints for future whole-body control.
         self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
-
-        # use the third party qpos to update the target of the posture task
-        # if others_controlled_qpos is None:
-        #     others_controlled_qpos = self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model][
-        #         self.others_controlled_qpos_indexes
-        #     ]
-        # self.set_posture_target(others_controlled_qpos, update_idxs=self.others_controlled_qpos_indexes)
 
         input_action = input_action.reshape(len(self.site_names), -1)
         input_pos = input_action[:, : self.pos_dim]
@@ -564,13 +535,6 @@ class WholeBodyMinkIK(WholeBody):
             if part_name in self.part_controllers:
                 joint_names += self.part_controllers[part_name].joint_names
 
-        # These joints are controlled by other controllers, not this IK controller
-        others_controlled_joint_names: str = []
-        if "external_part_names" in self.composite_controller_specific_config:
-            for part_name in self.composite_controller_specific_config["external_part_names"]:
-                if part_name in self.part_controllers:
-                    others_controlled_joint_names += self.part_controllers[part_name].joint_names
-
         default_site_names: List[str] = []
         for arm in ["right", "left"]:
             if arm in self.part_controller_config:
@@ -586,82 +550,6 @@ class WholeBodyMinkIK(WholeBody):
             ),
             robot_model=self.robot_model.mujoco_model,
             robot_joint_names=joint_names,
-            # others_controlled_joint_names=others_controlled_joint_names,
-            input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
-            input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
-            input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
-            solve_freq=self.composite_controller_specific_config.get("ik_solve_freq", 20),
-            posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
-            hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
-            hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
-            verbose=self.composite_controller_specific_config.get("verbose", False),
-        )
-
-
-@register_composite_controller
-class HybridWholeBodyMinkIK(WholeBodyMinkIK):
-    name = "HYBRID_WHOLE_BODY_MINK_IK"
-
-    def __init__(self, sim: MjSim, robot_model: RobotModel, grippers: Dict[str, GripperModel]):
-        super().__init__(sim, robot_model, grippers)
-
-    def _init_joint_action_policy(self):
-        joint_names: str = []
-        # the order of the joint names is important! Should be consistent with self._action_split_indexes
-        for part_name in self.composite_controller_specific_config["actuation_part_names"]:
-            if part_name in self.part_controllers:
-                joint_names += self.part_controllers[part_name].joint_names
-
-        # These joints are controlled by other controllers, not this IK controller
-        self.others_controlled_joint_names: str = []
-        if "external_part_names" in self.composite_controller_specific_config:
-            for part_name in self.composite_controller_specific_config["external_part_names"]:
-                if part_name in self.part_controllers:
-                    self.others_controlled_joint_names += self.part_controllers[part_name].joint_names
-
-        default_site_names: List[str] = []
-        for arm in ["right", "left"]:
-            if arm in self.part_controller_config:
-                default_site_names.append(self.part_controller_config[arm]["ref_name"])
-
-        # remove the joints in robot model that are controlled by this IK controller
-        env_xml_str = self.sim.model.get_xml()
-        xml_str = deepcopy(self.robot_model.get_xml())
-        root = ET.fromstring(xml_str)
-        # remove base joint
-        for joint in root.findall(".//freejoint"):
-            find_parent(root, joint).remove(joint)
-        for joint in root.findall(".//joint"):
-            if joint.get("name") in self.others_controlled_joint_names:
-                find_parent(root, joint).remove(joint)
-        for motor in root.findall(".//motor"):
-            if motor.get("joint") in self.others_controlled_joint_names:
-                find_parent(root, motor).remove(motor)
-        for sensor in root.findall(".//jointpos"):
-            if sensor.get("joint") in self.others_controlled_joint_names:
-                find_parent(root, sensor).remove(sensor)
-        for sensor in root.findall(".//jointvel"):
-            if sensor.get("joint") in self.others_controlled_joint_names:
-                find_parent(root, sensor).remove(sensor)
-        for sensor in root.findall(".//jointactuatorfrc"):
-            if sensor.get("joint") in self.others_controlled_joint_names:
-                find_parent(root, sensor).remove(sensor)
-        robot_model = mujoco.MjModel.from_xml_string(ET.tostring(root, encoding="utf-8").decode("utf-8"))
-        mujoco.MjModel.from_xml_string(env_xml_str)
-        # TODO: try using spec to create the model
-
-        self.joint_action_policy = IKSolverMink(
-            model=self.sim.model._model,
-            data=self.sim.data._data,
-            site_names=(
-                self.composite_controller_specific_config["ref_name"]
-                if "ref_name" in self.composite_controller_specific_config
-                else default_site_names
-            ),
-            robot_model=robot_model,
-            robot_joint_names=joint_names,
-            # base_transform_joint=self.composite_controller_specific_config.get("base_transform_joint", None),
-            # others_controlled_joint_names=others_controlled_joint_names,
             input_type=self.composite_controller_specific_config.get("ik_input_type", "absolute"),
             input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
