@@ -322,7 +322,7 @@ class MobileRobot(Robot):
         for arm in self.arms:
 
             @sensor(modality=modality)
-            def base_to_eef_pos(obs_cache):
+            def base_to_eef_pos(obs_cache, arm=arm):
                 eef_pos = np.array(self.sim.data.site_xpos[self.eef_site_id[arm]])
                 base_pos = np.array(
                     self.sim.data.site_xpos[self.sim.model.site_name2id(self.robot_model.base.correct_naming("center"))]
@@ -339,7 +339,7 @@ class MobileRobot(Robot):
                 return base_to_eef_pos
 
             @sensor(modality=modality)
-            def base_to_eef_quat(obs_cache):
+            def base_to_eef_quat(obs_cache, arm=arm):
                 """
                 Args:
                     obs_cache (dict): A dictionary containing cached observations.
@@ -376,7 +376,7 @@ class MobileRobot(Robot):
                 return T.mat2quat(base_to_eef_mat)
 
             @sensor(modality=modality)
-            def base_to_eef_quat_site(obs_cache):
+            def base_to_eef_quat_site(obs_cache, arm=arm):
                 """
                 Args:
                     obs_cache (dict): A dictionary containing cached observations.
