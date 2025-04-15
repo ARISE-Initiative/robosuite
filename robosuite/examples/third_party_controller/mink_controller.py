@@ -148,6 +148,9 @@ class IKSolverMink:
         solve_freq: float = 20.0,
         hand_pos_cost: float = 1,
         hand_ori_cost: float = 0.5,
+        com_cost: float = 0.0,
+        use_mink_posture_task: bool = False,
+        initial_qpos_as_posture_target: bool = False,
     ):
         self.full_model: mujoco.MjModel = model
         self.full_model_data: mujoco.MjData = data
@@ -157,9 +160,11 @@ class IKSolverMink:
         self.posture_weights = posture_weights
         self.hand_pos_cost = hand_pos_cost
         self.hand_ori_cost = hand_ori_cost
-
+        self.com_cost = com_cost
+        self.use_mink_posture_task = use_mink_posture_task
         self.hand_tasks: List[mink.FrameTask]
         self.posture_task: WeightedPostureTask
+        self.com_task: mink.ComTask | None = None
 
         if robot_joint_names is None:
             robot_joint_names: List[str] = [
@@ -188,13 +193,20 @@ class IKSolverMink:
                 self.full_model.joint(name).qposadr[0] + np.arange(len(self.full_model.joint(name).qpos0))
             )
 
-        # self.robot_model_dof_ids: List[int] = np.array([self.robot_model.joint(name).id for name in robot_joint_names])
-        # self.full_model_dof_ids: List[int] = np.array([self.full_model.joint(name).id for name in robot_joint_names])
         self.site_ids = [self.robot_model.site(site_name).id for site_name in site_names]
-
         self.site_names = site_names
+
+        # update robot states
+        self.update_robot_states()
+
+        # setup tasks
         self._setup_tasks()
-        self.set_posture_target(np.zeros(self.robot_model.nq))
+        if initial_qpos_as_posture_target:
+            self.set_posture_target()
+        else:
+            self.set_posture_target(np.zeros(self.robot_model.nq))
+        if self.com_cost > 0.0:
+            self.set_com_target()
 
         self.solver = "quadprog"
 
@@ -228,7 +240,10 @@ class IKSolverMink:
             joint_dof_idx = joint.dofadr[0] + np.arange(len(joint.jntid))
             weights[joint_dof_idx] = posture_weight
 
-        self.posture_task = WeightedPostureTask(self.robot_model, cost=0.01, weights=weights, lm_damping=2)
+        if self.use_mink_posture_task:
+            self.posture_task = mink.PostureTask(self.robot_model, cost=weights * 0.1, lm_damping=1.0)
+        else:
+            self.posture_task = WeightedPostureTask(self.robot_model, cost=0.01, weights=weights, lm_damping=2)
 
         self.tasks = [self.posture_task]
 
@@ -236,6 +251,10 @@ class IKSolverMink:
             self.site_names, position_cost=self.hand_pos_cost, orientation_cost=self.hand_ori_cost
         )
         self.tasks.extend(self.hand_tasks)
+
+        if self.com_cost > 0.0:
+            self.com_task = mink.ComTask(cost=self.com_cost)
+            self.tasks.append(self.com_task)
 
     def _create_frame_tasks(self, frame_names: List[str], position_cost: float, orientation_cost: float):
         return [
@@ -249,13 +268,30 @@ class IKSolverMink:
             for frame in frame_names
         ]
 
+    def update_robot_states(self):
+        # update the base pose, important for mobile robots such as humanoids
+        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
+
+        # update the qpos for the robot model
+        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
+
     def set_target_poses(self, target_poses: List[np.ndarray]):
         for task, target in zip(self.hand_tasks, target_poses):
             se3_target = mink.SE3.from_matrix(target)
             task.set_target(se3_target)
 
-    def set_posture_target(self, posture_target: np.ndarray):
-        self.posture_task.set_target(posture_target)
+    def set_posture_target(self, posture_target: np.ndarray | None = None):
+        if posture_target is None:
+            self.posture_task.set_target_from_configuration(self.configuration)
+        else:
+            self.posture_task.set_target(posture_target)
+
+    def set_com_target(self, com_target: np.ndarray | None = None):
+        assert self.com_task is not None, "COM task is not initialized"
+        if com_target is None:
+            com_target = self.configuration.data.subtree_com[1]
+        self.com_task.set_target(com_target)
 
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
@@ -281,13 +317,8 @@ class IKSolverMink:
         if src_frame == dst_frame:
             return src_frame_pose
 
-        # Note that we should not update the model. To be fixed in the future.
-        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
-        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
-        self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
-        self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
-
-        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
+        self.robot_model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
+        self.robot_model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
 
         X_src_frame_pose = src_frame_pose
         # convert src frame pose to world frame pose
@@ -319,15 +350,7 @@ class IKSolverMink:
         we're requiring our tasks' targets to be in the 'world' frame for mink.solve_ik().
         """
 
-        # update configuration's base to match actual base
-        self.configuration.model.body("robot0_base").pos = self.full_model.body("robot0_base").pos
-        self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
-        self.configuration.data.body("robot0_base").xpos = self.full_model_data.body("robot0_base").xpos
-        self.configuration.data.body("robot0_base").xquat = self.full_model_data.body("robot0_base").xquat
-
-        # update configuration's qpos to match actual qpos.
-        # Note that, we update all qpos for the robot model, not just the ik-controlled joints for future whole-body control.
-        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
+        self.update_robot_states()
 
         input_action = input_action.reshape(len(self.site_names), -1)
         input_pos = input_action[:, : self.pos_dim]
@@ -546,5 +569,9 @@ class WholeBodyMinkIK(WholeBody):
             posture_weights=self.composite_controller_specific_config.get("ik_posture_weights", {}),
             hand_pos_cost=self.composite_controller_specific_config.get("ik_hand_pos_cost", 1.0),
             hand_ori_cost=self.composite_controller_specific_config.get("ik_hand_ori_cost", 0.5),
+            use_mink_posture_task=self.composite_controller_specific_config.get("use_mink_posture_task", False),
+            initial_qpos_as_posture_target=self.composite_controller_specific_config.get(
+                "initial_qpos_as_posture_target", False
+            ),
             verbose=self.composite_controller_specific_config.get("verbose", False),
         )
