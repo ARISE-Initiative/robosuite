@@ -107,7 +107,6 @@ class JointTorqueController(Controller):
         self.torques = None  # Torques returned every time run_controller is called
 
         self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
-        # print(self.part_name, self.use_torque_compensation)
 
     def set_goal(self, torques):
         """
