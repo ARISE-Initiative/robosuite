@@ -274,7 +274,10 @@ class IKSolverMink:
         self.configuration.model.body("robot0_base").quat = self.full_model.body("robot0_base").quat
 
         # update the qpos for the robot model
-        self.configuration.update(self.full_model_data.qpos[self.all_robot_qpos_indexes_in_full_model])
+        self.configuration.update(
+            self.full_model_data.qpos[self.controlled_robot_qpos_indexes_in_full_model],
+            self.controlled_robot_qpos_indexes,
+        )
 
     def set_target_poses(self, target_poses: List[np.ndarray]):
         for task, target in zip(self.hand_tasks, target_poses):
