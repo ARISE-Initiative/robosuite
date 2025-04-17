@@ -124,6 +124,8 @@ class JointVelocityController(Controller):
         self.current_vel = np.zeros(self.joint_dim)  # Current velocity setpoint, pre-compensation
         self.torques = None  # Torques returned every time run_controller is called
 
+        self.torque_compensation = kwargs.get("use_torque_compensation", True)
+
     def set_goal(self, velocities):
         """
         Sets goal based on input @velocities.
@@ -187,7 +189,12 @@ class JointVelocityController(Controller):
             self.summed_err += err
 
         # Compute command torques via PID velocity controller plus gravity compensation torques
-        torques = self.kp * err + self.ki * self.summed_err + self.kd * self.derr_buf.average + self.torque_compensation
+        if self.torque_compensation:
+            torques = (
+                self.kp * err + self.ki * self.summed_err + self.kd * self.derr_buf.average + self.torque_compensation
+            )
+        else:
+            torques = self.kp * err + self.ki * self.summed_err + self.kd * self.derr_buf.average
 
         # Clip torques
         self.torques = self.clip_torques(torques)
