@@ -26,7 +26,7 @@ elif PYOPENGL_PLATFORM.lower() != "egl":
     raise ImportError(
         "Cannot use EGL rendering platform. "
         "The PYOPENGL_PLATFORM environment variable is set to {!r} "
-        "(should be either unset or 'egl')."
+        "(should be either unset or 'egl').".format(PYOPENGL_PLATFORM)
     )
 
 from mujoco.egl import egl_ext as EGL
