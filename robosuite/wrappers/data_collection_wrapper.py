@@ -145,7 +145,7 @@ class DataCollectionWrapper(Wrapper):
         Returns:
             OrderedDict: Environment observation space after reset occurs
         """
-        self.env.unset_ep_meta() # unset any episode meta data that was previously set
+        self.env.unset_ep_meta()  # unset any episode meta data that was previously set
         ret = super().reset()
         self._start_new_episode()
         return ret
