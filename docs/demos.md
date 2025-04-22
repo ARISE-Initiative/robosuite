@@ -121,6 +121,12 @@ The `demo_device_control.py` scripts shows how to teleoperate robot with [contro
         This current implementation only supports macOS (Linux support can be added).
         Download and install the [driver](https://www.3dconnexion.com/service/drivers.html) before running the script.
 
+* **DualSense**
+    We use the DualSense joystick from [DualSense](https://www.playstation.com/en-us/accessories/dualsense-wireless-controller/) to control the end-effector of the robot. The joystick provides 6-DoF control commands.
+
+    **Note:**
+        Make sure `hidapi` can detect your DualSense in your computer. In Linux, you may add udev rules in `/etc/udev/rules.d` to get access to the device without root privilege. For the rules content you can refer to [game-device-udev](https://codeberg.org/fabiscafe/game-devices-udev).
+
 * **Mujoco GUI**
         The Mujoco GUI provides a graphical user interface for viewing and interacting with a mujoco simulation. We use the GUI and a mouse to drag and drop mocap bodies, whose
         poses are tracked by a controller. More specifically, once the mujoco GUI is loaded from running `python demo_device_control.py`, you first need to hit the <Tab> key to reach the interactive mujoco viewer state. Then, you should double click on
@@ -174,7 +180,7 @@ The `demo_renderers.py` script shows how to use different renderers with the sim
 ```sh
 $ python demo_renderers.py --renderer default
 ```
-The `--renderer` flag can be set to `mujoco` or `default(default)
+The `--renderer` flag can be set to `mujoco` or `default`
 
 ### Exporting to USD
 Exporting to USD allows users to render **robosuite** trajectories in external renderers such as NVIDIA Omniverse and Blender. In order to export to USD you must install the required dependencies for the exporter.

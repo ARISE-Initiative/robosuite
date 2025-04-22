@@ -148,7 +148,7 @@ class Robot(object):
         """
         for part_name, controller_config in self.composite_controller_config.get("body_parts", {}).items():
             if not self.has_part(part_name):
-                ROBOSUITE_DEFAULT_LOGGER.warn(
+                ROBOSUITE_DEFAULT_LOGGER.warning(
                     f'The config has defined for the controller "{part_name}", '
                     "but the robot does not have this component. Skipping, but make sure this is intended."
                     f"Removing the controller config for {part_name} from self.part_controller_config."
@@ -359,7 +359,7 @@ class Robot(object):
         sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
         names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [False, True, True, True]
+        actives = [True, True, True, True]
 
         for arm in self.arms:
             arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
@@ -510,7 +510,7 @@ class Robot(object):
             zip(self.sim.data.qpos[self._ref_joint_pos_indexes], self.sim.model.jnt_range[self._ref_joint_indexes])
         ):
             if q_limits[0] != q_limits[1] and not (q_limits[0] + tolerance < q < q_limits[1] - tolerance):
-                ROBOSUITE_DEFAULT_LOGGER.warn("Joint limit reached in joint " + str(qidx))
+                ROBOSUITE_DEFAULT_LOGGER.warning("Joint limit reached in joint " + str(qidx))
                 return True
         return False
 

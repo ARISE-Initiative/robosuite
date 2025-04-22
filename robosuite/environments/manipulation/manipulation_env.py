@@ -5,6 +5,7 @@ from robosuite.environments.robot_env import RobotEnv
 from robosuite.models.base import MujocoModel
 from robosuite.models.grippers import GripperModel
 from robosuite.robots import ROBOT_CLASS_MAPPING, FixedBaseRobot, MobileRobot
+from robosuite.robots.legged_robot import LeggedRobot
 from robosuite.utils.observables import Observable, sensor
 
 
@@ -58,9 +59,9 @@ class ManipulationEnv(RobotEnv):
 
         has_offscreen_renderer (bool): True if using off-screen rendering
 
-        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+        render_camera (str or list of str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
             will result in the default angle being applied, which is useful as it can be dragged / panned by
-            the user using the mouse
+            the user using the mouse. When a list of strings is provided, it will render from multiple camera angles.
 
         render_collision_mesh (bool): True if rendering collision meshes in camera. False otherwise.
 
@@ -486,5 +487,5 @@ class ManipulationEnv(RobotEnv):
             robots = [robots]
         for robot in robots:
             assert issubclass(ROBOT_CLASS_MAPPING[robot], FixedBaseRobot) or issubclass(
-                ROBOT_CLASS_MAPPING[robot], MobileRobot
+                ROBOT_CLASS_MAPPING[robot], MobileRobot or issubclass(ROBOT_CLASS_MAPPING[robot], LeggedRobot)
             ), f"Only manipulator robots supported for manipulation environment! Got {ROBOT_CLASS_MAPPING[robot]}"

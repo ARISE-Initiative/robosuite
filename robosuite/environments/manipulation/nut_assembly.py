@@ -159,9 +159,11 @@ class NutAssembly(ManipulationEnv):
         env_configuration="default",
         controller_configs=None,
         gripper_types="default",
+        base_types="default",
         initialization_noise="default",
         table_full_size=(0.8, 0.8, 0.05),
         table_friction=(1, 0.005, 0.0001),
+        table_offset=(0, 0, 0.82),
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -202,7 +204,7 @@ class NutAssembly(ManipulationEnv):
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
-        self.table_offset = np.array((0, 0, 0.82))
+        self.table_offset = table_offset
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -218,7 +220,7 @@ class NutAssembly(ManipulationEnv):
             robots=robots,
             env_configuration=env_configuration,
             controller_configs=controller_configs,
-            base_types="default",
+            base_types=base_types,
             gripper_types=gripper_types,
             initialization_noise=initialization_noise,
             use_camera_obs=use_camera_obs,
