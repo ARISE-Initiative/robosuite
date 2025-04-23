@@ -21,8 +21,7 @@ class Device(metaclass=abc.ABCMeta):
                             using this device.
         """
         self.env = env
-        self.all_robot_arms = [robot.arms for robot in self.env.robots]
-        self.num_robots = len(self.all_robot_arms)
+        self._all_robot_arms = None
 
     def _reset_internal_state(self):
         """
@@ -34,6 +33,16 @@ class Device(metaclass=abc.ABCMeta):
         self.base_modes = [False] * len(self.all_robot_arms)
 
         self._prev_target = {arm: None for arm in self.all_robot_arms[self.active_robot]}
+
+    @property
+    def all_robot_arms(self):
+        if self._all_robot_arms is None:
+            self._all_robot_arms = [robot.arms for robot in self.env.robots]
+        return self._all_robot_arms
+
+    @property
+    def num_robots(self):
+        return len(self.all_robot_arms)
 
     @property
     def active_arm(self):

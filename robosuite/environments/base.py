@@ -82,6 +82,8 @@ class MujocoEnv(metaclass=EnvMeta):
         ignore_done (bool): True if never terminating the environment (ignore @horizon).
         hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
             only calls sim.reset and resets all robosuite-internal variables
+        load_model_on_init (bool): If True, load and initialize the model and renderer in __init__ constructor,
+            else, initialize these components in the first call to reset()
         renderer (str): string for the renderer to use
         renderer_config (dict): dictionary for the renderer configurations
         seed (int): environment seed. Default is None, where environment is unseeded, ie. random
@@ -102,6 +104,7 @@ class MujocoEnv(metaclass=EnvMeta):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
+        load_model_on_init=True,
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
@@ -143,31 +146,44 @@ class MujocoEnv(metaclass=EnvMeta):
 
         self._ep_meta = {}
 
-        # Load the model
-        self._load_model()
+        self.load_model_on_init = load_model_on_init
 
-        # Initialize the simulation
-        self._initialize_sim()
+        # variable to keep track of whether the env has been fully initialized
+        self._env_is_initialized = False
 
-        # initializes the rendering
-        self.initialize_renderer()
+        if self.load_model_on_init:
+            # Load the model
+            self._load_model()
 
-        # the variables will be set later.
-        # need to set to None, in case these variables are referenced before being set
-        self.viewer = None
-        self.viewer_get_obs = None
+            # Initialize the simulation
+            self._initialize_sim()
 
-        # Run all further internal (re-)initialization required
-        self._reset_internal()
+            # initializes the rendering
+            self.initialize_renderer()
 
-        # Load observables
-        if hasattr(self.viewer, "_setup_observables"):
-            self._observables = self.viewer._setup_observables()
+            # the variables will be set later.
+            # need to set to None, in case these variables are referenced before being set
+            self.viewer = None
+            self.viewer_get_obs = None
+
+            # Run all further internal (re-)initialization required
+            self._reset_internal()
+
+            # Load observables
+            if hasattr(self.viewer, "_setup_observables"):
+                self._observables = self.viewer._setup_observables()
+            else:
+                self._observables = self._setup_observables()
+
+            # check if viewer has get observations method and set a flag for future use.
+            self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
+            self._env_is_initialized = True
         else:
-            self._observables = self._setup_observables()
-
-        # check if viewer has get observations method and set a flag for future use.
-        self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
+            # the variables will be set later.
+            # need to set to None, in case these variables are referenced before being set
+            self.sim = None
+            self.viewer = None
+            self.viewer_get_obs = None
 
     def initialize_renderer(self):
         self.renderer = self.renderer.lower()
@@ -271,7 +287,7 @@ class MujocoEnv(metaclass=EnvMeta):
         if self.renderer == "mjviewer":
             self._destroy_viewer()
 
-        if self.hard_reset and not self.deterministic_reset:
+        if (self.sim is None) or (self.hard_reset and not self.deterministic_reset):
             if self.renderer == "mujoco":
                 self._destroy_viewer()
                 self._destroy_sim()
@@ -281,9 +297,33 @@ class MujocoEnv(metaclass=EnvMeta):
         else:
             self.sim.reset()
 
-        # Reset necessary robosuite-centric variables
-        self._reset_internal()
-        self.sim.forward()
+        if self._env_is_initialized is True:
+            # Reset necessary robosuite-centric variables
+            self._reset_internal()
+            self.sim.forward()
+        else:
+            # initializes the rendering
+            self.initialize_renderer()
+
+            # the variables will be set later.
+            # need to set to None, in case these variables are referenced before being set
+            self.viewer = None
+            self.viewer_get_obs = None
+
+            # Run all further internal (re-)initialization required
+            self._reset_internal()
+            self.sim.forward()
+
+            # Load observables
+            if hasattr(self.viewer, "_setup_observables"):
+                self._observables = self.viewer._setup_observables()
+            else:
+                self._observables = self._setup_observables()
+
+            # check if viewer has get observations method and set a flag for future use.
+            self.viewer_get_obs = hasattr(self.viewer, "_get_observations")
+            self._env_is_initialized = True
+
         # Setup observables, reloading if
         self._obs_cache = {}
         self._reset_observables()

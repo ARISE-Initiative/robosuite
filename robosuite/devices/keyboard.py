@@ -23,7 +23,6 @@ class Keyboard(Device):
         super().__init__(env)
 
         self._display_controls()
-        self._reset_internal_state()
 
         self._reset_state = 0
         self._enabled = False

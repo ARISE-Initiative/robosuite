@@ -78,6 +78,9 @@ class RobotEnv(MujocoEnv):
         hard_reset (bool): If True, re-loads model, sim, and render object upon a reset call, else,
             only calls sim.reset and resets all robosuite-internal variables
 
+        load_model_on_init (bool): If True, load and initialize the model and renderer in __init__ constructor,
+            else, initialize these components in the first call to reset()
+
         camera_names (str or list of str): name of camera to be rendered. Should either be single str if
             same name is to be used for all cameras' rendering or else it should be a list of cameras to render.
 
@@ -139,6 +142,7 @@ class RobotEnv(MujocoEnv):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
+        load_model_on_init=True,
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
@@ -230,6 +234,7 @@ class RobotEnv(MujocoEnv):
             horizon=horizon,
             ignore_done=ignore_done,
             hard_reset=hard_reset,
+            load_model_on_init=load_model_on_init,
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
