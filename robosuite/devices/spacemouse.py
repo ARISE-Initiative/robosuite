@@ -141,6 +141,7 @@ class SpaceMouse(Device):
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
+        self._running = True
 
         print("Manufacturer: %s" % self.device.get_manufacturer_string())
         print("Product: %s" % self.device.get_product_string())
@@ -247,7 +248,7 @@ class SpaceMouse(Device):
 
         t_last_click = -1
 
-        while True:
+        while self._running:
             d = self.device.read(13)
             if d is not None and self._enabled:
 
@@ -312,6 +313,15 @@ class SpaceMouse(Device):
                         self._reset_state = 1
                         self._enabled = False
                         self._reset_internal_state()
+            if not self._running: break
+
+    def close(self):
+        self._running = False
+        time.sleep(1.5)
+        if self.thread and self.thread.is_alive():
+            self.thread.join()
+        if self.device:
+            self.device.close()
 
     @property
     def control(self):
@@ -370,6 +380,14 @@ class SpaceMouse(Device):
 
         return dpos, drotation
 
+    def is_empty_input(self, action_dict):
+        if (
+            np.all(action_dict["right_delta"] == 0)
+            and action_dict["base_mode"] == -1
+            and np.all(action_dict["base"] == 0)
+        ):
+            return True
+        return False
 
 if __name__ == "__main__":
 
