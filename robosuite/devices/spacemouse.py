@@ -313,7 +313,8 @@ class SpaceMouse(Device):
                         self._reset_state = 1
                         self._enabled = False
                         self._reset_internal_state()
-            if not self._running: break
+            if not self._running:
+                break
 
     def close(self):
         self._running = False
