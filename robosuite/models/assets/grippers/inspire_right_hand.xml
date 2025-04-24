@@ -81,7 +81,7 @@
                 <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
                 <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
                 <!-- This site was added for visualization. -->
-                <site name="grip_site_cylinder" pos="0 0 0" quat="-0.5 -0.5 -0.5 0.5" size="0.005 0.5" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+                <site name="grip_site_cylinder" pos="0 0 0" quat="-0.5 -0.5 -0.5 0.5" size="0.005 0.5" rgba="0 1 0 0" type="cylinder" group="1"/>
             </body>
 
 
@@ -91,7 +91,10 @@
                 <geom name="r_palm_vis" type="mesh" mesh="r_palm_vis" material="r_base_material" group="1" contype="0" conaffinity="0"/>
                 <!-- Palm Collision -->
                 <geom name="r_palm_col" type="mesh" mesh="r_palm_col" mass="0.1" />
-
+                <site name="r_pinch_sphere_0" pos="-0.06 -0.12 -0.03" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
+                <site name="r_pinch_sphere_1" pos="-0.06 -0.12 -0.01" size="0.01 0.01 0.01" rgba="1 0.5 0.5 0.5" type="sphere" group="1"/>
+                <site name="r_pinch_sphere_2" pos="-0.06 -0.12 0.01" size="0.01 0.01 0.01" rgba="1 0.5 0.5 0.5" type="sphere" group="1"/>
+                <site name="r_pinch_sphere_3" pos="-0.06 -0.12 0.03" size="0.01 0.01 0.01" rgba="1 0.5 0.5 0.5" type="sphere" group="1"/>
                 <!-- Thumb -->
                 <body name="r_thumb" pos="0. 0. 0.">
                     <!-- Thumb Proximal 1 -->
@@ -121,6 +124,7 @@
                                     <geom name="r_thumb_distal_vis" type="mesh" mesh="r_thumb_distal_vis" material="r_thumb_distal_material" group="1" contype="0" conaffinity="0"> </geom>
                                     <geom name="r_thumb_distal_col" type="mesh" mesh="r_thumb_distal_col" mass="0.1" />
                                     <site name="site_r_thumb_distal" size="0.01" material="site_right_hand"/>
+                                    <site name="r_thumb_distal_site_cylinder" pos="0.04242 0.04242 -0.006" quat="0.7071 -0.5 0.5 0" size="0.002 0.06" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                                 </body>
                                 <!-- End of Thumb Distal -->
                             </body>
@@ -146,6 +150,7 @@
                             <site name="site_r_index_distal" size="0.01" material="site_right_hand"/>
                             <geom name="r_index_distal_vis" type="mesh" mesh="r_index_distal_vis" material="r_index_material" group="1" contype="0" conaffinity="0"/>
                              <geom name="r_index_distal_col" type="mesh" mesh="r_index_distal_col" mass="0.1" />
+                            <site name="r_index_distal_site_cylinder" pos="0 0.06 -0.005" quat="0.7071 0.7071 0 0" size="0.002 0.06" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                         </body>
                         <!-- End of Index Distal -->
                     </body>
@@ -166,6 +171,7 @@
                             <site name="site_r_middle_distal" size="0.01" material="site_right_hand"/>
                             <geom name="r_middle_distal_vis" type="mesh" mesh="r_middle_distal_vis" material="r_middle_material" group="1" contype="0" conaffinity="0"/>
                              <geom name="r_middle_distal_col" type="mesh" mesh="r_middle_distal_col" mass="0.1" />
+                            <site name="r_middle_distal_site_cylinder" pos="0 0.06 -0.005" quat="0.7071 0.7071 0 0" size="0.002 0.06" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                         </body>
                         <!-- End of Middle Distal -->
                     </body>
@@ -187,6 +193,7 @@
                             <site name="site_r_ring_distal" size="0.01" material="site_right_hand"/>
                             <geom name="r_ring_distal_vis" type="mesh" mesh="r_ring_distal_vis" material="r_ring_material" group="1" contype="0" conaffinity="0"/>
                             <geom name="r_ring_distal_col" type="mesh" mesh="r_ring_distal_col" mass="0.1" />
+                            <site name="r_ring_distal_site_cylinder" pos="0 0.06 -0.005" quat="0.7071 0.7071 0 0" size="0.002 0.06" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                         </body>
                         <!-- End of Ring Distal -->
                     </body>
@@ -208,6 +215,7 @@
                             <site name="site_r_pinky_distal" size="0.01" material="site_right_hand"/>
                             <geom name="r_pinky_distal_vis" type="mesh" mesh="r_pinky_distal_vis" material="r_pinky_material" group="1" contype="0" conaffinity="0"/>
                             <geom name="r_pinky_distal_col" type="mesh" mesh="r_pinky_distal_col" mass="0.1" />
+                            <site name="r_pinky_distal_site_cylinder" pos="0 0.06 -0.005" quat="0.7071 0.7071 0 0" size="0.002 0.06" rgba="0 1 0 0.3" type="cylinder" group="1"/>
                         </body>
                         <!-- End of Pinky Distal -->
                     </body>
