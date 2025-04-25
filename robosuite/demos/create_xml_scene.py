@@ -81,12 +81,13 @@ if __name__ == "__main__":
 
     # Reload the object positions to save the updated scene state.
     # NOTE: This is a hacky way to save the object placements. The saved scene might differ from what is rendered.
-    object_placements = env.placement_initializer.sample()
-    for obj_pos, obj_quat, obj in object_placements.values():
-        # Get the body id for the object's root body
-        body_id = env.sim.model.body_name2id(obj.root_body)
-        env.sim.model._model.body_pos[body_id] = np.array(obj_pos)
-        env.sim.model._model.body_quat[body_id] = np.array(obj_quat)
+    if hasattr(env, "placement_initializer"):
+        object_placements = env.placement_initializer.sample()
+        for obj_pos, obj_quat, obj in object_placements.values():
+            # Get the body id for the object's root body
+            body_id = env.sim.model.body_name2id(obj.root_body)
+            env.sim.model._model.body_pos[body_id] = np.array(obj_pos)
+            env.sim.model._model.body_quat[body_id] = np.array(obj_quat)
 
     # Determine the output filename
     if args.output:
