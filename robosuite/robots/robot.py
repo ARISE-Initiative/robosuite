@@ -356,10 +356,14 @@ class Robot(object):
         def joint_vel(obs_cache):
             return np.array([self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes])
 
-        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
-        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
+        @sensor(modality=modality)
+        def joint_acc(obs_cache):
+            return np.array([self.sim.data.qacc[x] for x in self._ref_joint_vel_indexes])
+
+        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel, joint_acc]
+        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel", "joint_acc"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [True, True, True, True]
+        actives = [True, True, True, True, True]
 
         for arm in self.arms:
             arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
