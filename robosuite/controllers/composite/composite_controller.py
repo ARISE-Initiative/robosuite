@@ -123,7 +123,8 @@ class CompositeController:
 
     def get_controller_base_pose(self, controller_name):
         """
-        Get the base position and orientation of a specified controller's part.
+        Get the base position and orientation of a specified controller's part. Note: this pose may likely differ from
+        the robot's base itself.
     
         Args:
             controller_name (str): The name of the controller, used to look up part-specific information.
