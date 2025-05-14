@@ -666,7 +666,35 @@ may only be verified once the part controller are initialized.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.composite.composite_controller.CompositeController.get_controller_base_pose">
 <span class="sig-name descname"><span class="pre">get_controller_base_pose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controller_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.composite.composite_controller.CompositeController.get_controller_base_pose" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>Get the base position and orientation of a specified controller’s part. Note: this pose may likely differ from
+the robot base’s pose.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>controller_name</strong> (<em>str</em>) – The name of the controller, used to look up part-specific information.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing:</dt><dd><ul class="simple">
+<li><p>base_pos (np.ndarray): The 3D position of the part’s center in world coordinates (shape: (3,)).</p></li>
+<li><p>base_ori (np.ndarray): The 3x3 rotation matrix representing the part’s orientation in world coordinates.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple[np.ndarray, np.ndarray]</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Details:</dt><dd><ul class="simple">
+<li><p>Uses the controller’s <cite>naming_prefix</cite> and <cite>part_name</cite> to construct the corresponding site name.</p></li>
+<li><p>Queries the simulation (<cite>self.sim</cite>) for the site’s position (<cite>site_xpos</cite>) and orientation (<cite>site_xmat</cite>).</p></li>
+<li><p>The site orientation matrix is reshaped from a flat array of size 9 to a 3x3 rotation matrix.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.composite.composite_controller.CompositeController.update_state">
