@@ -77,6 +77,7 @@ class DataCollectionWrapper(Wrapper):
 
         # trick for ensuring that we can play MuJoCo demonstrations back
         # deterministically by using the recorded actions open loop
+        self.env.set_ep_meta(self.env.get_ep_meta())
         self.env.reset_from_xml_string(self._current_task_instance_xml)
         self.env.sim.reset()
         self.env.sim.set_state_from_flattened(self._current_task_instance_state)
@@ -144,6 +145,7 @@ class DataCollectionWrapper(Wrapper):
         Returns:
             OrderedDict: Environment observation space after reset occurs
         """
+        self.env.unset_ep_meta()  # unset any episode meta data that was previously set
         ret = super().reset()
         self._start_new_episode()
         return ret
