@@ -231,7 +231,7 @@ class Robot(object):
         """
         self.sim = sim
 
-    def reset(self, deterministic=False):
+    def reset(self, deterministic=False, rng=None):
         """
         Sets initial pose of arm and grippers. Overrides robot joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
@@ -242,13 +242,15 @@ class Robot(object):
         Raises:
             ValueError: [Invalid noise type]
         """
+        if rng is None:
+            rng = np.random.default_rng()
         init_qpos = np.array(self.init_qpos)
         if not deterministic:
             # Determine noise
             if self.initialization_noise["type"] == "gaussian":
-                noise = np.random.randn(len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = rng.standard_normal(len(self.init_qpos)) * self.initialization_noise["magnitude"]
             elif self.initialization_noise["type"] == "uniform":
-                noise = np.random.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = rng.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
             else:
                 raise ValueError("Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'.")
             init_qpos += noise

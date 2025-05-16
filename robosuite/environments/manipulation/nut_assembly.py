@@ -189,6 +189,7 @@ class NutAssembly(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -242,6 +243,7 @@ class NutAssembly(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed
         )
 
     def reward(self, action=None):
@@ -424,6 +426,7 @@ class NutAssembly(ManipulationEnv):
                         ensure_valid_placement=True,
                         reference_pos=self.table_offset,
                         z_offset=0.02,
+                        rng=self.rng
                     )
                 )
         # Reset sampler before adding any new samplers / objects
@@ -597,7 +600,7 @@ class NutAssembly(ManipulationEnv):
         # Move objects out of the scene depending on the mode
         nut_names = {nut.name for nut in self.nuts}
         if self.single_object_mode == 1:
-            self.obj_to_use = random.choice(list(nut_names))
+            self.obj_to_use = self.rng.choice(list(nut_names))
             for nut_type, i in self.nut_to_id.items():
                 if nut_type.lower() in self.obj_to_use.lower():
                     self.nut_id = i

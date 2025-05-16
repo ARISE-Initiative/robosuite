@@ -36,7 +36,11 @@ class ObjectPositionSampler:
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
         z_offset=0.0,
+        rng=None
     ):
+        if rng is None:
+            rng = np.random.default_rng()
+        self.rng = rng
         # Setup attributes
         self.name = name
         if mujoco_objects is None:
@@ -135,6 +139,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
         z_offset=0.0,
+        rng=None
     ):
         self.x_range = x_range
         self.y_range = y_range
@@ -148,6 +153,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             ensure_valid_placement=ensure_valid_placement,
             reference_pos=reference_pos,
             z_offset=z_offset,
+            rng=rng
         )
 
     def _sample_x(self, object_horizontal_radius):
@@ -164,7 +170,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
-        return np.random.uniform(high=maximum, low=minimum)
+        return self.rng.uniform(high=maximum, low=minimum)
 
     def _sample_y(self, object_horizontal_radius):
         """
@@ -180,7 +186,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         if self.ensure_object_boundary_in_range:
             minimum += object_horizontal_radius
             maximum -= object_horizontal_radius
-        return np.random.uniform(high=maximum, low=minimum)
+        return self.rng.uniform(high=maximum, low=minimum)
 
     def _sample_quat(self):
         """
@@ -193,9 +199,9 @@ class UniformRandomSampler(ObjectPositionSampler):
             ValueError: [Invalid rotation axis]
         """
         if self.rotation is None:
-            rot_angle = np.random.uniform(high=2 * np.pi, low=0)
+            rot_angle = self.rng.uniform(high=2 * np.pi, low=0)
         elif isinstance(self.rotation, collections.abc.Iterable):
-            rot_angle = np.random.uniform(high=max(self.rotation), low=min(self.rotation))
+            rot_angle = self.rng.uniform(high=max(self.rotation), low=min(self.rotation))
         else:
             rot_angle = self.rotation
 

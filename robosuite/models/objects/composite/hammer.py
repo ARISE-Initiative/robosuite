@@ -40,6 +40,8 @@ class HammerObject(CompositeObject):
 
         rgba_claw (4-array or None): If specified, sets handle rgba values
 
+        rng (self.rng.RandomState): Random number generator to use for sampling. If None, will use self.rng.default_rng()
+
     Raises:
         ValueError: [Invalid handle shape]
     """
@@ -58,7 +60,11 @@ class HammerObject(CompositeObject):
         rgba_head=None,
         rgba_face=None,
         rgba_claw=None,
+        rng=None
     ):
+        if rng is None:
+            rng = np.random.default_rng()
+        self.rng = rng
         # Set name
         self._name = name
 
@@ -73,11 +79,11 @@ class HammerObject(CompositeObject):
         self.handle_friction_range = handle_friction if isinstance(handle_friction, Iterable) else [handle_friction] * 2
 
         # Sample actual radius and length, as well as head half-size
-        self.handle_radius = np.random.uniform(self.handle_radius_range[0], self.handle_radius_range[1])
-        self.handle_length = np.random.uniform(self.handle_length_range[0], self.handle_length_range[1])
-        self.handle_density = np.random.uniform(self.handle_density_range[0], self.handle_density_range[1])
-        self.handle_friction = np.random.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
-        self.head_halfsize = np.random.uniform(self.handle_radius, self.handle_radius * 1.2)
+        self.handle_radius = self.rng.uniform(self.handle_radius_range[0], self.handle_radius_range[1])
+        self.handle_length = self.rng.uniform(self.handle_length_range[0], self.handle_length_range[1])
+        self.handle_density = self.rng.uniform(self.handle_density_range[0], self.handle_density_range[1])
+        self.handle_friction = self.rng.uniform(self.handle_friction_range[0], self.handle_friction_range[1])
+        self.head_halfsize = self.rng.uniform(self.handle_radius, self.handle_radius * 1.2)
 
         # Initialize RGBA values and texture flag
         self.use_texture = use_texture
@@ -227,7 +233,7 @@ class HammerObject(CompositeObject):
             np.array: (x, y, z, w) quaternion orientation for the hammer
         """
         # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
-        return np.array([0.5, -0.5, 0.5, -0.5]) if np.random.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
+        return np.array([0.5, -0.5, 0.5, -0.5]) if self.rng.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
 
     @property
     def handle_geoms(self):

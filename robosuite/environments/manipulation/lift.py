@@ -175,6 +175,7 @@ class Lift(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -217,6 +218,7 @@ class Lift(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -312,6 +314,7 @@ class Lift(ManipulationEnv):
             size_max=[0.022, 0.022, 0.022],  # [0.018, 0.018, 0.018])
             rgba=[1, 0, 0, 1],
             material=redwood,
+            rng=self.rng
         )
 
         # Create placement initializer
@@ -329,6 +332,7 @@ class Lift(ManipulationEnv):
                 ensure_valid_placement=True,
                 reference_pos=self.table_offset,
                 z_offset=0.01,
+                rng=self.rng
             )
 
         # task includes arena, robot, and objects of interest
