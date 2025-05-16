@@ -18,7 +18,7 @@ setup(
         "numpy>=1.13.3",
         "numba>=0.49.1",
         "scipy>=1.2.3",
-        "mujoco>=3.2.3",
+        "mujoco>=3.3.0",
         "mink>=0.0.5",
         "Pillow",
         "opencv-python",

@@ -9,7 +9,7 @@
     <material name="Material.003" specular="0.5" shininess="0.225" rgba="0.640000 0.000000 0.000000 1.000000"/>
     <material name="Material_001.003" specular="0.5" shininess="0.225" rgba="0.000000 0.000000 0.000000 1.000000"/>
     <mesh name="H1_0" file="obj_meshes/head/H1/H1_0.obj"/>
-    <mesh name="H1_1" file="obj_meshes/head/H1/H1_1.obj"/>
+    <mesh name="H1_1" file="obj_meshes/head/H1/H1_1.obj" inertia="shell"/>
     <!-- lower elbow E1 material and mesh -->
     <material name="Material_001.004" specular="0.5" shininess="0.225" rgba="0.512000 0.000000 0.000000 1.000000"/>
     <material name="Material_002" specular="0.5" shininess="0.225" rgba="0.016303 0.016303 0.016303 1.000000"/>
