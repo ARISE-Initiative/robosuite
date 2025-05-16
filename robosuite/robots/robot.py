@@ -912,7 +912,7 @@ class Robot(object):
                 self.part_controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
                 self.part_controller_config[gripper_name]["policy_freq"] = self.control_freq
                 self.part_controller_config[gripper_name]["joint_indexes"] = {
-                    "joints": self.gripper_joints[arm],
+                    "joints": self._ref_joints_indexes_dict[gripper_name],
                     "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
                     "qvel": self._ref_gripper_joint_vel_indexes[arm],
