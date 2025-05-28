@@ -94,7 +94,7 @@ import time
 import numpy as np
 
 import robosuite as suite
-from robosuite import load_composite_controller_config
+from robosuite.controllers import load_composite_controller_config
 from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import VisualizationWrapper
 
