@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="tbar">
+  <asset>
+    <mesh name="tbar_mesh" file="meshes/tbar.stl" scale="1 1 1"/>
+    <material name="plastic_cyan" rgba="0.25 0.95 0.85 1" specular="0.2" shininess="0.5"/>
+    <material name="plastic_red" rgba="1 0 0 0.2" specular="0.2" shininess="0.5"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom pos="0 -0.045 0" size="0.015 0.075 0.012" type="box" group="0" material="plastic_cyan"/>
+
+        <geom pos="0 0.015 0" size="0.075 0.015 0.012" type="box" group="0" material="plastic_cyan"/>
+
+        <!-- <geom pos="0 0 0" quat="0.7071068 0.7071068 0 0" mesh="tbar_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="1 0 0" group="0" condim="4" material="plastic_cyan"/> -->
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 -0.04 -0.04" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 -0.04 0.04" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0.05 0.0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>

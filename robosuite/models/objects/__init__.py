@@ -3,6 +3,7 @@ from .generated_objects import CompositeBodyObject, CompositeObject, PrimitiveOb
 from .object_groups import ObjectGroup
 
 from .xml_objects import (
+    TBarObject,
     BottleObject,
     CanObject,
     LemonObject,
