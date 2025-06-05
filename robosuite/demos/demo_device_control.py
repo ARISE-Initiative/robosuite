@@ -235,9 +235,45 @@ if __name__ == "__main__":
     else:
         raise Exception("Invalid device choice: choose either 'keyboard', 'dualsene' or 'spacemouse'.")
 
+    def snapshot_model_and_data(sim):
+        snap = {}
+        # grab everything in sim.model that’s a numpy array
+        for attr in dir(sim.model):
+            if attr.startswith("_"): continue
+            val = getattr(sim.model, attr)
+            if isinstance(val, np.ndarray):
+                snap[f"model.{attr}"] = val.copy()
+        # grab everything in sim.data that’s a numpy array
+        for attr in dir(sim.data):
+            if attr.startswith("_"): continue
+            val = getattr(sim.data, attr)
+            if isinstance(val, np.ndarray):
+                snap[f"data.{attr}"] = val.copy()
+        return snap
+
     while True:
         # Reset the environment
         obs = env.reset()
+        presnap = snapshot_model_and_data(env.sim)
+        _current_task_instance_xml = env.sim.model.get_xml() 
+        # _current_task_instance_xml2 = env.sim.global_xml_str
+        # print(f"Current task instance XML2:\n{_current_task_instance_xml2}")
+        # print(f"Current task instance XML:\n{_current_task_instance_xml}")
+        # assert env.sim.global_xml_str is not None, "GLOBAL_XML_STRING is None, cannot restore state"
+        _current_task_instance_state = np.array(env.sim.get_state().flatten())
+        env.reset_from_xml_string(_current_task_instance_xml)
+        env.sim.reset()
+        env.sim.set_state_from_flattened(_current_task_instance_state)
+        env.sim.forward()
+        
+        post_post_snap = snapshot_model_and_data(env.sim)
+
+        for k, before_val in presnap.items():
+            after_val = post_post_snap.get(k)
+            if after_val.shape != before_val.shape or not np.allclose(before_val, after_val):
+                print(f"Failed to restore {k}: {before_val.shape} vs {after_val.shape} or not close")
+                print(f"Before: {before_val}\nAfter: {after_val}")
+            
 
         # Setup rendering
         cam_id = 0
@@ -298,6 +334,39 @@ if __name__ == "__main__":
 
             env.step(env_action)
             env.render()
+            # model = env.sim.model
+            # data  = env.sim.data
+            # print(f"nu (ctrl length) = {model.nu}\n")
+
+            # for i in [15, 16, 17]:
+            #     name      = model.actuator_names[i]
+            #     trn_type  = model.actuator_trntype[i]            # 0=motor, 1=position, 2=velocity, 3=general
+            #     gear      = model.actuator_gear[i]               # how big the actuation gain is
+            #     lo, hi    = model.actuator_ctrlrange[i]          # your clipping bounds
+            #     force     = data.actuator_force[i]               # what MuJoCo actually applied last step
+            #     print(
+            #         f"{i} {name}   type={trn_type}   gear={gear} force={force}"
+            #     )
+            sim = env.sim
+            mobile_joints = [
+                "mobilebase0_joint_mobile_side",
+            ]
+            for jname in mobile_joints:
+                # 1) get the joint index and its corresponding dof index
+                jidx   = sim.model.joint_name2id(jname)
+                dofidx = sim.model.jnt_dofadr[jidx]       # address into qvel, qacc, and the dof_* arrays
+
+                # 2) read out the various bits
+                damping      = sim.model.dof_damping[dofidx]
+                frictionloss = sim.model.dof_frictionloss[dofidx]   # this is your XML frictionloss="250"
+                qfrc_bias    = sim.data.qfrc_bias[dofidx]           # sum of gravity+Coriolis+damping+friction
+                qfrc_act     = sim.data.qfrc_actuator[dofidx]       # your commanded torque
+                qvel         = sim.data.qvel[dofidx]
+                qacc         = sim.data.qacc[dofidx]
+
+                print(f"{jname} dof#{dofidx} "
+                    f"qvel={qvel} "
+                    f"qacc={qacc}")
 
             # limit frame rate if necessary
             if args.max_fr is not None:

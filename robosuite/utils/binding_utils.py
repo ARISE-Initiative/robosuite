@@ -273,9 +273,10 @@ class MjModel(metaclass=_MjModelMeta):
 
     _HAS_DYNAMIC_ATTRIBUTES = True
 
-    def __init__(self, model_ptr):
+    def __init__(self, model_ptr, init_xml=None):
         """Creates a new MjModel instance from a mujoco.MjModel."""
         self._model = model_ptr
+        self.init_xml = init_xml
 
         # make useful mappings such as _body_name2id and _body_id2name
         self.make_mappings()
@@ -498,6 +499,7 @@ class MjModel(metaclass=_MjModelMeta):
     #     return self._userdata_name2id[name]
 
     def get_xml(self):
+        return self.init_xml
         with TemporaryDirectory() as td:
             filename = os.path.join(td, "model.xml")
             ret = mujoco.mj_saveLastXML(filename.encode(), self._model)
@@ -1057,13 +1059,13 @@ class MjSim:
     (see https://github.com/openai/mujoco-py/blob/master/mujoco_py/mjsim.pyx).
     """
 
-    def __init__(self, model):
+    def __init__(self, model, init_xml_str=None):
         """
         Args:
             model: should be an MjModel instance created via a factory function
                 such as mujoco.MjModel.from_xml_string(xml)
         """
-        self.model = MjModel(model)
+        self.model = MjModel(model, init_xml_str)
         self.data = MjData(self.model)
 
         # offscreen render context object
@@ -1072,7 +1074,7 @@ class MjSim:
     @classmethod
     def from_xml_string(cls, xml):
         model = mujoco.MjModel.from_xml_string(xml)
-        return cls(model)
+        return cls(model, xml)
 
     @classmethod
     def from_xml_file(cls, xml_file):
