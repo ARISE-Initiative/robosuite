@@ -42,6 +42,10 @@ SPACEMOUSE_PRODUCT_ID = 50734
 DUALSENSE_VENDOR_ID = 0x054C
 DUALSENSE_PRODUCT_ID = 0x0CE6
 
+# Logitech GF310 settings. Used by LogitechGF310 class in robosuite/devices/logitech_gf310.py
+LOGITECH_GF310_VENDOR_ID = 0x046d
+LOGITECH_GF310_PRODUCT_ID = 0xC216
+
 # If LOGGING LEVEL is set to None, the logger will be turned off
 CONSOLE_LOGGING_LEVEL = "INFO"
 # File logging is written to /tmp/robosuite_{time}_{pid}.log by default

@@ -228,6 +228,15 @@ if __name__ == "__main__":
             rot_sensitivity=args.rot_sensitivity,
             reverse_xy=args.reverse_xy,
         )
+    elif args.device == "logitech_gf310":
+        from robosuite.devices import LogitechGF310
+
+        device = LogitechGF310(
+            env=env,
+            pos_sensitivity=args.pos_sensitivity,
+            rot_sensitivity=args.rot_sensitivity,
+            reverse_xy=args.reverse_xy,
+        )
     elif args.device == "mjgui":
         from robosuite.devices.mjgui import MJGUI
 
