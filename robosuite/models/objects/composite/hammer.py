@@ -60,7 +60,7 @@ class HammerObject(CompositeObject):
         rgba_head=None,
         rgba_face=None,
         rgba_claw=None,
-        rng=None
+        rng=None,
     ):
         if rng is None:
             rng = np.random.default_rng()

@@ -170,7 +170,7 @@ class Door(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
-        seed=None
+        seed=None,
     ):
         # settings for table top (hardcoded since it's not an essential part of the environment)
         self.table_full_size = (0.8, 0.3, 0.05)
@@ -314,7 +314,7 @@ class Door(ManipulationEnv):
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
                 reference_pos=self.table_offset,
-                rng=self.rng
+                rng=self.rng,
             )
 
         # task includes arena, robot, and objects of interest

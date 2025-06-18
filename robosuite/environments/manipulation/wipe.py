@@ -235,8 +235,8 @@ class Wipe(ManipulationEnv):
         self.table_full_size = self.task_config["table_full_size"]
         self.table_height = self.task_config["table_height"]
         self.table_height_std = self.task_config["table_height_std"]
-        self.delta_height = None # sample variation in height done in load_model
-        self.table_offset = np.array(self.task_config["table_offset"]) 
+        self.delta_height = None  # sample variation in height done in load_model
+        self.table_offset = np.array(self.task_config["table_offset"])
         self.table_friction = self.task_config["table_friction"]
         self.table_friction_std = self.task_config["table_friction_std"]
         self.line_width = self.task_config["line_width"]
@@ -546,7 +546,7 @@ class Wipe(ManipulationEnv):
             num_markers=self.num_markers,
             line_width=self.line_width,
             two_clusters=self.two_clusters,
-            rng=self.rng
+            rng=self.rng,
         )
 
         # Arena always gets set to zero origin

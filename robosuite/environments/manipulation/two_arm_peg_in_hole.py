@@ -234,7 +234,7 @@ class TwoArmPegInHole(TwoArmEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -352,7 +352,7 @@ class TwoArmPegInHole(TwoArmEnv):
             material=greenwood,
             rgba=[0, 1, 0, 1],
             joints=None,
-            rng=self.rng
+            rng=self.rng,
         )
 
         # Load hole object

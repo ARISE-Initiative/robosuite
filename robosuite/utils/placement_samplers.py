@@ -36,7 +36,7 @@ class ObjectPositionSampler:
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
         z_offset=0.0,
-        rng=None
+        rng=None,
     ):
         if rng is None:
             rng = np.random.default_rng()
@@ -139,7 +139,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         ensure_valid_placement=True,
         reference_pos=(0, 0, 0),
         z_offset=0.0,
-        rng=None
+        rng=None,
     ):
         self.x_range = x_range
         self.y_range = y_range
@@ -153,7 +153,7 @@ class UniformRandomSampler(ObjectPositionSampler):
             ensure_valid_placement=ensure_valid_placement,
             reference_pos=reference_pos,
             z_offset=z_offset,
-            rng=rng
+            rng=rng,
         )
 
     def _sample_x(self, object_horizontal_radius):

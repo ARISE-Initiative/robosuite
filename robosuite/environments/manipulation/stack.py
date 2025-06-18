@@ -175,7 +175,7 @@ class Stack(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
-        seed=None
+        seed=None,
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -218,7 +218,7 @@ class Stack(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action):
@@ -384,7 +384,7 @@ class Stack(ManipulationEnv):
                 ensure_valid_placement=True,
                 reference_pos=self.table_offset,
                 z_offset=0.01,
-                rng=self.rng
+                rng=self.rng,
             )
 
         # task includes arena, robot, and objects of interest

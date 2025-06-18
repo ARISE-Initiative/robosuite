@@ -189,7 +189,7 @@ class NutAssembly(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
-        seed=None
+        seed=None,
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -243,7 +243,7 @@ class NutAssembly(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -426,7 +426,7 @@ class NutAssembly(ManipulationEnv):
                         ensure_valid_placement=True,
                         reference_pos=self.table_offset,
                         z_offset=0.02,
-                        rng=self.rng
+                        rng=self.rng,
                     )
                 )
         # Reset sampler before adding any new samplers / objects

@@ -12,16 +12,17 @@ import numpy as np
 
 import robosuite as suite
 
+
 def qpos_idx_to_joint_name(sim, idx):
-    
+
     model = sim.model
     for name in model.joint_names:
         addr = model.get_joint_qpos_addr(name)
         if addr == idx:
             return name
-        
+
     return None
- 
+
 
 def test_environment_determinism():
 
@@ -89,12 +90,11 @@ def test_environment_determinism():
             obs = env1.reset()
             obs2 = env2.reset()
 
-
             env1_xml = env1.sim.model.get_xml()
             env2_xml = env2.sim.model.get_xml()
             env1_state = env1.sim.get_state().flatten()
             env2_state = env2.sim.get_state().flatten()
-            
+
             for st_idx in range(env1_state.shape[0]):
                 if env1_state[st_idx] != env2_state[st_idx]:
                     joint_name = qpos_idx_to_joint_name(env1.sim, st_idx)
@@ -103,14 +103,12 @@ def test_environment_determinism():
                     else:
                         print(f"State at index {st_idx} is different between env1 and env2.")
 
-            if  env1_xml != env2_xml:
+            if env1_xml != env2_xml:
                 print("Environment XMLs are not the same! xml1: {}, xml2: {}".format(env1_xml, env2_xml))
                 assert False
             assert np.allclose(env1_state, env2_state), "Environment states are not the same!"
             env1.close()
             env2.close()
-
-            
 
     # Tests passed!
     print("All environment tests passed successfully!")

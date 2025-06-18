@@ -220,7 +220,7 @@ class TwoArmTransport(TwoArmEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -411,7 +411,7 @@ class TwoArmTransport(TwoArmEnv):
                     ensure_valid_placement=False,
                     reference_pos=table_pos,
                     z_offset=0.001,
-                    rng=self.rng
+                    rng=self.rng,
                 )
             )
 

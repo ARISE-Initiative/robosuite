@@ -211,7 +211,7 @@ class PickPlace(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
-        seed=None
+        seed=None,
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -268,7 +268,7 @@ class PickPlace(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -448,7 +448,7 @@ class PickPlace(ManipulationEnv):
                 ensure_valid_placement=True,
                 reference_pos=self.bin1_pos,
                 z_offset=self.z_offset,
-                rng=self.rng
+                rng=self.rng,
             )
         )
 
@@ -487,7 +487,7 @@ class PickPlace(ManipulationEnv):
                     ensure_valid_placement=False,
                     reference_pos=self.bin1_pos,
                     z_offset=self.bin2_pos[2] - self.bin1_pos[2],
-                    rng=self.rng
+                    rng=self.rng,
                 )
             )
             index += 1

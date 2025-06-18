@@ -172,7 +172,7 @@ class TwoArmLift(TwoArmEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
-        seed=None
+        seed=None,
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -352,7 +352,7 @@ class TwoArmLift(TwoArmEnv):
                 ensure_valid_placement=True,
                 reference_pos=self.table_offset,
                 rotation=(np.pi + -np.pi / 3, np.pi + np.pi / 3),
-                rng=self.rng
+                rng=self.rng,
             )
 
         # task includes arena, robot, and objects of interest

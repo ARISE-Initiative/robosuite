@@ -211,7 +211,7 @@ class ToolHang(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
-            seed=seed
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -394,7 +394,7 @@ class ToolHang(ManipulationEnv):
                     ensure_valid_placement=False,
                     reference_pos=self.table_offset,
                     z_offset=z_offset,
-                    rng=self.rng
+                    rng=self.rng,
                 )
             )
 
