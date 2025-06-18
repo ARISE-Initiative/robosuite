@@ -313,7 +313,6 @@ if __name__ == "__main__":
         use_camera_obs=False,
         reward_shaping=True,
         control_freq=20,
-        seed=7
     )
 
     # Wrap this with visualization wrapper
