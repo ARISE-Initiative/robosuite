@@ -175,6 +175,8 @@ class JointPositionController(Controller):
         # initialize
         self.goal_qpos = None
 
+        self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
+
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -260,7 +262,10 @@ class JointPositionController(Controller):
         desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
         # Return desired torques plus gravity compensations
-        self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+        if self.use_torque_compensation:
+            self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+        else:
+            self.torques = desired_torque
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()

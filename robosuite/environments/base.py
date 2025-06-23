@@ -63,9 +63,9 @@ class MujocoEnv(metaclass=EnvMeta):
         has_renderer (bool): If true, render the simulation state in
             a viewer instead of headless mode.
         has_offscreen_renderer (bool): True if using off-screen rendering.
-        render_camera (str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
+        render_camera (str or list of str): Name of camera to render if `has_renderer` is True. Setting this value to 'None'
             will result in the default angle being applied, which is useful as it can be dragged / panned by
-            the user using the mouse
+            the user using the mouse. When a list of strings is provided, it will render from multiple camera angles.
         render_collision_mesh (bool): True if rendering collision meshes
             in camera. False otherwise.
         render_visual_mesh (bool): True if rendering visual meshes
@@ -110,6 +110,8 @@ class MujocoEnv(metaclass=EnvMeta):
         self.has_renderer = has_renderer
         # offscreen renderer needed for on-screen rendering
         self.has_offscreen_renderer = (has_renderer and renderer != "mjviewer") or has_offscreen_renderer
+        if render_camera is not None and isinstance(render_camera, str):
+            render_camera = [render_camera]
         self.render_camera = render_camera
         self.render_collision_mesh = render_collision_mesh
         self.render_visual_mesh = render_visual_mesh
@@ -179,7 +181,8 @@ class MujocoEnv(metaclass=EnvMeta):
             from robosuite.renderers.viewer import MjviewerRenderer
 
             if self.render_camera is not None:
-                camera_id = self.sim.model.camera_name2id(self.render_camera)
+                assert len(self.render_camera) == 1, "Only one camera can be specified for mjviewer"
+                camera_id = self.sim.model.camera_name2id(self.render_camera[0])
             else:
                 camera_id = None
             self.viewer = MjviewerRenderer(env=self, camera_id=camera_id, **self.renderer_config)
@@ -323,8 +326,11 @@ class MujocoEnv(metaclass=EnvMeta):
 
                 # Set the camera angle for viewing
                 if self.render_camera is not None:
-                    camera_id = self.sim.model.camera_name2id(self.render_camera)
-                    self.viewer.set_camera(camera_id)
+                    camera_ids = []
+                    for cam in self.render_camera:
+                        camera_id = self.sim.model.camera_name2id(cam)
+                        camera_ids.append(camera_id)
+                    self.viewer.set_camera(camera_ids)
 
             elif self.renderer == "mjviewer":
                 self.initialize_renderer()

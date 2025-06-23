@@ -356,10 +356,14 @@ class Robot(object):
         def joint_vel(obs_cache):
             return np.array([self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes])
 
-        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
-        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
+        @sensor(modality=modality)
+        def joint_acc(obs_cache):
+            return np.array([self.sim.data.qacc[x] for x in self._ref_joint_vel_indexes])
+
+        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel, joint_acc]
+        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel", "joint_acc"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [True, True, True, True]
+        actives = [True, True, True, True, True]
 
         for arm in self.arms:
             arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
@@ -908,7 +912,7 @@ class Robot(object):
                 self.part_controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
                 self.part_controller_config[gripper_name]["policy_freq"] = self.control_freq
                 self.part_controller_config[gripper_name]["joint_indexes"] = {
-                    "joints": self.gripper_joints[arm],
+                    "joints": self._ref_joints_indexes_dict[gripper_name],
                     "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
                     "qvel": self._ref_gripper_joint_vel_indexes[arm],

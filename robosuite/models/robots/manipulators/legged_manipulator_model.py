@@ -47,6 +47,15 @@ class LeggedManipulatorModel(ManipulatorModel):
             if part_name in equality.get("joint1") or part_name in equality.get("joint2"):
                 parent_body = find_parent(self.equality, equality)
                 parent_body.remove(equality)
+        for sensor in self.root.findall(".//jointpos"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
+        for sensor in self.root.findall(".//jointvel"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
+        for sensor in self.root.findall(".//jointactuatorfrc"):
+            if part_name in sensor.get("joint"):
+                find_parent(self.root, sensor).remove(sensor)
 
     def _remove_free_joint(self):
         # remove freejoint
