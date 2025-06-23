@@ -116,7 +116,7 @@ class MujocoObject(MujocoModel):
             scale=scale,
             get_elements_func=self._get_elements,
             get_geoms_func=self._get_geoms,
-            scale_slide_joints=True
+            scale_slide_joints=True,
         )
 
     def _get_geoms(self, root, _parent=None):
@@ -589,7 +589,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
             scale=scale,
             get_elements_func=self._get_elements,
             get_geoms_func=self._get_geoms,
-            scale_slide_joints=False  # MujocoXMLObject doesn't handle slide joints
+            scale_slide_joints=False,  # MujocoXMLObject doesn't handle slide joints
         )
 
     @property

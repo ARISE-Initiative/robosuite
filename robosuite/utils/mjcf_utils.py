@@ -903,13 +903,13 @@ def get_ids(sim, elements, element_type="geom", inplace=False):
 def normalize_scale_array(scale):
     """
     Normalizes a scale factor to be a 3-element numpy array.
-    
+
     Args:
         scale (float or array-like): Scale factor (1 or 3 dims)
-        
+
     Returns:
         np.array: 3-element scale array
-        
+
     Raises:
         ValueError: If scale is not scalar or 3-element array
     """
@@ -924,18 +924,18 @@ def normalize_scale_array(scale):
 def scale_geom_element(element, scale_array):
     """
     Scales a single geom element's position and size.
-    
+
     Args:
         element (ET.Element): Geom element to scale
         scale_array (np.array): 3-element scale array
     """
     g_pos = element.get("pos")
     g_size = element.get("size")
-    
+
     if g_pos is not None:
         g_pos = array_to_string(string_to_array(g_pos) * scale_array)
         element.set("pos", g_pos)
-        
+
     if g_size is not None:
         g_size_np = string_to_array(g_size)
         # Handle cases where size is not 3-dimensional
@@ -956,7 +956,7 @@ def scale_geom_element(element, scale_array):
 def scale_mesh_element(element, scale_array):
     """
     Scales a single mesh element.
-    
+
     Args:
         element (ET.Element): Mesh element to scale
         scale_array (np.array): 3-element scale array
@@ -973,7 +973,7 @@ def scale_mesh_element(element, scale_array):
 def scale_body_element(element, scale_array):
     """
     Scales a single body element's position.
-    
+
     Args:
         element (ET.Element): Body element to scale
         scale_array (np.array): 3-element scale array
@@ -987,7 +987,7 @@ def scale_body_element(element, scale_array):
 def scale_joint_element(element, scale_array, scale_slide_joints=True):
     """
     Scales a single joint element's position and optionally range for slide joints.
-    
+
     Args:
         element (ET.Element): Joint element to scale
         scale_array (np.array): 3-element scale array
@@ -1023,7 +1023,7 @@ def scale_joint_element(element, scale_array, scale_slide_joints=True):
 def scale_site_element(element, scale_array):
     """
     Scales a single site element's position and size.
-    
+
     Args:
         element (ET.Element): Site element to scale
         scale_array (np.array): 3-element scale array
@@ -1052,21 +1052,21 @@ def scale_site_element(element, scale_array):
 def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, scale_slide_joints=True):
     """
     Scales all elements (geoms, meshes, bodies, joints, sites) in an MJCF model.
-    
+
     Args:
         obj (ET.Element): Root object element to scale
         asset_root (ET.Element): Asset root element containing meshes
         scale (float or array-like): Scale factor (1 or 3 dims)
         get_elements_func (callable): Function to get elements of a specific type from obj
-        get_geoms_func (callable): Function to get geom elements from obj  
+        get_geoms_func (callable): Function to get geom elements from obj
         scale_slide_joints (bool): Whether to scale ranges for slide joints
-        
+
     Returns:
         np.array: The normalized 3-element scale array that was applied
     """
     # Normalize scale to 3-element array
     scale_array = normalize_scale_array(scale)
-    
+
     # Scale geoms
     geom_pairs = get_geoms_func(obj)
     for _, (_, element) in enumerate(geom_pairs):
@@ -1088,8 +1088,8 @@ def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, 
         scale_joint_element(elem, scale_array, scale_slide_joints)
 
     # Scale sites
-    site_pairs = get_elements_func(obj, "site") 
+    site_pairs = get_elements_func(obj, "site")
     for (_, elem) in site_pairs:
         scale_site_element(elem, scale_array)
-        
+
     return scale_array

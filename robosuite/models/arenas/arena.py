@@ -197,5 +197,5 @@ class Arena(MujocoXML):
             scale=scale,
             get_elements_func=self._get_elements,
             get_geoms_func=self._get_geoms,
-            scale_slide_joints=False  # Arena doesn't handle slide joints
+            scale_slide_joints=False,  # Arena doesn't handle slide joints
         )
