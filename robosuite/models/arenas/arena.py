@@ -12,6 +12,7 @@ from robosuite.utils.mjcf_utils import (
     new_geom,
     new_joint,
     recolor_collision_geoms,
+    scale_mjcf_model,
     string_to_array,
 )
 
@@ -189,88 +190,12 @@ class Arena(MujocoXML):
             raise ValueError(f"Object {obj_name} not found in arena; cannot set scale. Available objects: {body_names}")
         self.object_scales[obj.get("name")] = scale
 
-        # scale geoms
-        geom_pairs = self._get_geoms(obj)
-        for _, (_, element) in enumerate(geom_pairs):
-            g_pos = element.get("pos")
-            g_size = element.get("size")
-            if g_pos is not None:
-                g_pos = array_to_string(string_to_array(g_pos) * scale)
-                element.set("pos", g_pos)
-            if g_size is not None:
-                g_size_np = string_to_array(g_size)
-                # handle cases where size is not 3 dimensional
-                if len(g_size_np) == 3:
-                    g_size_np = g_size_np * scale
-                elif len(g_size_np) == 2:
-                    scale = np.array(scale).reshape(-1)
-                    if len(scale) == 1:
-                        g_size_np[1] *= scale
-                    elif len(scale) == 3:
-                        # g_size_np[0] *= np.mean(scale[:2])
-                        g_size_np[0] *= np.mean(scale[:2])  # width
-                        g_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                else:
-                    raise ValueError
-                g_size = array_to_string(g_size_np)
-                element.set("size", g_size)
-
-        # scale meshes
-        meshes = self.asset.findall("mesh")
-        for elem in meshes:
-            m_scale = elem.get("scale")
-            if m_scale is not None:
-                m_scale = string_to_array(m_scale)
-            else:
-                m_scale = np.ones(3)
-
-            m_scale *= scale
-            elem.set("scale", array_to_string(m_scale))
-
-        # scale bodies
-        body_pairs = self._get_elements(obj, "body")
-        for (_, elem) in body_pairs:
-            b_pos = elem.get("pos")
-            if b_pos is not None:
-                b_pos = string_to_array(b_pos) * scale
-                elem.set("pos", array_to_string(b_pos))
-
-        # scale joints
-        joint_pairs = self._get_elements(obj, "joint")
-        for (_, elem) in joint_pairs:
-            j_pos = elem.get("pos")
-            if j_pos is not None:
-                j_pos = string_to_array(j_pos) * scale
-                elem.set("pos", array_to_string(j_pos))
-
-        # scale sites
-        site_pairs = self._get_elements(self.worldbody, "site")
-        for (_, elem) in site_pairs:
-            s_pos = elem.get("pos")
-            if s_pos is not None:
-                s_pos = string_to_array(s_pos) * scale
-                elem.set("pos", array_to_string(s_pos))
-
-            s_size = elem.get("size")
-            if s_size is not None:
-                s_size_np = string_to_array(s_size)
-                # handle cases where size is not 3 dimensional
-                if len(s_size_np) == 3:
-                    s_size_np = s_size_np * scale
-                elif len(s_size_np) == 2:
-                    scale = np.array(scale).reshape(-1)
-                    if len(scale) == 1:
-                        s_size_np *= scale
-                    elif len(scale) == 3:
-                        s_size_np[0] *= np.mean(scale[:2])  # width
-                        s_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                elif len(s_size_np) == 1:
-                    s_size_np *= np.mean(scale)
-                else:
-                    raise ValueError
-                s_size = array_to_string(s_size_np)
-                elem.set("size", s_size)
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            scale=scale,
+            get_elements_func=self._get_elements,
+            get_geoms_func=self._get_geoms,
+            scale_slide_joints=False  # Arena doesn't handle slide joints
+        )

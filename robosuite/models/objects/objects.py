@@ -14,6 +14,7 @@ from robosuite.utils.mjcf_utils import (
     array_to_string,
     find_elements,
     new_joint,
+    scale_mjcf_model,
     sort_elements,
     string_to_array,
 )
@@ -108,103 +109,15 @@ class MujocoObject(MujocoModel):
 
         self._scale = scale
 
-        # Ensure scale is an array of length 3
-        scale_array = np.array(self._scale).flatten()
-        if scale_array.size == 1:
-            scale_array = np.repeat(scale_array, 3)
-        elif scale_array.size != 3:
-            raise ValueError("Scale must be a scalar or a 3-element array.")
-
-        geom_pairs = self._get_geoms(obj)
-        for _, (_, element) in enumerate(geom_pairs):
-            g_pos = element.get("pos")
-            g_size = element.get("size")
-            if g_pos is not None:
-                g_pos = array_to_string(string_to_array(g_pos) * scale_array)
-                element.set("pos", g_pos)
-            if g_size is not None:
-                g_size_np = string_to_array(g_size)
-                # Handle cases where size is not 3-dimensional
-                if len(g_size_np) == 3:
-                    g_size_np = g_size_np * scale_array
-                elif len(g_size_np) == 2:
-                    # For 2D size, assume [radius, height] for cylinders
-                    g_size_np[0] *= np.mean(scale_array[:2])  # Average scaling in x and y
-                    g_size_np[1] *= scale_array[2]  # Scaling in z
-                else:
-                    raise ValueError("Unsupported geom size dimensions.")
-                g_size = array_to_string(g_size_np)
-                element.set("size", g_size)
-
-        # Scale meshes
-        meshes = self.asset.findall("mesh")
-        for elem in meshes:
-            m_scale = elem.get("scale")
-            if m_scale is not None:
-                m_scale = string_to_array(m_scale)
-            else:
-                m_scale = np.ones(3)
-            m_scale *= scale_array
-            elem.set("scale", array_to_string(m_scale))
-
-        # Scale bodies
-        body_pairs = self._get_elements(obj, "body")
-        for (_, elem) in body_pairs:
-            b_pos = elem.get("pos")
-            if b_pos is not None:
-                b_pos = string_to_array(b_pos) * scale_array
-                elem.set("pos", array_to_string(b_pos))
-
-        # Scale joints
-        joint_pairs = self._get_elements(obj, "joint")
-        for (_, elem) in joint_pairs:
-            j_pos = elem.get("pos")
-            if j_pos is not None:
-                j_pos = string_to_array(j_pos) * scale_array
-                elem.set("pos", array_to_string(j_pos))
-
-            # Scale joint ranges for slide joints
-            j_type = elem.get("type", "hinge")  # Default joint type is 'hinge' if not specified
-            j_range = elem.get("range")
-            if j_range is not None and j_type == "slide":
-                # Get joint axis
-                j_axis = elem.get("axis", "1 0 0")  # Default axis is [1, 0, 0]
-                j_axis = string_to_array(j_axis)
-                axis_norm = np.linalg.norm(j_axis)
-                if axis_norm > 0:
-                    axis_unit = j_axis / axis_norm
-                else:
-                    # Avoid division by zero
-                    axis_unit = np.array([1.0, 0.0, 0.0])
-                # Compute scaling factor along the joint axis
-                s = np.linalg.norm(axis_unit * scale_array)
-                # Scale the range
-                j_range_vals = string_to_array(j_range)
-                j_range_vals = j_range_vals * s
-                elem.set("range", array_to_string(j_range_vals))
-
-        # Scale sites
-        site_pairs = self._get_elements(obj, "site")
-        for (_, elem) in site_pairs:
-            s_pos = elem.get("pos")
-            if s_pos is not None:
-                s_pos = string_to_array(s_pos) * scale_array
-                elem.set("pos", array_to_string(s_pos))
-
-            s_size = elem.get("size")
-            if s_size is not None:
-                s_size_np = string_to_array(s_size)
-                if len(s_size_np) == 3:
-                    s_size_np = s_size_np * scale_array
-                elif len(s_size_np) == 2:
-                    s_size_np[0] *= np.mean(scale_array[:2])  # Average scaling in x and y
-                    s_size_np[1] *= scale_array[2]  # Scaling in z
-                elif len(s_size_np) == 1:
-                    s_size_np *= np.mean(scale_array)
-                else:
-                    raise ValueError("Unsupported site size dimensions.")
-                s_size = array_to_string(s_size_np)
-                elem.set("size", s_size)
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            scale=scale,
+            get_elements_func=self._get_elements,
+            get_geoms_func=self._get_geoms,
+            scale_slide_joints=True
+        )
 
     def _get_geoms(self, root, _parent=None):
         """
@@ -669,91 +582,15 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         self._scale = scale
 
-        # scale geoms
-        geom_pairs = self._get_geoms(obj)
-        for _, (_, element) in enumerate(geom_pairs):
-            g_pos = element.get("pos")
-            g_size = element.get("size")
-            if g_pos is not None:
-                g_pos = array_to_string(string_to_array(g_pos) * self._scale)
-                element.set("pos", g_pos)
-            if g_size is not None:
-                g_size_np = string_to_array(g_size)
-                # handle cases where size is not 3 dimensional
-                if len(g_size_np) == 3:
-                    g_size_np = g_size_np * self._scale
-                elif len(g_size_np) == 2:
-                    scale = np.array(self._scale).reshape(-1)
-                    if len(scale) == 1:
-                        g_size_np[1] *= scale
-                    elif len(scale) == 3:
-                        # g_size_np[0] *= np.mean(scale[:2])
-                        g_size_np[0] *= np.mean(scale[:2])  # width
-                        g_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                else:
-                    raise ValueError
-                g_size = array_to_string(g_size_np)
-                element.set("size", g_size)
-
-        # scale meshes
-        meshes = self.asset.findall("mesh")
-        for elem in meshes:
-            m_scale = elem.get("scale")
-            if m_scale is not None:
-                m_scale = string_to_array(m_scale)
-            else:
-                m_scale = np.ones(3)
-
-            m_scale *= self._scale
-            elem.set("scale", array_to_string(m_scale))
-
-        # scale bodies
-        body_pairs = self._get_elements(obj, "body")
-        for (_, elem) in body_pairs:
-            b_pos = elem.get("pos")
-            if b_pos is not None:
-                b_pos = string_to_array(b_pos) * self._scale
-                elem.set("pos", array_to_string(b_pos))
-
-        # scale joints
-        joint_pairs = self._get_elements(obj, "joint")
-        for (_, elem) in joint_pairs:
-            j_pos = elem.get("pos")
-            if j_pos is not None:
-                j_pos = string_to_array(j_pos) * self._scale
-                elem.set("pos", array_to_string(j_pos))
-
-        # scale sites
-        site_pairs = self._get_elements(self.worldbody, "site")
-        for (_, elem) in site_pairs:
-            s_pos = elem.get("pos")
-            if s_pos is not None:
-                s_pos = string_to_array(s_pos) * self._scale
-                elem.set("pos", array_to_string(s_pos))
-
-            s_size = elem.get("size")
-            if s_size is not None:
-                s_size_np = string_to_array(s_size)
-                # handle cases where size is not 3 dimensional
-                if len(s_size_np) == 3:
-                    s_size_np = s_size_np * self._scale
-                elif len(s_size_np) == 2:
-                    scale = np.array(self._scale).reshape(-1)
-                    if len(scale) == 1:
-                        s_size_np *= scale
-                    elif len(scale) == 3:
-                        s_size_np[0] *= np.mean(scale[:2])  # width
-                        s_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                elif len(s_size_np) == 1:
-                    s_size_np *= np.mean(self._scale)
-                else:
-                    raise ValueError
-                s_size = array_to_string(s_size_np)
-                elem.set("size", s_size)
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            scale=scale,
+            get_elements_func=self._get_elements,
+            get_geoms_func=self._get_geoms,
+            scale_slide_joints=False  # MujocoXMLObject doesn't handle slide joints
+        )
 
     @property
     def bottom_offset(self):
