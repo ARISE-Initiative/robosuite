@@ -69,10 +69,13 @@ class DataCollectionWrapper(Wrapper):
 
         # save the task instance (will be saved on the first env interaction)
 
-        # NOTE: was previously self.env.model.get_xml(). Was causing the following issue in rare cases:
+        # NOTE: was originally set to self.env.model.get_xml()
+        # That was causing the following issue in rare cases:
         # ValueError: Error: eigenvalues of mesh inertia violate A + B >= C
-        # switching to self.env.sim.model.get_xml() does not create this issue
-        self._current_task_instance_xml = self.env.sim.model.get_xml()
+        # then, switched to self.env.sim.model.get_xml() which does not create this issue
+        # however, that leads to subtle changes in the physics, such as fixture doors being harder to close
+        # so, reverting back to self.env.model.get_xml()
+        self._current_task_instance_xml = self.env.model.get_xml()
         self._current_task_instance_state = np.array(self.env.sim.get_state().flatten())
 
         # trick for ensuring that we can play MuJoCo demonstrations back
