@@ -119,8 +119,6 @@ class MujocoObject(MujocoModel):
             scale_slide_joints=True,
         )
 
-
-
     def exclude_from_prefixing(self, inp):
         """
         A function that should take in either an ET.Element or its attribute (str) and return either True or False,
@@ -466,8 +464,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         vis_element.set("mass", "1e-8")
         vis_element.set("name", vis_element.get("name") + "_visual")
         return vis_element
-
-
 
         # Return all found pairs
         return elem_pairs
