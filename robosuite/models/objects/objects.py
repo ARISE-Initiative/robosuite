@@ -13,6 +13,7 @@ from robosuite.utils.mjcf_utils import (
     add_prefix,
     array_to_string,
     find_elements,
+    get_elements,
     new_joint,
     scale_mjcf_model,
     sort_elements,
@@ -114,50 +115,11 @@ class MujocoObject(MujocoModel):
             obj=obj,
             asset_root=self.asset,
             scale=scale,
-            get_elements_func=self._get_elements,
-            get_geoms_func=self._get_geoms,
+            get_elements_func=get_elements,
             scale_slide_joints=True,
         )
 
-    def _get_geoms(self, root, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a geom element
 
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is a geom type
-        """
-        return self._get_elements(root, "geom", _parent)
-
-    def _get_elements(self, root, type, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a specific type of element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is of type
-        """
-        # Initialize return array
-        elem_pairs = []
-        # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
-        if _parent is not None and root.tag == type:
-            elem_pairs.append((_parent, root))
-        # Loop through all children elements recursively and add to pairs
-        for child in root:
-            elem_pairs += self._get_elements(child, type, _parent=root)
-
-        # Return all found pairs
-        return elem_pairs
 
     def exclude_from_prefixing(self, inp):
         """
@@ -435,7 +397,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         # Rename this top level object body (will have self.naming_prefix added later)
         obj.attrib["name"] = "main"
         # Get all geom_pairs in this tree
-        geom_pairs = self._get_geoms(obj)
+        geom_pairs = get_elements(obj, "geom")
 
         # Define a temp function so we don't duplicate so much code
         obj_type = self.obj_type
@@ -505,42 +467,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         vis_element.set("name", vis_element.get("name") + "_visual")
         return vis_element
 
-    def _get_geoms(self, root, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a geom element
 
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is a geom type
-        """
-        return self._get_elements(root, "geom", _parent)
-
-    def _get_elements(self, root, type, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a specific type of element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is of type
-        """
-        # Initialize return array
-        elem_pairs = []
-        # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
-        if _parent is not None and root.tag == type:
-            elem_pairs.append((_parent, root))
-        # Loop through all children elements recursively and add to pairs
-        for child in root:
-            elem_pairs += self._get_elements(child, type, _parent=root)
 
         # Return all found pairs
         return elem_pairs
@@ -587,8 +514,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
             obj=obj,
             asset_root=self.asset,
             scale=scale,
-            get_elements_func=self._get_elements,
-            get_geoms_func=self._get_geoms,
+            get_elements_func=get_elements,
             scale_slide_joints=False,  # MujocoXMLObject doesn't handle slide joints
         )
 

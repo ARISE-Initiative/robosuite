@@ -1049,7 +1049,7 @@ def scale_site_element(element, scale_array):
         element.set("size", s_size)
 
 
-def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, scale_slide_joints=True):
+def scale_mjcf_model(obj, asset_root, scale, get_elements_func, scale_slide_joints=True):
     """
     Scales all elements (geoms, meshes, bodies, joints, sites) in an MJCF model.
 
@@ -1058,7 +1058,6 @@ def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, 
         asset_root (ET.Element): Asset root element containing meshes
         scale (float or array-like): Scale factor (1 or 3 dims)
         get_elements_func (callable): Function to get elements of a specific type from obj
-        get_geoms_func (callable): Function to get geom elements from obj
         scale_slide_joints (bool): Whether to scale ranges for slide joints
 
     Returns:
@@ -1068,7 +1067,7 @@ def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, 
     scale_array = normalize_scale_array(scale)
 
     # Scale geoms
-    geom_pairs = get_geoms_func(obj)
+    geom_pairs = get_elements_func(obj, "geom")
     for _, (_, element) in enumerate(geom_pairs):
         scale_geom_element(element, scale_array)
 
@@ -1093,3 +1092,30 @@ def scale_mjcf_model(obj, asset_root, scale, get_elements_func, get_geoms_func, 
         scale_site_element(elem, scale_array)
 
     return scale_array
+
+
+def get_elements(root, element_type, _parent=None):
+    """
+    Helper function to recursively search through element tree starting at @root and returns
+    a list of (parent, child) tuples where the child is a specific type of element
+
+    Args:
+        root (ET.Element): Root of xml element tree to start recursively searching through
+        element_type (str): Type of element to search for (e.g., "geom", "body", "joint", "site")
+        _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
+            during the recursive call
+
+    Returns:
+        list: array of (parent, child) tuples where the child element is of specified type
+    """
+    # Initialize return array
+    elem_pairs = []
+    # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
+    if _parent is not None and root.tag == element_type:
+        elem_pairs.append((_parent, root))
+    # Loop through all children elements recursively and add to pairs
+    for child in root:
+        elem_pairs += get_elements(child, element_type, _parent=root)
+
+    # Return all found pairs
+    return elem_pairs

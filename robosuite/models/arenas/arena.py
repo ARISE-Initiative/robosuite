@@ -7,6 +7,7 @@ from robosuite.utils.mjcf_utils import (
     ENVIRONMENT_COLLISION_COLOR,
     array_to_string,
     find_elements,
+    get_elements,
     new_body,
     new_element,
     new_geom,
@@ -134,46 +135,6 @@ class Arena(MujocoXML):
         """
         pass
 
-    def _get_geoms(self, root, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a geom element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is a geom type
-        """
-        return self._get_elements(root, "geom", _parent)
-
-    def _get_elements(self, root, type, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a specific type of element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is of type
-        """
-        # Initialize return array
-        elem_pairs = []
-        # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
-        if _parent is not None and root.tag == type:
-            elem_pairs.append((_parent, root))
-        # Loop through all children elements recursively and add to pairs
-        for child in root:
-            elem_pairs += self._get_elements(child, type, _parent=root)
-
-        # Return all found pairs
-        return elem_pairs
-
     def set_scale(self, scale: Union[float, List[float]], obj_name: str):
         """
         Scales each geom, mesh, site, and body under obj_name.
@@ -195,7 +156,6 @@ class Arena(MujocoXML):
             obj=obj,
             asset_root=self.asset,
             scale=scale,
-            get_elements_func=self._get_elements,
-            get_geoms_func=self._get_geoms,
+            get_elements_func=get_elements,
             scale_slide_joints=False,  # Arena doesn't handle slide joints
         )
