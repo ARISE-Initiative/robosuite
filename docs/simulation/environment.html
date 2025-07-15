@@ -755,9 +755,9 @@ which should be interpreted accordingly by any subclasses.</p></li>
 custom controller. Else, uses the default controller for this specific task. Should either be single
 dict if same controller is to be used for all robots or else it should be a list of the same length as
 “robots” param</p></li>
-<li><p><strong>mount_types</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of mount, used to instantiate mount models from mount factory.
+<li><p><strong>mount_types</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of mount, used to instantiate mount models from mount factory.
 Default is “default”, which is the default mount associated with the robot(s) the ‘robots’ specification.
-None results in no mount, and any other (valid) model overrides the default mount. Should either be
+“NullMount” results in no mount, and any other (valid) model overrides the default mount. Should either be
 single str if same mount type is to be used for all robots or else it should be a list of the same
 length as “robots” param</p></li>
 <li><p><strong>initialization_noise</strong> (<em>dict</em><em> or </em><em>list</em><em> of </em><em>dict</em>) – <p>Dict containing the initialization noise parameters.
@@ -885,9 +885,9 @@ which should be interpreted accordingly by any subclasses.</p></li>
 custom controller. Else, uses the default controller for this specific task. Should either be single
 dict if same controller is to be used for all robots or else it should be a list of the same length as
 “robots” param</p></li>
-<li><p><strong>base_types</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of base, used to instantiate base models from base factory.
+<li><p><strong>base_types</strong> (<em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of base, used to instantiate base models from base factory.
 Default is “default”, which is the default base associated with the robot(s) the ‘robots’ specification.
-None results in no base, and any other (valid) model overrides the default base. Should either be
+“NullMount” results in no base, and any other (valid) model overrides the default base. Should either be
 single str if same base type is to be used for all robots or else it should be a list of the same
 length as “robots” param</p></li>
 <li><p><strong>gripper_types</strong> (<em>None</em><em> or </em><em>str</em><em> or </em><em>list</em><em> of </em><em>str</em>) – type of gripper, used to instantiate
