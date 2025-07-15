@@ -891,6 +891,7 @@ def get_ids(sim, elements, element_type="geom", inplace=False):
     if not inplace:
         elements = list(elements)
 
+    assert element_type in ["geom", "body", "joint", "site", "actuator", "sensor", "tendon", "camera", "light"], "Invalid element type"
     # Iterate through all elements and grab their corresponding IDs
     for i, element in enumerate(elements):
         if type(element) is not int:
