@@ -465,9 +465,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         vis_element.set("name", vis_element.get("name") + "_visual")
         return vis_element
 
-        # Return all found pairs
-        return elem_pairs
-
     def set_pos(self, pos):
         """
         Set position of object position is defined as center of bounding box
