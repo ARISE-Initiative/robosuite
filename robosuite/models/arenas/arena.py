@@ -1,3 +1,5 @@
+from typing import List, Union
+
 import numpy as np
 
 from robosuite.models.base import MujocoXML
@@ -5,11 +7,13 @@ from robosuite.utils.mjcf_utils import (
     ENVIRONMENT_COLLISION_COLOR,
     array_to_string,
     find_elements,
+    get_elements,
     new_body,
     new_element,
     new_geom,
     new_joint,
     recolor_collision_geoms,
+    scale_mjcf_model,
     string_to_array,
 )
 
@@ -22,6 +26,7 @@ class Arena(MujocoXML):
         # Get references to floor and bottom
         self.bottom_pos = np.zeros(3)
         self.floor = self.worldbody.find("./geom[@name='floor']")
+        self.object_scales = {}
 
         # Add mocap bodies to self.root for mocap control in mjviewer UI for robot control
         mocap_body_1 = new_body(name="left_eef_target", pos="0 0 -1", mocap=True)
@@ -129,3 +134,28 @@ class Arena(MujocoXML):
         Runs any necessary post-processing on the imported Arena model
         """
         pass
+
+    def set_scale(self, scale: Union[float, List[float]], obj_name: str):
+        """
+        Scales each geom, mesh, site, and body under obj_name.
+        Called during initialization but can also be used externally
+
+        Args:
+            scale (float or list of floats): Scale factor (1 or 3 dims)
+            obj_name Name of root object to apply.
+        """
+        obj = self.worldbody.find(f"./body[@name='{obj_name}']")
+        if obj is None:
+            bodies = self.worldbody.findall("./body")
+            body_names = [body.get("name") for body in bodies if body.get("name") is not None]
+            raise ValueError(f"Object {obj_name} not found in arena; cannot set scale. Available objects: {body_names}")
+        self.object_scales[obj.get("name")] = scale
+
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            scale=scale,
+            get_elements_func=get_elements,
+            scale_slide_joints=False,  # Arena doesn't handle slide joints
+        )
