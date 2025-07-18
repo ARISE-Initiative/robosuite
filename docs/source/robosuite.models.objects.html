@@ -480,6 +480,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.naming_prefix"><code class="docutils literal notranslate"><span class="pre">MujocoObject.naming_prefix</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.root_body"><code class="docutils literal notranslate"><span class="pre">MujocoObject.root_body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.sensors"><code class="docutils literal notranslate"><span class="pre">MujocoObject.sensors</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.set_scale"><code class="docutils literal notranslate"><span class="pre">MujocoObject.set_scale()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.sites"><code class="docutils literal notranslate"><span class="pre">MujocoObject.sites</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.top_offset"><code class="docutils literal notranslate"><span class="pre">MujocoObject.top_offset</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.visual_geoms"><code class="docutils literal notranslate"><span class="pre">MujocoObject.visual_geoms</span></code></a></li>
@@ -1464,6 +1465,17 @@ tree for this object.</p>
 list: Sensor names for this model</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.objects.objects.MujocoObject.set_scale">
+<span class="sig-name descname"><span class="pre">set_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.objects.MujocoObject.set_scale" title="Link to this definition">#</a></dt>
+<dd><p>Scales each geom, mesh, site, body, and joint ranges (for slide joints).
+Called during initialization but can also be used externally.
+:param scale: Scale factor (1 or 3 dims)
+:type scale: float or list of floats
+:param obj: Root object to apply scaling to. Defaults to root object of model.
+:type obj: ET.Element</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.objects.MujocoObject.sites">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#robosuite.models.objects.objects.MujocoObject.sites" title="Link to this definition">#</a></dt>
@@ -1920,6 +1932,7 @@ dict: In addition to any default sites for this object, also provides the follow
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.naming_prefix"><code class="docutils literal notranslate"><span class="pre">MujocoObject.naming_prefix</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.root_body"><code class="docutils literal notranslate"><span class="pre">MujocoObject.root_body</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.sensors"><code class="docutils literal notranslate"><span class="pre">MujocoObject.sensors</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.set_scale"><code class="docutils literal notranslate"><span class="pre">MujocoObject.set_scale()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.sites"><code class="docutils literal notranslate"><span class="pre">MujocoObject.sites</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.top_offset"><code class="docutils literal notranslate"><span class="pre">MujocoObject.top_offset</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoObject.visual_geoms"><code class="docutils literal notranslate"><span class="pre">MujocoObject.visual_geoms</span></code></a></li>

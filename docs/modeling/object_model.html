@@ -430,7 +430,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject.__init__"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject._duplicate_visual_from_collision"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject._duplicate_visual_from_collision()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject._get_geoms"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject._get_geoms()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -663,28 +662,6 @@ following attribute requirements: group=1, conaffinity/contype=0, no mass, name 
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="robosuite.models.objects.objects.MujocoXMLObject._get_geoms">
-<span class="sig-name descname"><span class="pre">_get_geoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_parent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.objects.MujocoXMLObject._get_geoms" title="Link to this definition">#</a></dt>
-<dd><p>Helper function to recursively search through element tree starting at &#64;root and returns
-a list of (parent, child) tuples where the child is a geom element</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>root</strong> (<em>ET.Element</em>) – Root of xml element tree to start recursively searching through</p></li>
-<li><p><strong>_parent</strong> (<em>ET.Element</em>) – Parent of the root element tree. Should not be used externally; only set
-during the recursive call</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>array of (parent, child) tuples where the child element is a geom type</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
-</dd>
-</dl>
-</dd></dl>
-
 </dd></dl>
 
 </section>
@@ -841,7 +818,6 @@ located in robosuite/models/assets/textures/</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject.__init__"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject.__init__()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject._duplicate_visual_from_collision"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject._duplicate_visual_from_collision()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.objects.objects.MujocoXMLObject._get_geoms"><code class="docutils literal notranslate"><span class="pre">MujocoXMLObject._get_geoms()</span></code></a></li>
 </ul>
 </li>
 </ul>

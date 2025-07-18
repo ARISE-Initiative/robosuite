@@ -416,6 +416,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena"><code class="docutils literal notranslate"><span class="pre">Arena</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_camera"><code class="docutils literal notranslate"><span class="pre">Arena.set_camera()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_origin"><code class="docutils literal notranslate"><span class="pre">Arena.set_origin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_scale"><code class="docutils literal notranslate"><span class="pre">Arena.set_scale()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -508,6 +509,21 @@ See <a class="reference external" href="http://www.mujoco.org/book/XMLreference.
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>offset</strong> (<em>3-tuple</em>) – (x,y,z) offset to apply to all nodes in this XML</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.models.arenas.arena.Arena.set_scale">
+<span class="sig-name descname"><span class="pre">set_scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.arenas.arena.Arena.set_scale" title="Link to this definition">#</a></dt>
+<dd><p>Scales each geom, mesh, site, and body under obj_name.
+Called during initialization but can also be used externally</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scale</strong> (<em>float</em><em> or </em><em>list</em><em> of </em><em>floats</em>) – Scale factor (1 or 3 dims)</p></li>
+<li><p><strong>apply.</strong> (<em>obj_name Name</em><em> of </em><em>root object to</em>)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -777,6 +793,7 @@ recent dirt position is defined by &#64;pos</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena"><code class="docutils literal notranslate"><span class="pre">Arena</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_camera"><code class="docutils literal notranslate"><span class="pre">Arena.set_camera()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_origin"><code class="docutils literal notranslate"><span class="pre">Arena.set_origin()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.models.arenas.arena.Arena.set_scale"><code class="docutils literal notranslate"><span class="pre">Arena.set_scale()</span></code></a></li>
 </ul>
 </li>
 </ul>

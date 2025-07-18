@@ -456,8 +456,6 @@ document.write(`
 </li>
       <li><a href="simulation/controller.html#robosuite.controllers.parts.arm.ik.InverseKinematicsController._get_current_error">_get_current_error() (robosuite.controllers.parts.arm.ik.InverseKinematicsController static method)</a>
 </li>
-      <li><a href="modeling/object_model.html#robosuite.models.objects.objects.MujocoXMLObject._get_geoms">_get_geoms() (robosuite.models.objects.objects.MujocoXMLObject method)</a>
-</li>
       <li><a href="modeling/object_model.html#robosuite.models.objects.objects.MujocoObject._get_object_properties">_get_object_properties() (robosuite.models.objects.objects.MujocoObject method)</a>
 </li>
       <li><a href="modeling/object_model.html#robosuite.models.objects.objects.MujocoObject._get_object_subtree">_get_object_subtree() (robosuite.models.objects.objects.MujocoObject method)</a>
@@ -2110,12 +2108,14 @@ document.write(`
 </li>
       <li><a href="source/robosuite.models.html#robosuite.models.base.MujocoXML.get_element_names">get_element_names() (robosuite.models.base.MujocoXML method)</a>
 </li>
-      <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.get_ep_meta">get_ep_meta() (robosuite.environments.base.MujocoEnv method)</a>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.get_elements">get_elements() (in module robosuite.utils.mjcf_utils)</a>
 </li>
-      <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.CameraModder.get_fovy">get_fovy() (robosuite.utils.mjmod.CameraModder method)</a>
+      <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.get_ep_meta">get_ep_meta() (robosuite.environments.base.MujocoEnv method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.CameraModder.get_fovy">get_fovy() (robosuite.utils.mjmod.CameraModder method)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_geom_jacp">get_geom_jacp() (robosuite.utils.binding_utils.MjData method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_geom_jacr">get_geom_jacr() (robosuite.utils.binding_utils.MjData method)</a>
@@ -3760,6 +3760,8 @@ document.write(`
       <li><a href="source/robosuite.models.bases.html#robosuite.models.bases.no_actuation_base.NoActuationBase">NoActuationBase (class in robosuite.models.bases.no_actuation_base)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.noct">noct (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.normalize_scale_array">normalize_scale_array() (in module robosuite.utils.mjcf_utils)</a>
 </li>
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.pick_place.PickPlace.not_in_bin">not_in_bin() (robosuite.environments.manipulation.pick_place.PickPlace method)</a>
 </li>
@@ -5567,6 +5569,18 @@ document.write(`
         <li><a href="simulation/controller.html#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.scale_action">(robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController method)</a>, <a href="source/robosuite.controllers.parts.mobile_base.html#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.scale_action">[1]</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_body_element">scale_body_element() (in module robosuite.utils.mjcf_utils)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_geom_element">scale_geom_element() (in module robosuite.utils.mjcf_utils)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_joint_element">scale_joint_element() (in module robosuite.utils.mjcf_utils)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_mesh_element">scale_mesh_element() (in module robosuite.utils.mjcf_utils)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_mjcf_model">scale_mjcf_model() (in module robosuite.utils.mjcf_utils)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.scale_site_element">scale_site_element() (in module robosuite.utils.mjcf_utils)</a>
+</li>
       <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.scale_to_control">scale_to_control() (in module robosuite.devices.dualsense)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.sensor">sensor (robosuite.utils.binding_utils.MjData property)</a>
@@ -5727,8 +5741,14 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.observables.Observable.set_sampling_rate">set_sampling_rate() (robosuite.utils.observables.Observable method)</a>
 </li>
-      <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoXMLObject.set_scale">set_scale() (robosuite.models.objects.objects.MujocoXMLObject method)</a>
+      <li><a href="source/robosuite.models.arenas.html#robosuite.models.arenas.arena.Arena.set_scale">set_scale() (robosuite.models.arenas.arena.Arena method)</a>
+
+      <ul>
+        <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject.set_scale">(robosuite.models.objects.objects.MujocoObject method)</a>
 </li>
+        <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoXMLObject.set_scale">(robosuite.models.objects.objects.MujocoXMLObject method)</a>
+</li>
+      </ul></li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.observables.Observable.set_sensor">set_sensor() (robosuite.utils.observables.Observable method)</a>
 </li>
       <li><a href="modeling/mujoco_model.html#robosuite.models.base.MujocoModel.set_sites_visibility">set_sites_visibility() (robosuite.models.base.MujocoModel method)</a>, <a href="source/robosuite.models.html#robosuite.models.base.MujocoModel.set_sites_visibility">[1]</a>
@@ -5743,6 +5763,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_positions">set_target_positions() (robosuite.utils.ik_utils.IKSolver method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_rotations">set_target_rotations() (robosuite.utils.ik_utils.IKSolver method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.TextureModder.set_texture">set_texture() (robosuite.utils.mjmod.TextureModder method)</a>
@@ -5751,8 +5773,6 @@ document.write(`
 </li>
       <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DSState.setDPadState">setDPadState() (robosuite.devices.dualsense.DSState method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.CompositeController.setup_action_split_idx">setup_action_split_idx() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.setup_action_split_idx">[1]</a>
 
       <ul>
