@@ -9,7 +9,7 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 from mink.configuration import Configuration
-from mink.tasks.exceptions import TargetNotSet
+from mink.exceptions import TargetNotSet
 from mink.tasks.frame_task import FrameTask
 
 import robosuite.utils.transform_utils as T
