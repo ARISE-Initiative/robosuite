@@ -97,28 +97,6 @@ class MujocoObject(MujocoModel):
         assert self._obj is not None, "Object XML tree has not been generated yet!"
         return self._obj
 
-    def set_scale(self, scale, obj=None):
-        """
-        Scales each geom, mesh, site, body, and joint ranges (for slide joints).
-        Called during initialization but can also be used externally.
-        Args:
-            scale (float or list of floats): Scale factor (1 or 3 dims)
-            obj (ET.Element): Root object to apply scaling to. Defaults to root object of model.
-        """
-        if obj is None:
-            obj = self._obj
-
-        self._scale = scale
-
-        # Use the centralized scaling utility function
-        scale_mjcf_model(
-            obj=obj,
-            asset_root=self.asset,
-            scale=scale,
-            get_elements_func=get_elements,
-            scale_slide_joints=True,
-        )
-
     def exclude_from_prefixing(self, inp):
         """
         A function that should take in either an ET.Element or its attribute (str) and return either True or False,
@@ -506,6 +484,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         scale_mjcf_model(
             obj=obj,
             asset_root=self.asset,
+            worldbody=self.worldbody,
             scale=scale,
             get_elements_func=get_elements,
             scale_slide_joints=False,  # MujocoXMLObject doesn't handle slide joints

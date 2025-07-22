@@ -155,6 +155,7 @@ class Arena(MujocoXML):
         scale_mjcf_model(
             obj=obj,
             asset_root=self.asset,
+            worldbody=self.worldbody,
             scale=scale,
             get_elements_func=get_elements,
             scale_slide_joints=False,  # Arena doesn't handle slide joints
