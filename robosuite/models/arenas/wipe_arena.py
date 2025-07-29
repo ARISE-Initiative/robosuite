@@ -31,7 +31,11 @@ class WipeArena(TableArena):
         table_friction_std=0,
         line_width=0.02,
         two_clusters=False,
+        rng=None,
     ):
+        if rng is None:
+            rng = np.random.default_rng()
+        self.rng = rng
         # Tactile table-specific features
         self.table_friction_std = table_friction_std
         self.line_width = line_width
@@ -89,6 +93,7 @@ class WipeArena(TableArena):
                 material=dirt,
                 obj_type="visual",
                 joints=None,
+                rng=self.rng,
             )
             # Manually add this object to the arena xml
             self.merge_assets(marker)
@@ -140,15 +145,15 @@ class WipeArena(TableArena):
             np.array: the (x,y) value of the newly sampled dirt starting location
         """
         # First define the random direction that we will start at
-        self.direction = np.random.uniform(-np.pi, np.pi)
+        self.direction = self.rng.uniform(-np.pi, np.pi)
 
         return np.array(
             (
-                np.random.uniform(
+                self.rng.uniform(
                     -self.table_half_size[0] * self.coverage_factor + self.line_width / 2,
                     self.table_half_size[0] * self.coverage_factor - self.line_width / 2,
                 ),
-                np.random.uniform(
+                self.rng.uniform(
                     -self.table_half_size[1] * self.coverage_factor + self.line_width / 2,
                     self.table_half_size[1] * self.coverage_factor - self.line_width / 2,
                 ),
@@ -167,8 +172,8 @@ class WipeArena(TableArena):
             np.array: the (x,y) value of the newly sampled dirt position to add to the current dirt path
         """
         # Random chance to alter the current dirt direction
-        if np.random.uniform(0, 1) > 0.7:
-            self.direction += np.random.normal(0, 0.5)
+        if self.rng.uniform(0, 1) > 0.7:
+            self.direction += self.rng.normal(0, 0.5)
 
         posnew0 = pos[0] + 0.005 * np.sin(self.direction)
         posnew1 = pos[1] + 0.005 * np.cos(self.direction)
@@ -178,7 +183,7 @@ class WipeArena(TableArena):
             abs(posnew0) >= self.table_half_size[0] * self.coverage_factor - self.line_width / 2
             or abs(posnew1) >= self.table_half_size[1] * self.coverage_factor - self.line_width / 2
         ):
-            self.direction += np.random.normal(0, 0.5)
+            self.direction += self.rng.normal(0, 0.5)
             posnew0 = pos[0] + 0.005 * np.sin(self.direction)
             posnew1 = pos[1] + 0.005 * np.cos(self.direction)
 

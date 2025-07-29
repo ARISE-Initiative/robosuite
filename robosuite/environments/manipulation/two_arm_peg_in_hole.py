@@ -192,6 +192,7 @@ class TwoArmPegInHole(TwoArmEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # Assert that the gripper type is None
         assert gripper_types is None, "Tried to specify gripper other than None in TwoArmPegInHole environment!"
@@ -233,6 +234,7 @@ class TwoArmPegInHole(TwoArmEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -350,6 +352,7 @@ class TwoArmPegInHole(TwoArmEnv):
             material=greenwood,
             rgba=[0, 1, 0, 1],
             joints=None,
+            rng=self.rng,
         )
 
         # Load hole object

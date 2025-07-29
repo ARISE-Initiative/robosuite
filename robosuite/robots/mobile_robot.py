@@ -192,7 +192,7 @@ class MobileRobot(Robot):
         # First, run the superclass method to load the relevant model
         super().load_model()
 
-    def reset(self, deterministic=False):
+    def reset(self, deterministic=False, rng=None):
         """
         Sets initial pose of arm and grippers. Overrides gripper joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
@@ -201,7 +201,7 @@ class MobileRobot(Robot):
             deterministic (bool): If true, will not randomize initializations within the sim
         """
         # First, run the superclass method to reset the position and controller
-        super().reset(deterministic)
+        super().reset(deterministic, rng=rng)
 
     def setup_references(self):
         """
