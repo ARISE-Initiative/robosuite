@@ -32,8 +32,9 @@ class Device(metaclass=abc.ABCMeta):
         self.active_arm_indices = [0] * len(self.all_robot_arms)
         self.active_robot = 0
         self.base_modes = [False] * len(self.all_robot_arms)
-
-        self._prev_target = {arm: None for arm in self.all_robot_arms[self.active_robot]}
+        # need to keep track of all previous targets. If not when using absolute actions,
+        # the robot will execute the other robots pose when switching robots
+        self._prev_target = [{arm: None for arm in self.all_robot_arms[i]} for i in range(self.num_robots)]
 
     @property
     def active_arm(self):
@@ -177,7 +178,9 @@ class Device(metaclass=abc.ABCMeta):
 
         return ac_dict
 
-    def get_arm_action(self, robot, arm, norm_delta, goal_update_mode="target"):
+    def get_arm_action(self, robot, arm, norm_delta, goal_update_mode="target", robot_idx=None):
+        if robot_idx is None:
+            robot_idx = self.active_robot
         assert np.all(norm_delta <= 1.0) and np.all(norm_delta >= -1.0)
 
         assert goal_update_mode in [
@@ -195,7 +198,7 @@ class Device(metaclass=abc.ABCMeta):
                 "abs": abs_action,
             }
         elif robot.composite_controller_config["type"] in ["WHOLE_BODY_MINK_IK", "HYBRID_WHOLE_BODY_MINK_IK"]:
-            ref_frame = self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+            ref_frame = robot.composite_controller.composite_controller_specific_config.get(
                 "ik_input_ref_frame", "world"
             )
 
@@ -204,8 +207,9 @@ class Device(metaclass=abc.ABCMeta):
             delta_action[3:6] *= 0.15
 
             # general case
-            if goal_update_mode == "achieved" or self._prev_target[arm] is None:
-                site_name = f"gripper0_{arm}_grip_site"
+            if goal_update_mode == "achieved" or self._prev_target[self.active_robot][arm] is None:
+                id = robot.robot_model.idn
+                site_name = f"gripper{id}_{arm}_grip_site"
                 # update next target based on current achieved pose
                 pos = self.env.sim.data.get_site_xpos(site_name).copy()
                 ori = self.env.sim.data.get_site_xmat(site_name).copy()
@@ -214,7 +218,7 @@ class Device(metaclass=abc.ABCMeta):
                     pose_in_world = np.eye(4)
                     pose_in_world[:3, 3] = pos
                     pose_in_world[:3, :3] = ori
-                    pose_in_base = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    pose_in_base = robot.composite_controller.joint_action_policy.transform_pose(
                         src_frame_pose=pose_in_world,
                         src_frame="world",  # mocap pose is world coordinates
                         dst_frame=ref_frame,
@@ -222,8 +226,8 @@ class Device(metaclass=abc.ABCMeta):
                     pos, ori = pose_in_base[:3, 3], pose_in_base[:3, :3]
             else:
                 # update next target based on previous target pose
-                pos = self._prev_target[arm][0:3].copy()
-                ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+                pos = self._prev_target[self.active_robot][arm][0:3].copy()
+                ori = T.quat2mat(T.axisangle2quat(self._prev_target[self.active_robot][arm][3:6].copy()))
 
             # new positions computed in world frame coordinates
             new_pos = pos + delta_action[0:3]
@@ -232,22 +236,23 @@ class Device(metaclass=abc.ABCMeta):
             new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
 
             abs_action = np.concatenate([new_pos, new_axisangle])
-            self._prev_target[arm] = abs_action.copy()
+            self._prev_target[self.active_robot][arm] = abs_action.copy()
 
             return {
                 "delta": delta_action,
                 "abs": abs_action,
             }
         elif robot.composite_controller_config["type"] in ["WHOLE_BODY_IK"]:
-            if goal_update_mode == "achieved" or self._prev_target[arm] is None:
-                site_name = f"gripper0_{arm}_grip_site"
+            if goal_update_mode == "achieved" or self._prev_target[self.active_robot][arm] is None:
+                id = robot.robot_model.idn
+                site_name = f"gripper{id}_{arm}_grip_site"
                 # update next target based on current achieved pose
                 pos = self.env.sim.data.get_site_xpos(site_name).copy()
                 ori = self.env.sim.data.get_site_xmat(site_name).copy()
             else:
                 # update next target based on previous target pose
-                pos = self._prev_target[arm][0:3].copy()
-                ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
+                pos = self._prev_target[self.active_robot][arm][0:3].copy()
+                ori = T.quat2mat(T.axisangle2quat(self._prev_target[self.active_robot][arm][3:6].copy()))
 
             delta_action = norm_delta.copy()
             delta_action[0:3] *= 0.05
@@ -260,7 +265,7 @@ class Device(metaclass=abc.ABCMeta):
             new_axisangle = T.quat2axisangle(T.mat2quat(new_ori))
 
             abs_action = np.concatenate([new_pos, new_axisangle])
-            self._prev_target[arm] = abs_action.copy()
+            self._prev_target[self.active_robot][arm] = abs_action.copy()
 
             return {
                 "delta": delta_action,
