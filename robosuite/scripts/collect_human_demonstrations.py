@@ -185,9 +185,6 @@ def collect_human_trajectory(env, device, arm, max_fr):
                 for arm in robot.arms:
                     # set goal mode to acheived to avoid changing the target
                     inactive_robot_ac_dict[arm] = get_abs_arm_static_target(robot, arm, env)
-                    print(
-                        f"Inactive robot {robot.robot_model.idn} arm {arm} action: {inactive_robot_ac_dict[arm]}"
-                    )  # DEBUG
 
             all_robot_action_dicts.append(inactive_robot_ac_dict)
 
