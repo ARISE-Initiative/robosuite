@@ -609,7 +609,7 @@ Called by _load_controller() function</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.robot.Robot.reset" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.robot.Robot.reset" title="Link to this definition">#</a></dt>
 <dd><p>Sets initial pose of arm and grippers. Overrides robot joint configuration if we’re using a
 deterministic reset (e.g.: hard reset from xml file)</p>
 <dl class="field-list simple">
@@ -1073,7 +1073,7 @@ int: the index that correctly splits the right arm from the left arm joints</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.reset" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.reset" title="Link to this definition">#</a></dt>
 <dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
 deterministic reset (e.g.: hard reset from xml file)</p>
 <dl class="field-list simple">
@@ -1210,7 +1210,7 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.reset" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.reset" title="Link to this definition">#</a></dt>
 <dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
 deterministic reset (e.g.: hard reset from xml file)</p>
 <dl class="field-list simple">
@@ -1315,7 +1315,7 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.reset" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.reset" title="Link to this definition">#</a></dt>
 <dd><p>Sets initial pose of arm and grippers. Overrides gripper joint configuration if we’re using a
 deterministic reset (e.g.: hard reset from xml file)</p>
 <dl class="field-list simple">
