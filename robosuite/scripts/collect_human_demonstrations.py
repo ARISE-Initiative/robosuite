@@ -5,6 +5,7 @@ The demonstrations can be played back using the `playback_demonstrations_from_hd
 """
 
 import argparse
+import copy
 import datetime
 import json
 import os
@@ -15,9 +16,93 @@ import h5py
 import numpy as np
 
 import robosuite as suite
+import robosuite.utils.transform_utils as T
 from robosuite.controllers import load_composite_controller_config
 from robosuite.controllers.composite.composite_controller import WholeBody
+from robosuite.controllers.parts.arm import InverseKinematicsController, OperationalSpaceController
+from robosuite.utils.log_utils import ROBOSUITE_DEFAULT_LOGGER
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
+
+
+def get_arm_ref(env, robot, arm):
+    """
+    Extracts the reference pose of the specified arm of the robot.
+    """
+    if robot.composite_controller_config["type"] in ["WHOLE_BODY_MINK_IK", "HYBRID_WHOLE_BODY_MINK_IK"]:
+        ref_frame = robot.composite_controller.composite_controller_specific_config.get("ik_input_ref_frame", "world")
+
+        # general case
+        id = robot.robot_model.idn
+        site_name = f"gripper{id}_{arm}_grip_site"
+        # update next target based on current achieved pose
+        pos = env.sim.data.get_site_xpos(site_name).copy()
+        ori = env.sim.data.get_site_xmat(site_name).copy()
+        # convert target in world coordinate to
+        pose_in_world = np.eye(4)
+        pose_in_world[:3, 3] = pos
+        pose_in_world[:3, :3] = ori
+        pose_in_base = robot.composite_controller.joint_action_policy.transform_pose(
+            src_frame_pose=pose_in_world,
+            src_frame="world",  # mocap pose is world coordinates
+            dst_frame=ref_frame,
+        )
+        pos, ori = pose_in_base[:3, 3], pose_in_base[:3, :3]
+        axisangle = T.quat2axisangle(T.mat2quat(ori))
+
+        abs_action = np.concatenate([pos, axisangle])
+
+        return abs_action
+    elif robot.composite_controller_config["type"] in ["WHOLE_BODY_IK"]:
+        id = robot.robot_model.idn
+        site_name = f"gripper{id}_{arm}_grip_site"
+        # update next target based on current achieved pose
+        pos = env.sim.data.get_site_xpos(site_name).copy()
+        ori = env.sim.data.get_site_xmat(site_name).copy()
+
+        axisangle = T.quat2axisangle(T.mat2quat(ori))
+
+        abs_action = np.concatenate([pos, axisangle])
+
+        return abs_action
+    else:
+        raise NotImplementedError
+
+
+def get_abs_arm_static_target(robot, arm, env):
+    """
+    Extracts the internal goal absolute target for the specified arm of the robot. If the
+    internal goal is not set, it extracts the current achieved pose of the arm.
+    This is needed to maintain the arm position of a robot when the device is not controlling it.
+
+
+    Args:
+        robot (Robot): the robot to extract the arm target from
+        arm (str): the arm to extract the target for
+
+    Returns:
+        np.ndarray: the absolute target for the arm
+    """
+    abs_action = np.zeros(6)
+    if isinstance(robot.composite_controller, WholeBody):
+        controller_input_type = robot.composite_controller.joint_action_policy.input_type
+        prev_action = robot.composite_controller.input_action_goal
+        if prev_action is None:
+            abs_action = get_arm_ref(env, robot, arm)
+        else:
+            start_idx, end_idx = robot.composite_controller._whole_body_controller_action_split_indexes[arm]
+            abs_action = prev_action[start_idx:end_idx]
+    elif isinstance(robot.part_controllers[arm], OperationalSpaceController):
+        controller_input_type = robot.part_controllers[arm].input_type
+        abs_action = robot.part_controllers[arm].delta_to_abs_action(np.zeros(6), "achieved")
+    else:
+        ROBOSUITE_DEFAULT_LOGGER.warning(
+            "Unable to extract absolute target for arm {} of robot {} returning zeros. This is only a problem is it is a TwoArmEnv".format(
+                arm, robot.robot_model.idn
+            )
+        )
+
+    assert controller_input_type == "absolute", f"Only calculating absolute targets"
+    return abs_action
 
 
 def collect_human_trajectory(env, device, arm, max_fr):
@@ -82,9 +167,29 @@ def collect_human_trajectory(env, device, arm, max_fr):
                 action_dict[arm] = input_ac_dict[f"{arm}_abs"]
             else:
                 raise ValueError
+        all_robot_action_dicts = []
+        # set inactive robot action dicts
+        for i, robot in enumerate(env.robots):
+            if i == device.active_robot:
+                all_robot_action_dicts.append(action_dict)
+                continue
+
+            inactive_robot_ac_dict = copy.deepcopy(all_prev_gripper_actions[i])
+            if isinstance(robot.composite_controller, WholeBody):
+                controller_input_type = robot.composite_controller.joint_action_policy.input_type
+            else:
+                controller_input_type = robot.part_controllers[arm].input_type
+
+            # update action when controller input type is absolute so that the inactive robot does not move
+            if controller_input_type == "absolute":
+                for arm in robot.arms:
+                    # set goal mode to acheived to avoid changing the target
+                    inactive_robot_ac_dict[arm] = get_abs_arm_static_target(robot, arm, env)
+
+            all_robot_action_dicts.append(inactive_robot_ac_dict)
 
         # Maintain gripper state for each robot but only update the active robot with action
-        env_action = [robot.create_action_vector(all_prev_gripper_actions[i]) for i, robot in enumerate(env.robots)]
+        env_action = [robot.create_action_vector(all_robot_action_dicts[i]) for i, robot in enumerate(env.robots)]
         env_action[device.active_robot] = active_robot.create_action_vector(action_dict)
         env_action = np.concatenate(env_action)
         for gripper_ac in all_prev_gripper_actions[device.active_robot]:
@@ -301,6 +406,14 @@ if __name__ == "__main__":
     # Check if we're using a multi-armed environment and use env_configuration argument if so
     if "TwoArm" in args.environment:
         config["env_configuration"] = args.config
+        # make fresh copies of the controller config for each robot since they will have different references
+        config["controller_configs"] = [
+            load_composite_controller_config(
+                controller=args.controller,
+                robot=robot,
+            )
+            for robot in args.robots
+        ]
 
     # Create environment
     env = suite.make(
