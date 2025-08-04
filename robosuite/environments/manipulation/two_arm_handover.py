@@ -175,6 +175,7 @@ class TwoArmHandover(TwoArmEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # Task settings
         self.prehensile = prehensile
@@ -223,6 +224,7 @@ class TwoArmHandover(TwoArmEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -347,7 +349,7 @@ class TwoArmHandover(TwoArmEnv):
         )
 
         # initialize objects of interest
-        self.hammer = HammerObject(name="hammer")
+        self.hammer = HammerObject(name="hammer", rng=self.rng)
 
         # Create placement initializer
         if self.placement_initializer is not None:
@@ -366,6 +368,7 @@ class TwoArmHandover(TwoArmEnv):
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
                 reference_pos=self.table_offset,
+                rng=self.rng,
             )
 
         # task includes arena, robot, and objects of interest
