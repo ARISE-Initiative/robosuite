@@ -53,13 +53,13 @@ class MujocoObject(MujocoModel):
 
     """
 
-    def __init__(self, obj_type="all", duplicate_collision_geoms=True):
+    def __init__(self, obj_type="all", duplicate_collision_geoms=True, scale=None):
         super().__init__()
         self.asset = ET.Element("asset")
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
         self.obj_type = obj_type
         self.duplicate_collision_geoms = duplicate_collision_geoms
-
+        self._scale = scale
         # Attributes that should be filled in within the subclass
         self._name = None
         self._obj = None
@@ -72,6 +72,33 @@ class MujocoObject(MujocoModel):
         self._sites = None
         self._contact_geoms = None
         self._visual_geoms = None
+
+        if self._scale is not None:
+            self.set_scale(self._scale)
+
+    def set_scale(self, scale, obj=None):
+        """
+        Scales each geom, mesh, site, and body.
+        Called during initialization but can also be used externally
+
+        Args:
+            scale (float or list of floats): Scale factor (1 or 3 dims)
+            obj (ET.Element) Root object to apply. Defaults to root object of model
+        """
+        if obj is None:
+            obj = self._obj
+
+        self._scale = scale
+
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            worldbody=None,  # because we don't have a worldbody in MujocoObject
+            scale=scale,
+            get_elements_func=get_elements,
+            scale_slide_joints=False,  # MujocoObject doesn't handle slide joints
+        )
 
     def merge_assets(self, other):
         """
