@@ -1060,7 +1060,7 @@ def scale_site_element(element, scale_array):
         element.set("size", s_size)
 
 
-def scale_mjcf_model(obj, asset_root, worldbody, scale, get_elements_func, scale_slide_joints=True):
+def scale_mjcf_model(obj, asset_root, scale, get_elements_func, worldbody=None, scale_slide_joints=True):
     """
     Scales all elements (geoms, meshes, bodies, joints, sites) in an MJCF model.
 
@@ -1098,9 +1098,10 @@ def scale_mjcf_model(obj, asset_root, worldbody, scale, get_elements_func, scale
         scale_joint_element(elem, scale_array, scale_slide_joints)
 
     # Scale sites
-    site_pairs = get_elements_func(worldbody, "site")
-    for (_, elem) in site_pairs:
-        scale_site_element(elem, scale_array)
+    if worldbody is not None:
+        site_pairs = get_elements_func(worldbody, "site")
+        for (_, elem) in site_pairs:
+            scale_site_element(elem, scale_array)
 
     return scale_array
 
