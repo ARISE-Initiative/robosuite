@@ -245,6 +245,8 @@ class WholeBody(CompositeController):
         # task space actions (such as end effector poses) to joint actions (such as joint angles or joint torques)
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
+        self._latest_all_joint_angle_action: Optional[np.ndarray] = None
+        self._use_joint_angle_action_input: bool = False
 
     def _init_controllers(self):
         for part_name in self.part_controller_config.keys():
@@ -323,9 +325,11 @@ class WholeBody(CompositeController):
             previous_idx = last_idx
 
     def set_goal(self, all_action):
-        target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
-        # create new all_action vector with the IK solver's actions first
-        all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
+        if not self._use_joint_angle_action_input:
+            target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
+            # create new all_action vector with the IK solver's actions first
+            all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
+        self._latest_all_joint_angle_action = all_action
         for part_name, controller in self.part_controllers.items():
             start_idx, end_idx = self._action_split_indexes[part_name]
             action = all_action[start_idx:end_idx]
@@ -343,6 +347,9 @@ class WholeBody(CompositeController):
         Returns the action limits for the whole body controller.
         Corresponds to each term in the action vector passed to env.step().
         """
+        if self._use_joint_angle_action_input:
+            return super().action_limits
+
         low, high = [], []
         # assumption: IK solver's actions come first
         low_c, high_c = self.joint_action_policy.control_limits
@@ -444,6 +451,11 @@ class WholeBodyIK(WholeBody):
 
         # Update the configuration with only the valid reference names
         self.composite_controller_specific_config["ref_name"] = valid_ref_names
+
+        # Set the use joint angle action input flag
+        self._use_joint_angle_action_input = self.composite_controller_specific_config.get(
+            "use_joint_angle_action_input", False
+        )
 
     def _init_joint_action_policy(self):
         joint_names: str = []

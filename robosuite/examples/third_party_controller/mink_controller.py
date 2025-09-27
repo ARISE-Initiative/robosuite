@@ -544,6 +544,11 @@ class WholeBodyMinkIK(WholeBody):
         # Update the configuration with only the valid posture weights
         self.composite_controller_specific_config["ik_posture_weights"] = valid_posture_weights
 
+        # Set the use joint angle action input flag
+        self._use_joint_angle_action_input = self.composite_controller_specific_config.get(
+            "use_joint_angle_action_input", False
+        )
+
     def _init_joint_action_policy(self):
         joint_names: str = []
         for part_name in self.composite_controller_specific_config["actuation_part_names"]:
