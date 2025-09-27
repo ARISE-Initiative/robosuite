@@ -130,6 +130,7 @@ class Robot(object):
 
         self._ref_actuators_indexes_dict = {}
         self._ref_joints_indexes_dict = {}
+        self._ref_actuator_to_joint_id = None
 
         self._enabled_parts = {}
         self.composite_controller = None
