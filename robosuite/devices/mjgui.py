@@ -116,13 +116,14 @@ class MJGUI(Device):
             target_mat = self.env.sim.data.site_xmat[self.env.sim.model.site_name2id(site_name)]
             set_mocap_pose(self.env.sim, target_pos, target_mat, f"{target_name_prefix}_eef_target")
 
-    def input2action(self) -> Dict[str, np.ndarray]:
+    def input2action(self, goal_update_mode="desired") -> Dict[str, np.ndarray]:
         """
         Uses mocap body poses to determine action for robot. Obtain input_type
         (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
         from the controller itself.
 
         """
+        assert goal_update_mode == "desired", "goal_update_mode must be 'desired' for MJGUI: targets are based off the pose of the mocap body."
         # TODO: unify this logic to be independent from controller type.
         action: Dict[str, np.ndarray] = {}
         gripper_dof = self.env.robots[0].gripper[self.active_end_effector].dof
@@ -131,20 +132,6 @@ class MJGUI(Device):
             target_name_prefix = "right" if "right" in site_name else "left"  # hardcoded for now
             target_pos_world, target_ori_mat_world = get_mocap_pose(self.env.sim, f"{target_name_prefix}_eef_target")
 
-            if isinstance(self.env.robots[0].composite_controller, WholeBodyIK):
-                assert (
-                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                        "ik_input_ref_frame", "world"
-                    )
-                    == "world"
-                ), ("Only support world frame for MJGui teleop for now. " "Please modify the controller configs.")
-                assert (
-                    self.env.robots[0].composite_controller.composite_controller_specific_config.get(
-                        "ik_input_type", "absolute"
-                    )
-                    == "absolute"
-                ), ("Only support absolute actions for MJGui teleop for now. " "Please modify the controller configs.")
-            # check if need to update frames
             if isinstance(self.env.robots[0].composite_controller, WholeBody):
                 # TODO: should be more general
                 if (

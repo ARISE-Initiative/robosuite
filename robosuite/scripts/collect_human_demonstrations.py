@@ -20,7 +20,7 @@ from robosuite.controllers.composite.composite_controller import WholeBody
 from robosuite.wrappers import DataCollectionWrapper, VisualizationWrapper
 
 
-def collect_human_trajectory(env, device, arm, max_fr):
+def collect_human_trajectory(env, device, arm, max_fr, goal_update_mode):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -60,7 +60,7 @@ def collect_human_trajectory(env, device, arm, max_fr):
         active_robot = env.robots[device.active_robot]
 
         # Get the newest action
-        input_ac_dict = device.input2action()
+        input_ac_dict = device.input2action(goal_update_mode=goal_update_mode)
 
         # If action is none, then this a reset so we should break
         if input_ac_dict is None:
@@ -279,6 +279,15 @@ if __name__ == "__main__":
         default=False,
         help="(DualSense Only)Reverse the effect of the x and y axes of the joystick.It is used to handle the case that the left/right and front/back sides of the view are opposite to the LX and LY of the joystick(Push LX up but the robot move left in your view)",
     )
+    parser.add_argument(
+        "--goal_update_mode",
+        type=str,
+        default="desired",
+        choices=["desired", "achieved"],
+        help="Used by the device to get the arm's actions. The mode to update the goal in. Can be 'desired' or 'achieved'. If 'desired', the goal is updated based on the current desired goal. "
+            "If 'achieved', the goal is updated based on the current achieved state. "
+            "We recommend using 'achieved' (and input_ref_frame='base') if collecting demonstrations with a mobile base robot."
+    )
     args = parser.parse_args()
 
     # Get controller config
@@ -366,5 +375,5 @@ if __name__ == "__main__":
 
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device, args.arm, args.max_fr)
+        collect_human_trajectory(env, device, args.arm, args.max_fr, args.goal_update_mode)
         gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)

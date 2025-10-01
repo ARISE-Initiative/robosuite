@@ -27,6 +27,7 @@ class IKSolver:
         input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
         input_file: Optional[str] = None,
         input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
+        input_ref_frame: Literal["world", "base"] = "world",
     ):
         """
         Args:
@@ -64,6 +65,7 @@ class IKSolver:
 
         self.input_action_repr = input_action_repr
         self.input_rotation_repr = input_rotation_repr
+        self.input_ref_frame = input_ref_frame
         ROTATION_REPRESENTATION_DIMS: Dict[str, int] = {"quat_wxyz": 4, "axis_angle": 3}
         self.rot_dim = ROTATION_REPRESENTATION_DIMS[input_rotation_repr]
         self.pos_dim = 3
@@ -260,6 +262,16 @@ class IKSolver:
             target_quat_wxyz = np.array(
                 [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
             )
+
+        if self.input_ref_frame == "base":
+            for i in range(len(target_pos)):
+                X_B_goal = T.make_pose(
+                    translation=target_pos[i],
+                    rotation=T.quat2mat(np.roll(target_quat_wxyz[i], -1)),
+                )
+                X_W_goal = self.transform_pose(X_B_goal, src_frame="robot0_base", dst_frame="world")
+                target_pos[i] = X_W_goal[:3, 3]
+                target_quat_wxyz[i] = np.roll(T.mat2quat(X_W_goal[:3, :3]), 1)
 
         jac = self._compute_jacobian(self.full_model, self.full_model_data)
 

@@ -71,7 +71,7 @@ class Device(metaclass=abc.ABCMeta):
     def _postprocess_device_outputs(self, dpos, drotation):
         raise NotImplementedError
 
-    def input2action(self, mirror_actions=False) -> Optional[Dict]:
+    def input2action(self, mirror_actions=False, goal_update_mode="desired") -> Optional[Dict]:
         """
         Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -80,6 +80,8 @@ class Device(metaclass=abc.ABCMeta):
         Args:
             mirror_actions (bool): actions corresponding to viewing robot from behind.
                 first axis: left/right. second axis: back/forward. third axis: down/up.
+            goal_update_mode (str): the mode to update the goal in. Can be 'desired' or 'achieved'.
+            If 'desired', the goal is updated based on the current desired goal. If 'achieved', the goal is updated based on the current achieved state.
 
         Returns:
             Optional[Dict]: Dictionary of actions to be fed into env.step()
@@ -134,6 +136,7 @@ class Device(metaclass=abc.ABCMeta):
                 robot,
                 arm,
                 norm_delta=np.zeros(6),
+                goal_update_mode=goal_update_mode,
             )
             ac_dict[f"{arm}_abs"] = arm_action["abs"]
             ac_dict[f"{arm}_delta"] = arm_action["delta"]
@@ -155,6 +158,15 @@ class Device(metaclass=abc.ABCMeta):
             ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
         else:
             arm_norm_delta = np.concatenate([dpos, drotation])
+
+        if robot.torso is not None:
+            assert robot.part_controllers[robot.torso].name == "JOINT_POSITION", "torso controller must be joint position controller for now"
+            if robot.part_controllers[robot.torso].input_type == "delta":
+                torso_ac = np.zeros(1)
+            else:
+                # otherwise, keep at current position
+                torso_ac = robot.part_controllers[robot.torso].goal_qpos
+            ac_dict["torso"] = torso_ac
 
         # populate action dict items for arm and grippers
         arm_action = self.get_arm_action(
@@ -249,6 +261,10 @@ class Device(metaclass=abc.ABCMeta):
                 pos = self._prev_target[arm][0:3].copy()
                 ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
 
+            ref_frame = self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                "ik_input_ref_frame", "world"
+            )
+
             delta_action = norm_delta.copy()
             delta_action[0:3] *= 0.05
             delta_action[3:6] *= 0.15
@@ -261,6 +277,31 @@ class Device(metaclass=abc.ABCMeta):
 
             abs_action = np.concatenate([new_pos, new_axisangle])
             self._prev_target[arm] = abs_action.copy()
+
+            # convert to be w.r.t base frame
+            if ref_frame == "base":
+                # convert to matrix format
+                abs_action_mat = T.make_pose(
+                    translation=abs_action[0:3],
+                    rotation=T.quat2mat(T.axisangle2quat(abs_action[3:6])),
+                )
+                delta_action_mat = T.make_pose(
+                    translation=delta_action[0:3],
+                    rotation=T.quat2mat(T.axisangle2quat(delta_action[3:6])),
+                )
+                abs_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    src_frame_pose=abs_action_mat,
+                    src_frame="world",
+                    dst_frame="base",
+                )
+                delta_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    src_frame_pose=delta_action_mat,
+                    src_frame="world",
+                    dst_frame="base",
+                )
+                # get the new delta action and abs action position and orientation from the matrix
+                delta_action = np.concatenate([delta_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(delta_action_base_mat[:3, :3]))])
+                abs_action = np.concatenate([abs_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(abs_action_base_mat[:3, :3]))])
 
             return {
                 "delta": delta_action,
