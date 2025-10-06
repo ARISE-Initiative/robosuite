@@ -71,7 +71,7 @@ class Device(metaclass=abc.ABCMeta):
     def _postprocess_device_outputs(self, dpos, drotation):
         raise NotImplementedError
 
-    def input2action(self, mirror_actions=False, goal_update_mode="desired") -> Optional[Dict]:
+    def input2action(self, mirror_actions=False, goal_update_mode="target") -> Optional[Dict]:
         """
         Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -80,8 +80,8 @@ class Device(metaclass=abc.ABCMeta):
         Args:
             mirror_actions (bool): actions corresponding to viewing robot from behind.
                 first axis: left/right. second axis: back/forward. third axis: down/up.
-            goal_update_mode (str): the mode to update the goal in. Can be 'desired' or 'achieved'.
-            If 'desired', the goal is updated based on the current desired goal. If 'achieved', the goal is updated based on the current achieved state.
+            goal_update_mode (str): the mode to update the goal in. Can be 'target' or 'achieved'.
+            If 'target', the goal is updated based on the current target goal. If 'achieved', the goal is updated based on the current achieved state.
 
         Returns:
             Optional[Dict]: Dictionary of actions to be fed into env.step()
