@@ -97,7 +97,10 @@ class IKSolver:
         self.error_prev = np.zeros_like(self.q0)
         self.error_dot = np.zeros_like(self.q0)
 
-    def get_controller_ref_pose(self):
+    def get_controller_base_pose(self):
+        """
+        Returns the pose of the controller's base frame in the world frame.
+        """
         return T.make_pose(
             translation=self.full_model_data.body(self.input_ref_frame).xpos,
             rotation=T.quat2mat(np.roll(self.full_model_data.body(self.input_ref_frame).xquat, shift=-1)),
