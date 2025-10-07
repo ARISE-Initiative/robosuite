@@ -27,7 +27,7 @@ class IKSolver:
         input_action_repr: Literal["absolute", "relative", "relative_pose"] = "absolute",
         input_file: Optional[str] = None,
         input_rotation_repr: Literal["quat_wxyz", "axis_angle"] = "axis_angle",
-        input_ref_frame: Literal["world", "base"] = "world",
+        input_ref_frame: Literal["world", "base", "mobilebase0_base"] = "world",
     ):
         """
         Args:
@@ -96,6 +96,12 @@ class IKSolver:
         # Initialize error and error_dot
         self.error_prev = np.zeros_like(self.q0)
         self.error_dot = np.zeros_like(self.q0)
+
+    def get_controller_ref_pose(self):
+        return T.make_pose(
+            translation=self.full_model_data.body(self.input_ref_frame).xpos,
+            rotation=T.quat2mat(np.roll(self.full_model_data.body(self.input_ref_frame).xquat, shift=-1)),
+        )
 
     def action_split_indexes(self) -> Dict[str, Tuple[int, int]]:
         action_split_indexes: Dict[str, Tuple[int, int]] = {}
@@ -176,7 +182,7 @@ class IKSolver:
         return {name: data.site(site_id).xpos for name, site_id in zip(self.site_names, self.site_ids)}
 
     def transform_pose(
-        self, src_frame_pose: np.ndarray, src_frame: Literal["world", "base"], dst_frame: Literal["world", "base"]
+        self, src_frame_pose: np.ndarray, src_frame: Literal["world", "base", "mobilebase0_base"], dst_frame: Literal["world", "base", "mobilebase0_base"]
     ) -> np.ndarray:
         """
         Transforms src_frame_pose from src_frame to dst_frame.
@@ -198,11 +204,13 @@ class IKSolver:
         # now convert to destination frame
         if dst_frame == "world":
             X_dst_frame_pose = X_W_pose
-        elif dst_frame == "base":
+        else:
+            if dst_frame == "base":
+                dst_frame = "robot0_base"
             X_dst_frame_W = np.linalg.inv(
                 T.make_pose(
-                    translation=self.full_model.body("robot0_base").pos,
-                    rotation=T.quat2mat(np.roll(self.full_model.body("robot0_base").quat, shift=-1)),
+                    translation=self.full_model.body(dst_frame).pos,
+                    rotation=T.quat2mat(np.roll(self.full_model.body(dst_frame).quat, shift=-1)),
                 )
             )  # hardcode name of base
             X_dst_frame_pose = X_dst_frame_W.dot(X_W_pose)
@@ -263,13 +271,17 @@ class IKSolver:
                 [np.roll(T.mat2quat(new_target_poses[i, :3, :3]), shift=1) for i in range(len(self.site_ids))]
             )
 
-        if self.input_ref_frame == "base":
+        if self.input_ref_frame != "world":
+            if self.input_ref_frame == "base":
+                src_frame = "robot0_base"
+            else:
+                src_frame = self.input_ref_frame
             for i in range(len(target_pos)):
                 X_B_goal = T.make_pose(
                     translation=target_pos[i],
                     rotation=T.quat2mat(np.roll(target_quat_wxyz[i], -1)),
                 )
-                X_W_goal = self.transform_pose(X_B_goal, src_frame="robot0_base", dst_frame="world")
+                X_W_goal = self.transform_pose(X_B_goal, src_frame=src_frame, dst_frame="world")
                 target_pos[i] = X_W_goal[:3, 3]
                 target_quat_wxyz[i] = np.roll(T.mat2quat(X_W_goal[:3, :3]), 1)
 

@@ -279,7 +279,7 @@ class Device(metaclass=abc.ABCMeta):
             self._prev_target[arm] = abs_action.copy()
 
             # convert to be w.r.t base frame
-            if ref_frame == "base":
+            if ref_frame != "world":
                 # convert to matrix format
                 abs_action_mat = T.make_pose(
                     translation=abs_action[0:3],
@@ -292,12 +292,12 @@ class Device(metaclass=abc.ABCMeta):
                 abs_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
                     src_frame_pose=abs_action_mat,
                     src_frame="world",
-                    dst_frame="base",
+                    dst_frame=ref_frame,
                 )
                 delta_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
                     src_frame_pose=delta_action_mat,
                     src_frame="world",
-                    dst_frame="base",
+                    dst_frame=ref_frame,
                 )
                 # get the new delta action and abs action position and orientation from the matrix
                 delta_action = np.concatenate([delta_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(delta_action_base_mat[:3, :3]))])
