@@ -1,6 +1,6 @@
 import copy
 import json
-import os
+import mujoco
 from collections import OrderedDict
 from typing import Optional
 
@@ -373,6 +373,14 @@ class Robot(object):
             names += arm_sensor_names
             actives += [True] * len(arm_sensors)
 
+        if hasattr(self.robot_model, "torso_body"):
+            torso_sensors, torso_sensor_names = self._create_torso_sensors(
+                self.robot_model.torso_body, modality=modality
+            )
+            sensors += torso_sensors
+            names += torso_sensor_names
+            actives += [True] * len(torso_sensors)
+
         base_sensors, base_sensor_names = self._create_base_sensors(modality=modality)
         sensors += base_sensors
         names += base_sensor_names
@@ -476,9 +484,48 @@ class Robot(object):
             def gripper_qvel(obs_cache):
                 return np.array([self.sim.data.qvel[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
 
-            sensors += [gripper_qpos, gripper_qvel]
-            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel"]
+            @sensor(modality=modality)
+            def gripper_qacc(obs_cache):
+                return np.array([self.sim.data.qacc[x] for x in self._ref_gripper_joint_vel_indexes[arm]])
 
+            sensors += [gripper_qpos, gripper_qvel, gripper_qacc]
+            names += [f"{pf}gripper_qpos", f"{pf}gripper_qvel", f"{pf}gripper_qacc"]
+
+        return sensors, names
+
+    def _create_torso_sensors(self, torso_body, modality):
+        """
+        Helper function to create sensors for the robot torso. This will be
+        overriden by subclasses.
+        """
+        sensors = []
+        names = []
+
+        for torso_name in torso_body:
+            pf = self.robot_model.naming_prefix
+            torso_index = self.sim.model.body_name2id(f"{pf}{torso_name}")
+
+            @sensor(modality=modality)
+            def torso_imu_quat(obs_cache):
+                return self.sim.data.xquat[torso_index]
+
+            @sensor(modality=modality)
+            def torso_imu_vel(obs_cache):
+                pose = np.zeros(6)
+                mujoco.mj_objectVelocity(
+                    self.sim.model._model,
+                    self.sim.data._data,
+                    mujoco.mjtObj.mjOBJ_BODY,
+                    torso_index,
+                    pose,
+                    1,
+                )  # 1 for local frame
+                # Reorder velocity from [ang, lin] to [lin, ang]
+                pose[:3], pose[3:6] = pose[3:6].copy(), pose[:3].copy()
+                return pose
+
+            sensors += [torso_imu_quat, torso_imu_vel]
+            names += [f"{torso_name}_imu_quat", f"{torso_name}_imu_vel"]
         return sensors, names
 
     def _create_base_sensors(self, modality):
