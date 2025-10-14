@@ -375,24 +375,28 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self._ep_meta = {}
 
-    def _update_observables(self, force=False):
+    def _update_observables(self, force=False, timestep=None):
         """
         Updates all observables in this environment
         Args:
             force (bool): If True, will force all the observables to update their internal values to the newest
                 value. This is useful if, e.g., you want to grab observations when directly setting simulation states
                 without actually stepping the simulation.
+            timestep (float): If specified, will update the observables with the given timestep. Sometimes, we only
+            want to get the current time step of the observables without interrupt the observable update process.
         """
         for observable in self._observables.values():
-            observable.update(timestep=self.model_timestep, obs_cache=self._obs_cache, force=force)
+            observable.update(timestep=self.model_timestep if timestep is None else timestep, obs_cache=self._obs_cache, force=force)
 
-    def _get_observations(self, force_update=False):
+    def _get_observations(self, force_update=False, timestep=None):
         """
         Grabs observations from the environment.
         Args:
             force_update (bool): If True, will force all the observables to update their internal values to the newest
                 value. This is useful if, e.g., you want to grab observations when directly setting simulation states
                 without actually stepping the simulation.
+            timestep (float): If specified, will update the observables with the given timestep. Sometimes, we only
+            want to get the current time step of the observables without interrupt the observable update process.
         Returns:
             OrderedDict: OrderedDict containing observations [(name_string, np.array), ...]
         """
@@ -401,7 +405,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         # Force an update if requested
         if force_update:
-            self._update_observables(force=True)
+            self._update_observables(force=True, timestep=timestep)
 
         # Loop through all observables and grab their current observation
         for obs_name, observable in self._observables.items():
