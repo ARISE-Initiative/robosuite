@@ -177,9 +177,7 @@ class JointPositionController(Controller):
 
         self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
 
-        self.use_external_torque_compensation = kwargs.get(
-            "use_external_torque_compensation", False
-        )
+        self.use_external_torque_compensation = kwargs.get("use_external_torque_compensation", False)
 
     def set_goal(self, action, set_qpos=None):
         """

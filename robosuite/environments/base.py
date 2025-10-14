@@ -386,7 +386,9 @@ class MujocoEnv(metaclass=EnvMeta):
             want to get the current time step of the observables without interrupt the observable update process.
         """
         for observable in self._observables.values():
-            observable.update(timestep=self.model_timestep if timestep is None else timestep, obs_cache=self._obs_cache, force=force)
+            observable.update(
+                timestep=self.model_timestep if timestep is None else timestep, obs_cache=self._obs_cache, force=force
+            )
 
     def _get_observations(self, force_update=False, timestep=None):
         """
