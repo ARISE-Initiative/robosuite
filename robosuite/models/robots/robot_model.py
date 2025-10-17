@@ -190,10 +190,10 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # Keep robot0_base as the root, but move all its content (geoms, inertial, arms) to mobile base support
         merge_body = self.root_body
         root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
-        
+
         # Store all direct children of robot0_base (arms, geoms, inertial, etc.)
         all_root_children = list(root)  # Make a copy of all children
-        
+
         # Append mobile base bodies to robot0_base (not to worldbody)
         for body in mobile_base.worldbody:
             root.append(body)
