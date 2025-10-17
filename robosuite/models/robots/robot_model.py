@@ -146,7 +146,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         Mounts @mount to arm.
 
-        Throws error if robot already has a mount or if mount type i\s incorrect.
+        Throws error if robot already has a mount or if mount type is incorrect.
 
         Args:
             mount (MountModel): mount MJCF model
