@@ -375,7 +375,7 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self._ep_meta = {}
 
-    def _update_observables(self, force=False):
+    def _update_observables(self, force=False, skip_render_images=False):
         """
         Updates all observables in this environment
         Args:
@@ -383,7 +383,10 @@ class MujocoEnv(metaclass=EnvMeta):
                 value. This is useful if, e.g., you want to grab observations when directly setting simulation states
                 without actually stepping the simulation.
         """
+        render_keys = ["_segmentation_instance", "_depth", "_image"]
         for observable in self._observables.values():
+            if skip_render_images and any(key in observable.name for key in render_keys):
+                continue
             observable.update(timestep=self.model_timestep, obs_cache=self._obs_cache, force=force)
 
     def _get_observations(self, force_update=False):
@@ -424,7 +427,7 @@ class MujocoEnv(metaclass=EnvMeta):
 
         return observations
 
-    def step(self, action):
+    def step(self, action, skip_render_images=False):
         """
         Takes a step in simulation with control command @action.
         Args:
@@ -461,7 +464,7 @@ class MujocoEnv(metaclass=EnvMeta):
                 self.sim.step2()
             else:
                 self.sim.step()
-            self._update_observables()
+            self._update_observables(skip_render_images=skip_render_images)
             policy_step = False
 
         # Note: this is done all at once to avoid floating point inaccuracies
