@@ -146,7 +146,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         """
         Mounts @mount to arm.
 
-        Throws error if robot already has a mount or if mount type i\s incorrect.
+        Throws error if robot already has a mount or if mount type is incorrect.
 
         Args:
             mount (MountModel): mount MJCF model
@@ -187,19 +187,25 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         offset = self.base_offset - mobile_base.top_offset
         mobile_base._elements["root_body"].set("pos", array_to_string(offset))
 
-        # if the mount is mobile, the robot should be "merged" into the mount,
-        # so that when the mount moves the robot moves along with it
+        # Keep robot0_base as the root, but move all its content (geoms, inertial, arms) to mobile base support
         merge_body = self.root_body
         root = find_elements(root=self.worldbody, tags="body", attribs={"name": merge_body}, return_first=True)
+
+        # Store all direct children of robot0_base (arms, geoms, inertial, etc.)
+        all_root_children = list(root)  # Make a copy of all children
+
+        # Append mobile base bodies to robot0_base (not to worldbody)
         for body in mobile_base.worldbody:
             root.append(body)
-        arm_root = find_elements(root=self.worldbody, tags="body", return_first=False)[1]
 
+        # Find the mount's support body where everything should attach
         mount_support = find_elements(
             root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
-        mount_support.append(deepcopy(arm_root))
-        root.remove(arm_root)
+        # Move ALL content from robot0_base to the mobile base support (arms, geoms, inertial)
+        for child in all_root_children:
+            mount_support.append(deepcopy(child))
+            root.remove(child)
         self.merge_assets(mobile_base)
         for one_actuator in mobile_base.actuator:
             self.actuator.append(one_actuator)
