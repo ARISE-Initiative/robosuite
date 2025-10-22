@@ -245,6 +245,7 @@ class WholeBody(CompositeController):
         # task space actions (such as end effector poses) to joint actions (such as joint angles or joint torques)
 
         self._whole_body_controller_action_split_indexes: OrderedDict = OrderedDict()
+        self.input_action_goal = None
 
     def _init_controllers(self):
         for part_name in self.part_controller_config.keys():
@@ -323,6 +324,7 @@ class WholeBody(CompositeController):
             previous_idx = last_idx
 
     def set_goal(self, all_action):
+        self.input_action_goal = all_action.copy()
         target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
         all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
@@ -433,6 +435,7 @@ class WholeBodyIK(WholeBody):
 
         # Loop through ref_names and validate against mujoco model
         original_ref_names = self.composite_controller_specific_config.get("ref_name", [])
+        original_ref_names = [name.format(idn=self.robot_model.idn) for name in original_ref_names]
         for ref_name in original_ref_names:
             if ref_name in self.sim.model.site_names:  # Check if the site exists in the mujoco model
                 valid_ref_names.append(ref_name)
