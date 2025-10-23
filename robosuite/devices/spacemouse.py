@@ -136,14 +136,18 @@ class SpaceMouse(Device):
             print(f"Connected to SpaceMouse using default IDs: {vendor_id:04x}:{product_id:04x}")
         except OSError:
             print("Default SpaceMouse IDs failed, searching for SpaceMouse devices...")
-            success = self._auto_detect_spacemouse()
-            if not success:
-                ROBOSUITE_DEFAULT_LOGGER.warning(
-                    "Failed to find any SpaceMouse device. "
-                    "Make sure device is connected and not used by other processes. "
-                    "Consider killing 3DconnexionHelper: killall 3DconnexionHelper"
-                )
+            spacemouses = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
+            if not spacemouses:
+                print("No SpaceMouse devices found")
                 raise OSError("No SpaceMouse device found")
+            else:
+                print(f"Found {len(spacemouses)} SpaceMouse devices:")
+                for d in spacemouses:
+                    print(f"  {d['vendor_id']:04x}:{d['product_id']:04x} - {d['product_string']}")
+                self.device.open(spacemouses[0]['vendor_id'], spacemouses[0]['product_id'])
+                self.vendor_id = spacemouses[0]['vendor_id']
+                self.product_id = spacemouses[0]['product_id']
+                print(f"Connected to SpaceMouse using first device: {spacemouses[0]['vendor_id']:04x}:{spacemouses[0]['product_id']:04x}")
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -174,29 +178,6 @@ class SpaceMouse(Device):
 
         # start listening
         self.listener.start()
-
-    def _auto_detect_spacemouse(self):
-        """Find 3Dconnexion devices and try first one."""
-        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
-        if devices:
-            device = devices[0]
-            try:
-                self.device.open(device['vendor_id'], device['product_id'])
-                self.vendor_id = device['vendor_id']
-                self.product_id = device['product_id']
-                print(f"Connected to {device['manufacturer_string']} {device['product_string']}")
-                return True
-            except OSError:
-                pass
-        return False
-
-    @staticmethod
-    def list_available_devices():
-        """List 3Dconnexion devices."""
-        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
-        print(f"Found {len(devices)} 3Dconnexion devices:")
-        for d in devices:
-            print(f"  {d['vendor_id']:04x}:{d['product_id']:04x} - {d['product_string']}")
 
     @staticmethod
     def _display_controls():
