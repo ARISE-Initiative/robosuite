@@ -313,10 +313,11 @@ class Device(metaclass=abc.ABCMeta):
         torso_controller = robot.part_controllers[robot.torso]
 
         if torso_controller.name == "JOINT_POSITION":
-            scale = 0.01
             if torso_controller.input_type == "delta":
+                scale = 0.2
                 return np.array([device_input * scale])
             else:
+                scale = 0.01
                 target = self._prev_torso_target if self._prev_torso_target is not None else torso_controller.goal_qpos
                 if abs(device_input) < 1e-6:
                     action = target
