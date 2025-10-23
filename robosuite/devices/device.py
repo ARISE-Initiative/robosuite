@@ -34,6 +34,7 @@ class Device(metaclass=abc.ABCMeta):
         self.base_modes = [False] * len(self.all_robot_arms)
 
         self._prev_target = {arm: None for arm in self.all_robot_arms[self.active_robot]}
+        self._prev_torso_target = None
 
     @property
     def active_arm(self):
@@ -147,26 +148,20 @@ class Device(metaclass=abc.ABCMeta):
             if base_mode is True:
                 arm_norm_delta = np.zeros(6)
                 base_ac = np.array([dpos[0], dpos[1], drotation[2]])
-                torso_ac = np.array([dpos[2]])
+                device_torso_input = dpos[2]  # Use vertical movement for torso in base mode
             else:
                 arm_norm_delta = np.concatenate([dpos, drotation])
                 base_ac = np.zeros(3)
-                torso_ac = np.zeros(1)
+                device_torso_input = 0.0  # No torso input when not in base mode
 
             ac_dict["base"] = base_ac
-            # ac_dict["torso"] = torso_ac
             ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
         else:
             arm_norm_delta = np.concatenate([dpos, drotation])
+            device_torso_input = 0.0  # No torso input for non-mobile robots by default
 
         if hasattr(robot, "torso") and robot.torso is not None:
-            assert robot.part_controllers[robot.torso].name == "JOINT_POSITION", "torso controller must be joint position controller for now"
-            if robot.part_controllers[robot.torso].input_type == "delta":
-                torso_ac = np.zeros(1)
-            else:
-                # otherwise, keep at current position
-                torso_ac = robot.part_controllers[robot.torso].goal_qpos
-            ac_dict["torso"] = torso_ac
+            ac_dict["torso"] = self.get_torso_action(robot, device_torso_input)
 
         # populate action dict items for arm and grippers
         arm_action = self.get_arm_action(
@@ -309,3 +304,27 @@ class Device(metaclass=abc.ABCMeta):
             }
         else:
             raise NotImplementedError
+
+    def get_torso_action(self, robot, device_input):
+        """Generate torso action from device input"""
+        if robot.torso is None:
+            return np.zeros(1)
+
+        torso_controller = robot.part_controllers[robot.torso]
+
+        if torso_controller.name == "JOINT_POSITION":
+            scale = 0.01
+            if torso_controller.input_type == "delta":
+                return np.array([device_input * scale])
+            else:
+                target = self._prev_torso_target if self._prev_torso_target is not None else torso_controller.goal_qpos
+                if abs(device_input) < 1e-6:
+                    action = target
+                else:
+                    action = target + np.array([device_input * scale])
+                self._prev_torso_target = action.copy()
+                return action
+        elif torso_controller.name == "JOINT_VELOCITY":
+            return np.array([device_input * 0.5])
+        else:
+            return np.zeros(1)
