@@ -419,6 +419,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.base_mode"><code class="docutils literal notranslate"><span class="pre">Device.base_mode</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_arm_action"><code class="docutils literal notranslate"><span class="pre">Device.get_arm_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_torso_action"><code class="docutils literal notranslate"><span class="pre">Device.get_torso_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.grasp"><code class="docutils literal notranslate"><span class="pre">Device.grasp</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.input2action"><code class="docutils literal notranslate"><span class="pre">Device.input2action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
@@ -518,6 +519,12 @@ Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 <dd><p>Returns the current state of the device, a dictionary of pos, orn, grasp, and reset.</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.devices.device.Device.get_torso_action">
+<span class="sig-name descname"><span class="pre">get_torso_action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device.get_torso_action" title="Link to this definition">#</a></dt>
+<dd><p>Generate torso action from device input</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.grasp">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp</span></span><a class="headerlink" href="#robosuite.devices.device.Device.grasp" title="Link to this definition">#</a></dt>
@@ -525,13 +532,19 @@ Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.input2action">
-<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mirror_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#robosuite.devices.device.Device.input2action" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mirror_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'target'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#robosuite.devices.device.Device.input2action" title="Link to this definition">#</a></dt>
 <dd><p>Converts an input from an active device into a valid action sequence that can be fed into an env.step() call</p>
 <p>If a reset is triggered from the device, immediately returns None. Else, returns the appropriate action</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>mirror_actions</strong> (<em>bool</em>) – actions corresponding to viewing robot from behind.
-first axis: left/right. second axis: back/forward. third axis: down/up.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mirror_actions</strong> (<em>bool</em>) – actions corresponding to viewing robot from behind.
+first axis: left/right. second axis: back/forward. third axis: down/up.</p></li>
+<li><p><strong>goal_update_mode</strong> (<em>str</em>) – the mode to update the goal in. Can be ‘target’ or ‘achieved’.</p></li>
+<li><p><strong>'target'</strong> (<em>If</em>)</p></li>
+<li><p><strong>'achieved'</strong> (<em>the goal is updated based on the current target goal. If</em>)</p></li>
+<li><p><strong>state.</strong> (<em>the goal is updated based on the current achieved</em>)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
@@ -752,7 +765,7 @@ using this device.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.input2action">
-<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'desired'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
 <dd><p>Uses mocap body poses to determine action for robot. Obtain input_type
 (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
 from the controller itself.</p>
@@ -839,6 +852,7 @@ start receiving commands.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.base_mode"><code class="docutils literal notranslate"><span class="pre">Device.base_mode</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_arm_action"><code class="docutils literal notranslate"><span class="pre">Device.get_arm_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_torso_action"><code class="docutils literal notranslate"><span class="pre">Device.get_torso_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.grasp"><code class="docutils literal notranslate"><span class="pre">Device.grasp</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.input2action"><code class="docutils literal notranslate"><span class="pre">Device.input2action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
