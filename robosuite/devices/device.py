@@ -162,7 +162,7 @@ class Device(metaclass=abc.ABCMeta):
 
         if hasattr(robot, "torso") and robot.torso is not None:
             # only support single joint torso for now
-            if self.env.robots[0].composite_controller.part_controllers['torso'].joint_dim == 1:
+            if self.env.robots[0].composite_controller.part_controllers["torso"].joint_dim == 1:
                 ac_dict["torso"] = self.get_torso_action(robot, device_torso_input)
 
         # populate action dict items for arm and grippers
@@ -192,7 +192,7 @@ class Device(metaclass=abc.ABCMeta):
         assert goal_update_mode in [
             "achieved",
             "target",
-        ], f"goal_update_mode must be either 'achieved' or 'target', got {goal_update_mode}" # update next target either based on achieved pose or current target pose
+        ], f"goal_update_mode must be either 'achieved' or 'target', got {goal_update_mode}"  # update next target either based on achieved pose or current target pose
 
         # TODO: the logic between OSC and while body based ik is fragmented right now. Unify
         if isinstance(robot.part_controllers[arm], OperationalSpaceController):

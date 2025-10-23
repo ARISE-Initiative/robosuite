@@ -206,7 +206,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         # elements to avoid duplicates since mobile base support already has inertial properties
         for child in all_root_children:
             # Skip inertial elements to avoid duplicates with mobile base's own inertial
-            if child.tag != 'inertial':
+            if child.tag != "inertial":
                 mount_support.append(deepcopy(child))
             root.remove(child)
         self.merge_assets(mobile_base)
