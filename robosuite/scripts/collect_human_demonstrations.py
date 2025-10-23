@@ -300,6 +300,10 @@ if __name__ == "__main__":
         # mink-speicific import. requires installing mink
         from robosuite.examples.third_party_controller.mink_controller import WholeBodyMinkIK
 
+    # if WHOLE BODY IK; assert only one robot
+    if controller_config["type"] == "WHOLE_BODY_IK":
+        assert len(args.robots) == 1, "Whole Body IK only supports one robot"
+
     # Create argument configuration
     config = {
         "env_name": args.environment,
