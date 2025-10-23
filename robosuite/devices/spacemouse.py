@@ -104,14 +104,13 @@ def convert(b1, b2):
 class SpaceMouse(Device):
     """
     A minimalistic driver class for SpaceMouse with HID library.
-
-    Note: Use hid.enumerate() to view all USB human interface devices (HID).
-    Make sure SpaceMouse is detected before running the script.
-    You can look up its vendor/product id from this method.
+    Auto-detects 3Dconnexion devices if default vendor/product IDs fail.
 
     Args:
         env (RobotEnv): The environment which contains the robot(s) to control
                         using this device.
+        vendor_id (int): SpaceMouse vendor ID (will auto-detect if default fails)
+        product_id (int): SpaceMouse product ID (will auto-detect if default fails)
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
@@ -130,14 +129,21 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
+        
+        # Try default vendor/product ID first
         try:
             self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
-        except OSError as e:
-            ROBOSUITE_DEFAULT_LOGGER.warning(
-                "Failed to open SpaceMouse device"
-                "Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)"
-            )
-            raise
+            print(f"Connected to SpaceMouse using default IDs: {vendor_id:04x}:{product_id:04x}")
+        except OSError:
+            print("Default SpaceMouse IDs failed, searching for SpaceMouse devices...")
+            success = self._auto_detect_spacemouse()
+            if not success:
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    "Failed to find any SpaceMouse device. "
+                    "Make sure device is connected and not used by other processes. "
+                    "Consider killing 3DconnexionHelper: killall 3DconnexionHelper"
+                )
+                raise OSError("No SpaceMouse device found")
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -168,6 +174,29 @@ class SpaceMouse(Device):
 
         # start listening
         self.listener.start()
+
+    def _auto_detect_spacemouse(self):
+        """Find 3Dconnexion devices and try first one."""
+        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
+        if devices:
+            device = devices[0]
+            try:
+                self.device.open(device['vendor_id'], device['product_id'])
+                self.vendor_id = device['vendor_id']
+                self.product_id = device['product_id']
+                print(f"Connected to {device['manufacturer_string']} {device['product_string']}")
+                return True
+            except OSError:
+                pass
+        return False
+
+    @staticmethod
+    def list_available_devices():
+        """List 3Dconnexion devices."""
+        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
+        print(f"Found {len(devices)} 3Dconnexion devices:")
+        for d in devices:
+            print(f"  {d['vendor_id']:04x}:{d['product_id']:04x} - {d['product_string']}")
 
     @staticmethod
     def _display_controls():
