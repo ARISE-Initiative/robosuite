@@ -203,10 +203,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
         # Move content from robot0_base to the mobile base support (arms, geoms), but skip inertial
-        # elements to avoid duplicates since mobile base support already has inertial properties
+        # elements and freejoints to avoid conflicts and MuJoCo constraints
         for child in all_root_children:
             # Skip inertial elements to avoid duplicates with mobile base's own inertial
-            if child.tag != "inertial":
+            # Skip freejoints since they can only be used at top level
+            if child.tag not in ["inertial", "freejoint"]:
                 mount_support.append(deepcopy(child))
             root.remove(child)
         self.merge_assets(mobile_base)
