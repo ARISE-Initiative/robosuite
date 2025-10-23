@@ -127,7 +127,7 @@ class SpaceMouse(Device):
     ):
         super().__init__(env)
 
-        print("Opening SpaceMouse device")
+        ROBOSUITE_DEFAULT_LOGGER.info("Opening SpaceMouse device")
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
@@ -135,23 +135,23 @@ class SpaceMouse(Device):
         if device_path:
             try:
                 self.device.open_path(device_path)
-                print(f"Connected using path: {device_path}")
+                ROBOSUITE_DEFAULT_LOGGER.info(f"Connected using path: {device_path}")
             except OSError:
-                print(f"Failed to open device at path: {device_path}")
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Failed to open device at path: {device_path}")
                 self._auto_detect_device()
         else:
             try:
                 self.device.open(vendor_id, product_id)
-                print(f"Connected using default IDs: {vendor_id:04x}:{product_id:04x}")
+                ROBOSUITE_DEFAULT_LOGGER.info(f"Connected using default IDs: {vendor_id:04x}:{product_id:04x}")
             except OSError:
-                print(f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}")
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}")
                 self._auto_detect_device()
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
 
-        print("Manufacturer: %s" % self.device.get_manufacturer_string())
-        print("Product: %s" % self.device.get_product_string())
+        ROBOSUITE_DEFAULT_LOGGER.info("Manufacturer: %s" % self.device.get_manufacturer_string())
+        ROBOSUITE_DEFAULT_LOGGER.info("Product: %s" % self.device.get_product_string())
 
         # 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
@@ -187,7 +187,7 @@ class SpaceMouse(Device):
         self.device.open_path(selected["path"])
         self.vendor_id = selected["vendor_id"]
         self.product_id = selected["product_id"]
-        print(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
 
     @staticmethod
     def _display_controls():
@@ -397,5 +397,5 @@ if __name__ == "__main__":
 
     space_mouse = SpaceMouse()
     for i in range(100):
-        print(space_mouse.control, space_mouse.control_gripper)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Control: {space_mouse.control}, Gripper: {space_mouse.control_gripper}")
         time.sleep(0.02)
