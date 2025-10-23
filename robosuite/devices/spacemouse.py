@@ -104,14 +104,14 @@ def convert(b1, b2):
 class SpaceMouse(Device):
     """
     A minimalistic driver class for SpaceMouse with HID library.
-
-    Note: Use hid.enumerate() to view all USB human interface devices (HID).
-    Make sure SpaceMouse is detected before running the script.
-    You can look up its vendor/product id from this method.
+    Auto-detects 3Dconnexion devices if default vendor/product IDs fail.
 
     Args:
         env (RobotEnv): The environment which contains the robot(s) to control
                         using this device.
+        vendor_id (int): SpaceMouse vendor ID (will auto-detect if default fails)
+        product_id (int): SpaceMouse product ID (will auto-detect if default fails)
+        device_path (bytes): Specific device path (e.g., b'1-2:1.0') for reliable identification
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
@@ -121,29 +121,39 @@ class SpaceMouse(Device):
         env,
         vendor_id=macros.SPACEMOUSE_VENDOR_ID,
         product_id=macros.SPACEMOUSE_PRODUCT_ID,
+        device_path=None,
         pos_sensitivity=1.0,
         rot_sensitivity=1.0,
     ):
         super().__init__(env)
 
-        print("Opening SpaceMouse device")
+        ROBOSUITE_DEFAULT_LOGGER.info("Opening SpaceMouse device")
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        try:
-            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
-        except OSError as e:
-            ROBOSUITE_DEFAULT_LOGGER.warning(
-                "Failed to open SpaceMouse device"
-                "Consider killing other processes that may be using the device such as 3DconnexionHelper (killall 3DconnexionHelper)"
-            )
-            raise
+
+        if device_path:
+            try:
+                self.device.open_path(device_path)
+                ROBOSUITE_DEFAULT_LOGGER.info(f"Connected using path: {device_path}")
+            except OSError:
+                ROBOSUITE_DEFAULT_LOGGER.warning(f"Failed to open device at path: {device_path}")
+                self._auto_detect_device()
+        else:
+            try:
+                self.device.open(vendor_id, product_id)
+                ROBOSUITE_DEFAULT_LOGGER.info(f"Connected using default IDs: {vendor_id:04x}:{product_id:04x}")
+            except OSError:
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}"
+                )
+                self._auto_detect_device()
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
 
-        print("Manufacturer: %s" % self.device.get_manufacturer_string())
-        print("Product: %s" % self.device.get_product_string())
+        ROBOSUITE_DEFAULT_LOGGER.info("Manufacturer: %s" % self.device.get_manufacturer_string())
+        ROBOSUITE_DEFAULT_LOGGER.info("Product: %s" % self.device.get_product_string())
 
         # 6-DOF variables
         self.x, self.y, self.z = 0, 0, 0
@@ -169,6 +179,18 @@ class SpaceMouse(Device):
         # start listening
         self.listener.start()
 
+    def _auto_detect_device(self):
+        """Auto-detect and connect to first 3Dconnexion device."""
+        devices = [d for d in hid.enumerate() if d.get("manufacturer_string") == "3Dconnexion"]
+        if not devices:
+            raise OSError("No 3Dconnexion devices found")
+
+        selected = devices[0]
+        self.device.open_path(selected["path"])
+        self.vendor_id = selected["vendor_id"]
+        self.product_id = selected["product_id"]
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
+
     @staticmethod
     def _display_controls():
         """
@@ -190,6 +212,8 @@ class SpaceMouse(Device):
         print_command("b", "toggle arm/base mode (if applicable)")
         print_command("s", "switch active arm (if multi-armed robot)")
         print_command("=", "switch active robot (if multi-robot environment)")
+        print("")
+        print("NOTE: Auto-detects 3Dconnexion devices. Use device_path for specific device.")
         print("")
 
     def _reset_internal_state(self):
@@ -375,5 +399,5 @@ if __name__ == "__main__":
 
     space_mouse = SpaceMouse()
     for i in range(100):
-        print(space_mouse.control, space_mouse.control_gripper)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Control: {space_mouse.control}, Gripper: {space_mouse.control_gripper}")
         time.sleep(0.02)
