@@ -144,7 +144,9 @@ class SpaceMouse(Device):
                 self.device.open(vendor_id, product_id)
                 ROBOSUITE_DEFAULT_LOGGER.info(f"Connected using default IDs: {vendor_id:04x}:{product_id:04x}")
             except OSError:
-                ROBOSUITE_DEFAULT_LOGGER.warning(f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}")
+                ROBOSUITE_DEFAULT_LOGGER.warning(
+                    f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}"
+                )
                 self._auto_detect_device()
 
         self.pos_sensitivity = pos_sensitivity
