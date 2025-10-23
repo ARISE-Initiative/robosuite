@@ -179,14 +179,14 @@ class SpaceMouse(Device):
 
     def _auto_detect_device(self):
         """Auto-detect and connect to first 3Dconnexion device."""
-        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
+        devices = [d for d in hid.enumerate() if d.get("manufacturer_string") == "3Dconnexion"]
         if not devices:
             raise OSError("No 3Dconnexion devices found")
-        
+
         selected = devices[0]
-        self.device.open_path(selected['path'])
-        self.vendor_id = selected['vendor_id']
-        self.product_id = selected['product_id']
+        self.device.open_path(selected["path"])
+        self.vendor_id = selected["vendor_id"]
+        self.product_id = selected["product_id"]
         print(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
 
     @staticmethod
