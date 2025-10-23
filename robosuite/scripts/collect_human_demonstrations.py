@@ -282,9 +282,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--goal_update_mode",
         type=str,
-        default="desired",
-        choices=["desired", "achieved"],
-        help="Used by the device to get the arm's actions. The mode to update the goal in. Can be 'desired' or 'achieved'. If 'desired', the goal is updated based on the current desired goal. "
+        default="target",
+        choices=["target", "achieved"],
+        help="Used by the device to get the arm's actions. The mode to update the goal in. Can be 'target' or 'achieved'. If 'target', the goal is updated based on the current target pose. "
         "If 'achieved', the goal is updated based on the current achieved state. "
         "We recommend using 'achieved' (and input_ref_frame='base') if collecting demonstrations with a mobile base robot.",
     )
