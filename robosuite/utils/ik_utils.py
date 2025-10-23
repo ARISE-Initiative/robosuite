@@ -185,7 +185,10 @@ class IKSolver:
         return {name: data.site(site_id).xpos for name, site_id in zip(self.site_names, self.site_ids)}
 
     def transform_pose(
-        self, src_frame_pose: np.ndarray, src_frame: Literal["world", "base", "mobilebase0_base"], dst_frame: Literal["world", "base", "mobilebase0_base"]
+        self,
+        src_frame_pose: np.ndarray,
+        src_frame: Literal["world", "base", "mobilebase0_base"],
+        dst_frame: Literal["world", "base", "mobilebase0_base"],
     ) -> np.ndarray:
         """
         Transforms src_frame_pose from src_frame to dst_frame.

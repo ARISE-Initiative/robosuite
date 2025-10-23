@@ -123,7 +123,9 @@ class MJGUI(Device):
         from the controller itself.
 
         """
-        assert goal_update_mode == "desired", "goal_update_mode must be 'desired' for MJGUI: targets are based off the pose of the mocap body."
+        assert (
+            goal_update_mode == "desired"
+        ), "goal_update_mode must be 'desired' for MJGUI: targets are based off the pose of the mocap body."
         # TODO: unify this logic to be independent from controller type.
         action: Dict[str, np.ndarray] = {}
         gripper_dof = self.env.robots[0].gripper[self.active_end_effector].dof

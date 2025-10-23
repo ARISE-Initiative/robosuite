@@ -285,8 +285,8 @@ if __name__ == "__main__":
         default="desired",
         choices=["desired", "achieved"],
         help="Used by the device to get the arm's actions. The mode to update the goal in. Can be 'desired' or 'achieved'. If 'desired', the goal is updated based on the current desired goal. "
-            "If 'achieved', the goal is updated based on the current achieved state. "
-            "We recommend using 'achieved' (and input_ref_frame='base') if collecting demonstrations with a mobile base robot."
+        "If 'achieved', the goal is updated based on the current achieved state. "
+        "We recommend using 'achieved' (and input_ref_frame='base') if collecting demonstrations with a mobile base robot.",
     )
     args = parser.parse_args()
 

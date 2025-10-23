@@ -295,8 +295,12 @@ class Device(metaclass=abc.ABCMeta):
                     dst_frame=ref_frame,
                 )
                 # get the new delta action and abs action position and orientation from the matrix
-                delta_action = np.concatenate([delta_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(delta_action_base_mat[:3, :3]))])
-                abs_action = np.concatenate([abs_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(abs_action_base_mat[:3, :3]))])
+                delta_action = np.concatenate(
+                    [delta_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(delta_action_base_mat[:3, :3]))]
+                )
+                abs_action = np.concatenate(
+                    [abs_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(abs_action_base_mat[:3, :3]))]
+                )
 
             return {
                 "delta": delta_action,
