@@ -111,6 +111,7 @@ class SpaceMouse(Device):
                         using this device.
         vendor_id (int): SpaceMouse vendor ID (will auto-detect if default fails)
         product_id (int): SpaceMouse product ID (will auto-detect if default fails)
+        device_path (bytes): Specific device path (e.g., b'1-2:1.0') for reliable identification
         pos_sensitivity (float): Magnitude of input position command scaling
         rot_sensitivity (float): Magnitude of scale input rotation commands scaling
     """
@@ -120,6 +121,7 @@ class SpaceMouse(Device):
         env,
         vendor_id=macros.SPACEMOUSE_VENDOR_ID,
         product_id=macros.SPACEMOUSE_PRODUCT_ID,
+        device_path=None,
         pos_sensitivity=1.0,
         rot_sensitivity=1.0,
     ):
@@ -129,25 +131,21 @@ class SpaceMouse(Device):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.device = hid.device()
-        
-        # Try default vendor/product ID first
-        try:
-            self.device.open(self.vendor_id, self.product_id)  # SpaceMouse
-            print(f"Connected to SpaceMouse using default IDs: {vendor_id:04x}:{product_id:04x}")
-        except OSError:
-            print("Default SpaceMouse IDs failed, searching for SpaceMouse devices...")
-            spacemouses = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
-            if not spacemouses:
-                print("No SpaceMouse devices found")
-                raise OSError("No SpaceMouse device found")
-            else:
-                print(f"Found {len(spacemouses)} SpaceMouse devices:")
-                for d in spacemouses:
-                    print(f"  {d['vendor_id']:04x}:{d['product_id']:04x} - {d['product_string']}")
-                self.device.open(spacemouses[0]['vendor_id'], spacemouses[0]['product_id'])
-                self.vendor_id = spacemouses[0]['vendor_id']
-                self.product_id = spacemouses[0]['product_id']
-                print(f"Connected to SpaceMouse using first device: {spacemouses[0]['vendor_id']:04x}:{spacemouses[0]['product_id']:04x}")
+
+        if device_path:
+            try:
+                self.device.open_path(device_path)
+                print(f"Connected using path: {device_path}")
+            except OSError:
+                print(f"Failed to open device at path: {device_path}")
+                self._auto_detect_device()
+        else:
+            try:
+                self.device.open(vendor_id, product_id)
+                print(f"Connected using default IDs: {vendor_id:04x}:{product_id:04x}")
+            except OSError:
+                print(f"Failed to open device with provided IDs: {vendor_id:04x}:{product_id:04x}")
+                self._auto_detect_device()
 
         self.pos_sensitivity = pos_sensitivity
         self.rot_sensitivity = rot_sensitivity
@@ -179,6 +177,18 @@ class SpaceMouse(Device):
         # start listening
         self.listener.start()
 
+    def _auto_detect_device(self):
+        """Auto-detect and connect to first 3Dconnexion device."""
+        devices = [d for d in hid.enumerate() if d.get('manufacturer_string') == '3Dconnexion']
+        if not devices:
+            raise OSError("No 3Dconnexion devices found")
+        
+        selected = devices[0]
+        self.device.open_path(selected['path'])
+        self.vendor_id = selected['vendor_id']
+        self.product_id = selected['product_id']
+        print(f"Auto-detected: {selected['product_string']} with path {selected['path']}")
+
     @staticmethod
     def _display_controls():
         """
@@ -200,6 +210,8 @@ class SpaceMouse(Device):
         print_command("b", "toggle arm/base mode (if applicable)")
         print_command("s", "switch active arm (if multi-armed robot)")
         print_command("=", "switch active robot (if multi-robot environment)")
+        print("")
+        print("NOTE: Auto-detects 3Dconnexion devices. Use device_path for specific device.")
         print("")
 
     def _reset_internal_state(self):
