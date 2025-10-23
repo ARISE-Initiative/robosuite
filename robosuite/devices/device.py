@@ -161,7 +161,9 @@ class Device(metaclass=abc.ABCMeta):
             device_torso_input = 0.0  # No torso input for non-mobile robots by default
 
         if hasattr(robot, "torso") and robot.torso is not None:
-            ac_dict["torso"] = self.get_torso_action(robot, device_torso_input)
+            # only support single joint torso for now
+            if self.env.robots[0].composite_controller.part_controllers["torso"].joint_dim == 1:
+                ac_dict["torso"] = self.get_torso_action(robot, device_torso_input)
 
         # populate action dict items for arm and grippers
         arm_action = self.get_arm_action(
