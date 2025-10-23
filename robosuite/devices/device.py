@@ -159,7 +159,7 @@ class Device(metaclass=abc.ABCMeta):
         else:
             arm_norm_delta = np.concatenate([dpos, drotation])
 
-        if robot.torso is not None:
+        if hasattr(robot, "torso") and robot.torso is not None:
             assert robot.part_controllers[robot.torso].name == "JOINT_POSITION", "torso controller must be joint position controller for now"
             if robot.part_controllers[robot.torso].input_type == "delta":
                 torso_ac = np.zeros(1)
