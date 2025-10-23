@@ -202,9 +202,12 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         mount_support = find_elements(
             root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
-        # Move ALL content from robot0_base to the mobile base support (arms, geoms, inertial)
+        # Move content from robot0_base to the mobile base support (arms, geoms), but skip inertial
+        # elements to avoid duplicates since mobile base support already has inertial properties
         for child in all_root_children:
-            mount_support.append(deepcopy(child))
+            # Skip inertial elements to avoid duplicates with mobile base's own inertial
+            if child.tag != 'inertial':
+                mount_support.append(deepcopy(child))
             root.remove(child)
         self.merge_assets(mobile_base)
         for one_actuator in mobile_base.actuator:
