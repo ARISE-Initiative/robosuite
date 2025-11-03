@@ -6,7 +6,7 @@ import numpy as np
 
 from robosuite.models.base import MujocoXMLModel
 from robosuite.models.bases import LegBaseModel, MobileBaseModel, MountModel, NullBaseModel, RobotBaseModel
-from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent
+from robosuite.utils.mjcf_utils import ROBOT_COLLISION_COLOR, array_to_string, find_elements, find_parent, new_element
 from robosuite.utils.transform_utils import euler2mat, mat2quat
 
 REGISTERED_ROBOTS = {}
@@ -202,14 +202,21 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         mount_support = find_elements(
             root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
-        # Move content from robot0_base to the mobile base support (arms, geoms), but skip inertial
-        # elements and freejoints to avoid conflicts and MuJoCo constraints
+        
+        # Create an intermediate body to act as what robot0_base previously was
+        manipulator_mount = new_element("body", "manipulator_mount")
+        
+        # Move content from robot0_base to the intermediate manipulator_mount body (arms, geoms), 
+        # but skip inertial elements and freejoints to avoid conflicts and MuJoCo constraints
         for child in all_root_children:
             # Skip inertial elements to avoid duplicates with mobile base's own inertial
             # Skip freejoints since they can only be used at top level
             if child.tag not in ["inertial", "freejoint"]:
-                mount_support.append(deepcopy(child))
+                manipulator_mount.append(deepcopy(child))
             root.remove(child)
+        
+        # Attach the manipulator_mount body to the mobile base support
+        mount_support.append(manipulator_mount)
         self.merge_assets(mobile_base)
         for one_actuator in mobile_base.actuator:
             self.actuator.append(one_actuator)
