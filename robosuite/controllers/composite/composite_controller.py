@@ -122,23 +122,6 @@ class CompositeController:
             return self.part_controllers[part_name].control_dim
 
     def get_controller_base_pose(self, controller_name):
-        """
-        Get the base position and orientation of a specified controller's part. Note: this pose may likely differ from
-        the robot base's pose.
-
-        Args:
-            controller_name (str): The name of the controller, used to look up part-specific information.
-
-        Returns:
-            tuple[np.ndarray, np.ndarray]: A tuple containing:
-                - base_pos (np.ndarray): The 3D position of the part's center in world coordinates (shape: (3,)).
-                - base_ori (np.ndarray): The 3x3 rotation matrix representing the part's orientation in world coordinates.
-
-        Details:
-            - Uses the controller's `naming_prefix` and `part_name` to construct the corresponding site name.
-            - Queries the simulation (`self.sim`) for the site's position (`site_xpos`) and orientation (`site_xmat`).
-            - The site orientation matrix is reshaped from a flat array of size 9 to a 3x3 rotation matrix.
-        """
         naming_prefix = self.part_controllers[controller_name].naming_prefix
         part_name = self.part_controllers[controller_name].part_name
         base_pos = np.array(self.sim.data.site_xpos[self.sim.model.site_name2id(f"{naming_prefix}{part_name}_center")])
@@ -161,7 +144,10 @@ class CompositeController:
         for part_name, controller in self.part_controllers.items():
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
-                    low_g, high_g = ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
+                    low_g, high_g = (
+                        [-1] * self.grippers[part_name].dof,
+                        [1] * self.grippers[part_name].dof,
+                    )
                     low, high = np.concatenate([low, low_g]), np.concatenate([high, high_g])
                 else:
                     control_dim = controller.control_dim
@@ -171,6 +157,55 @@ class CompositeController:
                 low_c, high_c = controller.control_limits
                 low, high = np.concatenate([low, low_c]), np.concatenate([high, high_c])
         return low, high
+
+    def create_action_vector(self, action_dict):
+        """
+        A helper function that creates the action vector given a dictionary
+        """
+        full_action_vector = np.zeros(self.action_limits[0].shape)
+        for part_name, action_vector in action_dict.items():
+            if part_name not in self._action_split_indexes:
+                ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
+                continue
+            start_idx, end_idx = self._action_split_indexes[part_name]
+            if end_idx - start_idx == 0:
+                # skipping not controlling actions
+                continue
+            assert len(action_vector) == (end_idx - start_idx), ROBOSUITE_DEFAULT_LOGGER.error(
+                f"Action vector for {part_name} is not the correct size. Expected {end_idx - start_idx} for {part_name}, got {len(action_vector)}"
+            )
+            full_action_vector[start_idx:end_idx] = action_vector
+        return full_action_vector
+
+    def get_action_info(self):
+        action_index_info = []
+        action_dim_info = []
+        for part_name, (
+            start_idx,
+            end_idx,
+        ) in self._action_split_indexes.items():
+            action_dim_info.append(f"{part_name}: {(end_idx - start_idx)} dim")
+            action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
+
+        return action_index_info, action_dim_info
+
+    def print_action_info(self):
+        action_index_info, action_dim_info = self.get_action_info()
+        action_index_info_str = ", ".join(action_index_info)
+        action_dim_info_str = ", ".join(action_dim_info)
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Dimensions: [{action_dim_info_str}]")
+        ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
+
+    def get_action_info_dict(self):
+        info_dict = {}
+        info_dict["Action Dimension"] = self.action_limits[0].shape
+        info_dict.update(dict(self._action_split_indexes))
+        return info_dict
+
+    def print_action_info_dict(self, name: str = ""):
+        info_dict = self.get_action_info_dict()
+        info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
+        ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
 
 @register_composite_controller
@@ -217,7 +252,7 @@ class HybridMobileBase(CompositeController):
         A helper function that creates the action vector given a dictionary
         """
         full_action_vector = np.zeros(self.action_limits[0].shape)
-        for (part_name, action_vector) in action_dict.items():
+        for part_name, action_vector in action_dict.items():
             if part_name not in self._action_split_indexes:
                 ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                 continue
@@ -323,6 +358,10 @@ class WholeBody(CompositeController):
             previous_idx = last_idx
 
     def set_goal(self, all_action):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            super().set_goal(all_action)
+            return
+
         target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
         # create new all_action vector with the IK solver's actions first
         all_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
@@ -343,6 +382,9 @@ class WholeBody(CompositeController):
         Returns the action limits for the whole body controller.
         Corresponds to each term in the action vector passed to env.step().
         """
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().action_limits
+
         low, high = [], []
         # assumption: IK solver's actions come first
         low_c, high_c = self.joint_action_policy.control_limits
@@ -353,7 +395,10 @@ class WholeBody(CompositeController):
                 continue
             if part_name not in self.arms:
                 if part_name in self.grippers.keys():
-                    low_g, high_g = ([-1] * self.grippers[part_name].dof, [1] * self.grippers[part_name].dof)
+                    low_g, high_g = (
+                        [-1] * self.grippers[part_name].dof,
+                        [1] * self.grippers[part_name].dof,
+                    )
                     low, high = np.concatenate([low, low_g]), np.concatenate([high, high_g])
                 else:
                     control_dim = controller.control_dim
@@ -365,8 +410,11 @@ class WholeBody(CompositeController):
         return low, high
 
     def create_action_vector(self, action_dict: Dict[str, np.ndarray]) -> np.ndarray:
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().create_action_vector(action_dict)
+
         full_action_vector = np.zeros(self.action_limits[0].shape)
-        for (part_name, action_vector) in action_dict.items():
+        for part_name, action_vector in action_dict.items():
             if part_name not in self._whole_body_controller_action_split_indexes:
                 ROBOSUITE_DEFAULT_LOGGER.debug(f"{part_name} is not specified in the action space")
                 continue
@@ -380,24 +428,53 @@ class WholeBody(CompositeController):
             full_action_vector[start_idx:end_idx] = action_vector
         return full_action_vector
 
-    def print_action_info(self):
+    def get_action_info(self):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().get_action_info()
+
         action_index_info = []
         action_dim_info = []
-        for part_name, (start_idx, end_idx) in self._whole_body_controller_action_split_indexes.items():
+        for part_name, (
+            start_idx,
+            end_idx,
+        ) in self._whole_body_controller_action_split_indexes.items():
             action_dim_info.append(f"{part_name}: {(end_idx - start_idx)} dim")
             action_index_info.append(f"{part_name}: {start_idx}:{end_idx}")
+        return action_index_info, action_dim_info
 
+    def print_action_info(self):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().print_action_info()
+
+        action_index_info, action_dim_info = self.get_action_info()
+        action_index_info_str = ", ".join(action_index_info)
         action_dim_info_str = ", ".join(action_dim_info)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Dimensions: [{action_dim_info_str}]")
-
-        action_index_info_str = ", ".join(action_index_info)
         ROBOSUITE_DEFAULT_LOGGER.info(f"Action Indices: [{action_index_info_str}]")
 
-    def print_action_info_dict(self, name: str = ""):
+    def get_action_info_dict(self):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().get_action_info_dict()
+
         info_dict = {}
         info_dict["Action Dimension"] = self.action_limits[0].shape
         info_dict.update(dict(self._whole_body_controller_action_split_indexes))
+        return info_dict
 
+    def get_action_info_dict(self):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().get_action_info_dict()
+
+        info_dict = {}
+        info_dict["Action Dimension"] = self.action_limits[0].shape
+        info_dict.update(dict(self._whole_body_controller_action_split_indexes))
+        return info_dict
+
+    def print_action_info_dict(self, name: str = ""):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().print_action_info_dict(name)
+
+        info_dict = self.get_action_info_dict()
         info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
@@ -474,6 +551,5 @@ class WholeBodyIK(WholeBody):
             max_dq_torso=self.composite_controller_specific_config.get("ik_max_dq_torso", 0.2),
             input_rotation_repr=self.composite_controller_specific_config.get("ik_input_rotation_repr", "axis_angle"),
             input_type=self.composite_controller_specific_config.get("ik_input_type", "axis_angle"),
-            input_ref_frame=self.composite_controller_specific_config.get("ik_input_ref_frame", "world"),
             debug=self.composite_controller_specific_config.get("verbose", False),
         )
