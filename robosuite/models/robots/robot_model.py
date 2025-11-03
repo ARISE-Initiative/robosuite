@@ -202,11 +202,11 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         mount_support = find_elements(
             root=self.worldbody, tags="body", attribs={"name": mobile_base.correct_naming("support")}, return_first=True
         )
-        
+
         # Create an intermediate body to act as what robot0_base previously was
         manipulator_mount = new_element("body", "manipulator_mount")
-        
-        # Move content from robot0_base to the intermediate manipulator_mount body (arms, geoms), 
+
+        # Move content from robot0_base to the intermediate manipulator_mount body (arms, geoms),
         # but skip inertial elements and freejoints to avoid conflicts and MuJoCo constraints
         for child in all_root_children:
             # Skip inertial elements to avoid duplicates with mobile base's own inertial
@@ -214,7 +214,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
             if child.tag not in ["inertial", "freejoint"]:
                 manipulator_mount.append(deepcopy(child))
             root.remove(child)
-        
+
         # Attach the manipulator_mount body to the mobile base support
         mount_support.append(manipulator_mount)
         self.merge_assets(mobile_base)
