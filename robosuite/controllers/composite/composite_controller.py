@@ -125,12 +125,15 @@ class CompositeController:
         """
         Get the base position and orientation of a specified controller's part. Note: this pose may likely differ from
         the robot base's pose.
+
         Args:
             controller_name (str): The name of the controller, used to look up part-specific information.
+
         Returns:
             tuple[np.ndarray, np.ndarray]: A tuple containing:
                 - base_pos (np.ndarray): The 3D position of the part's center in world coordinates (shape: (3,)).
                 - base_ori (np.ndarray): The 3x3 rotation matrix representing the part's orientation in world coordinates.
+
         Details:
             - Uses the controller's `naming_prefix` and `part_name` to construct the corresponding site name.
             - Queries the simulation (`self.sim`) for the site's position (`site_xpos`) and orientation (`site_xmat`).
