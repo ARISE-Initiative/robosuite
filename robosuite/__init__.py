@@ -4,6 +4,7 @@ from robosuite.environments.base import make
 from robosuite.environments.manipulation.lift import Lift
 from robosuite.environments.manipulation.stack import Stack
 from robosuite.environments.manipulation.stack_three import StackThree
+from robosuite.environments.manipulation.arrange_three import ArrangeThree
 from robosuite.environments.manipulation.cleanup import Cleanup
 from robosuite.environments.manipulation.peg_in_hole import PegInHole
 from robosuite.environments.manipulation.nut_assembly import NutAssembly
