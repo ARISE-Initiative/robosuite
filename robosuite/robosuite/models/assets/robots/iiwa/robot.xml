@@ -1,0 +1,136 @@
+<mujoco model="iiwa7">
+    <compiler angle="radian"/>
+    <actuator>
+        <!-- Physical limits of the actuator. -->
+        <!-- Values taken from kuka_lbr_iiwa_brochure_en.pdf (see website) -->
+        <motor ctrllimited="true" ctrlrange="-176.0 176.0" joint="joint_1" name="torq_j1" />
+        <motor ctrllimited="true" ctrlrange="-176.0 176.0" joint="joint_2" name="torq_j2" />
+        <motor ctrllimited="true" ctrlrange="-110.0 110.0" joint="joint_3" name="torq_j3" />
+        <motor ctrllimited="true" ctrlrange="-110.0 110.0" joint="joint_4" name="torq_j4" />
+        <motor ctrllimited="true" ctrlrange="-110.0 110.0" joint="joint_5" name="torq_j5" />
+        <motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="joint_6" name="torq_j6" />
+        <motor ctrllimited="true" ctrlrange="-40.0 40.0" joint="joint_7" name="torq_j7" />
+    </actuator>
+    <asset>
+        <mesh name="link_0" file="meshes/link_0.stl" />
+        <mesh name="link_1" file="meshes/link_1.stl" />
+        <mesh name="link_2" file="meshes/link_2.stl" />
+        <mesh name="link_3" file="meshes/link_3.stl" />
+        <mesh name="link_4" file="meshes/link_4.stl" />
+        <mesh name="link_5" file="meshes/link_5.stl" />
+        <mesh name="link_6" file="meshes/link_6.stl" />
+        <mesh name="link_7" file="meshes/link_7.stl" />
+        <mesh name="link_0_vis" file="meshes/link_0_vis.stl" />
+        <mesh name="link_1_vis" file="meshes/link_1_vis.stl" />
+        <mesh name="link_2_vis" file="meshes/link_2_vis.stl" />
+        <mesh name="link_3_vis" file="meshes/link_3_vis.stl" />
+        <mesh name="link_4_vis" file="meshes/link_4_vis.stl" />
+        <mesh name="link_5_vis" file="meshes/link_5_vis.stl" />
+        <mesh name="link_6_vis" file="meshes/link_6_vis.stl" />
+        <mesh name="link_7_vis" file="meshes/link_7_vis.stl" />
+    </asset>
+    <worldbody>
+        <body name="base" pos="0 0 0">
+            <!-- robot view -->
+            <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653" />
+            <inertial diaginertia="0 0 0" mass="0" pos="0 0 0" />
+            <!-- mount attached here -->
+            <body name="fixed_base_link" pos="0 0 0">
+                <geom type="mesh" pos="0 0 0" contype="0" conaffinity="0" group="1"
+                    rgba="0.4 0.4 0.4 1" name="link_0_visual" mesh="link_0_vis" />
+                <geom type="mesh" pos="0 0 0" rgba="0.4 0.4 0.4 1" contype="0" mesh="link_0"
+                    name="link_0_collision" />
+                <body name="link_1" pos="0 0 0.15">
+                    <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2" />
+                    <inertial pos="0 -0.03 0.12" quat="0.428904 0.562175 -0.562175 0.428904"
+                        mass="3.4525" diaginertia="0.0218946 0.02183 0.00663837" />
+                    <joint name="joint_1" pos="0 0 0" axis="0 0 1" limited="true"
+                        range="-2.96706 2.96706" damping="0.1" />
+                    <geom pos="0 0 0.0075" type="mesh" contype="0" conaffinity="0" group="1"
+                        rgba="0.4 0.4 0.4 1" name="link_1_visual" mesh="link_1_vis" />
+                    <geom pos="0 0 0.0075" type="mesh" contype="0" rgba="0.4 0.4 0.4 1"
+                        mesh="link_1" name="link_1_collision" />
+                    <body name="link_2" pos="0 0 0.19" quat="0 0 0.707107 0.707107">
+                        <inertial pos="0.0003 0.059 0.042"
+                            quat="0.701371 0.0898824 0.0898824 0.701371" mass="3.4821"
+                            diaginertia="0.02179 0.0217049 0.00684512" />
+                        <joint name="joint_2" pos="0 0 0" axis="0 0 1" limited="true"
+                            range="-2.0944 2.0944" damping="0.1" />
+                        <geom type="mesh" contype="0" conaffinity="0" group="1"
+                            rgba="1 0.423529 0.0392157 1" name="link_2_visual" mesh="link_2_vis" />
+                        <geom type="mesh" contype="0" rgba="1 0.423529 0.0392157 1" mesh="link_2"
+                            name="link_2_collision" />
+                        <body name="link_3" pos="0 0.21 0" quat="0 0 0.707107 0.707107">
+                            <inertial pos="0 0.03 0.13" quat="0.56292 0.427927 -0.427927 0.56292"
+                                mass="4.05623" diaginertia="0.0321488 0.03204 0.00799117" />
+                            <joint name="joint_3" pos="0 0 0" axis="0 0 1" limited="true"
+                                range="-2.96706 2.96706" damping="0.1" />
+                            <geom pos="0 0 -0.026" type="mesh" contype="0" conaffinity="0" group="1"
+                                rgba="0.4 0.4 0.4 1" name="link_3_visual" mesh="link_3_vis" />
+                            <geom pos="0 0 -0.026" type="mesh" contype="0" rgba="0.4 0.4 0.4 1"
+                                mesh="link_3" name="link_3_collision" />
+                            <body name="link_4" pos="0 0 0.19" quat="0.707107 0.707107 0 0">
+                                <inertial pos="0 0.067 0.034" quat="0.991887 -0.127124 0 0"
+                                    mass="3.4822" diaginertia="0.02178 0.0216947 0.00684029" />
+                                <joint name="joint_4" pos="0 0 0" axis="0 0 1" limited="true"
+                                    range="-2.0944 2.0944" damping="0.1" />
+                                <geom type="mesh" contype="0" conaffinity="0" group="1"
+                                    rgba="1 0.423529 0.0392157 1" name="link_4_visual"
+                                    mesh="link_4_vis" />
+                                <geom type="mesh" contype="0" rgba="1 0.423529 0.0392157 1"
+                                    mesh="link_4" name="link_4_collision" />
+                                <body name="link_5" pos="0 0.21 0" quat="0 0 0.707107 0.707107">
+                                    <inertial pos="0.0001 0.021 0.076"
+                                        quat="0.365352 0.605407 -0.605407 0.365352" mass="2.1633"
+                                        diaginertia="0.0131987 0.01287 0.0036293" />
+                                    <joint name="joint_5" pos="0 0 0" axis="0 0 1" limited="true"
+                                        range="-2.96706 2.96706" damping="0.1" />
+                                    <geom pos="0 0 -0.026" type="mesh" contype="0" conaffinity="0"
+                                        group="1" rgba="0.4 0.4 0.4 1" name="link_5_visual"
+                                        mesh="link_5_vis" />
+                                    <geom pos="0 0 -0.026" type="mesh" contype="0"
+                                        rgba="0.4 0.4 0.4 1" mesh="link_5" name="link_5_collision" />
+                                    <body name="link_6" pos="0 0.0607 0.19"
+                                        quat="0.707107 0.707107 0 0">
+                                        <inertial pos="0 0.0006 0.0004" quat="0.996112 0.088097 0 0"
+                                            mass="2.3466"
+                                            diaginertia="0.006509 0.00631585 0.00447015" />
+                                        <joint name="joint_6" pos="0 0 0" axis="0 0 1"
+                                            limited="true" range="-2.0944 2.0944" damping="0.1" />
+                                        <geom type="mesh" contype="0" conaffinity="0" group="1"
+                                            mesh="link_6_vis" name="link_6_visual"
+                                            rgba="1 0.423529 0.0392157 1" />
+                                        <geom type="mesh" contype="0" rgba="1 0.423529 0.0392157 1"
+                                            mesh="link_6" name="link_6_collision" />
+                                        <body name="link_7" pos="0 0.081 0.0607"
+                                            quat="0 0 0.707107 0.707107">
+                                            <inertial pos="0 0 0.02" quat="0.923068 0 0 0.384636"
+                                                mass="3.129"
+                                                diaginertia="0.0152362 0.0140538 0.002872" />
+                                            <joint name="joint_7" pos="0 0 0" axis="0 0 1"
+                                                limited="true" range="-3.05433 3.05433"
+                                                damping="0.1" />
+                                            <geom pos="0 0 -0.0005" type="mesh" contype="0"
+                                                conaffinity="0" group="1" rgba="0.4 0.4 0.4 1"
+                                                mesh="link_7_vis" name="link_7_visual" />
+                                            <geom pos="0 0 -0.0005" type="mesh" contype="0"
+                                                rgba="0.4 0.4 0.4 1" mesh="link_7"
+                                                name="link_7_collision" />
+                                            <body name="right_hand" pos="0 0 0.044" quat="0 0 0 1">
+                                                <!-- This camera points out from the eef. -->
+                                                <camera mode="fixed" name="eye_in_hand"
+                                                    pos="0.05 0 0" quat="0 0.707108 0.707108 0"
+                                                    fovy="75" />
+                                                <!-- To add gripper -->
+                                            </body>
+                                        </body>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+</mujoco>

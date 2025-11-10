@@ -126,3 +126,16 @@ MUJOCO_LOG.TXT
 
 # private demonstration files
 robosuite/models/assets/demonstrations_private
+*.mp4
+episode_*
+*.hdf5
+*.tar
+*.mp4
+*.hdf5
+*.tar
+episode_*
+cereal_demo_seed/
+debug_videos/
+openvla_datasets/
+vla_datasets/
+vla_visuals/

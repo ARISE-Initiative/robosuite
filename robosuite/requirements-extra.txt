@@ -1,0 +1,17 @@
+# required for GymWrapper
+gymnasium
+
+# macOS only
+hidapi
+
+# required for demonstration utils
+h5py
+
+# for mujoco ik
+mink
+
+# for extra robosuite_models
+robosuite-models==1.0.0
+
+# for USD export and rendering
+usd-core

@@ -1,0 +1,61 @@
+name: run-tests
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        sudo apt-cache search mesa
+        sudo apt update
+        sudo apt install -y libglx-mesa0 libgl1-mesa-dev libosmesa6-dev python3-opengl mesa-utils
+
+        # check if OSMesa is installed
+        dpkg -L libosmesa6-dev
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+
+    # Install the current repo. We explictly install mink as it's supposed to be in requirements-extra, but we need it for passing CI test.
+    - name: Install robosuite
+      run: |
+        pip install -e .
+        if [ -f requirements.txt ]; then 
+          pip install -r requirements.txt
+          pip install mink
+        fi
+        if [ -f requirements-extra.txt ]; then 
+          pip install -r requirements-extra.txt
+          pip uninstall -y robosuite-models
+        fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    # Run the specified tests
+    # NOTE: custom environment variable MUJOCO_GL="osmesa" is used to run tests without a display
+    # https://github.com/google-deepmind/dm_control/issues/136
+    # https://github.com/ARISE-Initiative/robosuite/issues/469
+    - name: Test with pytest
+      run: |
+        export PYOPENGL_PLATFORM="osmesa"
+        export MUJOCO_GL="osmesa"
+        export NUMBA_DISABLE_JIT=1
+        pytest

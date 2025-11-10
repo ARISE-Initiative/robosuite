@@ -1,0 +1,12 @@
+# ------------------------------ Sawyer ------------------------------
+named_poses:
+  right:
+    joint_names: ['right_j0', 'right_j1', 'right_j2', 'right_j3', 'right_j4', 'right_j5', 'right_j6']
+    poses:
+      neutral: [0.00, -1.18, 0.00, 2.18, 0.00, 0.57, 3.3161]
+      shipping: [0.00, -1.57, 0.00, 2.79, 0.00, -2.79, 3.3161]
+  head:
+    joint_names: ['head_pan']
+    poses:
+      neutral: [0.00]
+      shipping: [-3.14]

@@ -1,0 +1,43 @@
+{
+    "type": "BASIC",
+    "body_parts": {
+        "arms": {
+            "right": {
+                "type": "OSC_POSE",
+                "input_max": 1,
+                "input_min": -1,
+                "output_max": [0.05, 0.05, 0.05, 0.5, 0.5, 0.5],
+                "output_min": [-0.05, -0.05, -0.05, -0.5, -0.5, -0.5],
+                "kp": 150,
+                "damping_ratio": 1,
+                "impedance_mode": "fixed",
+                "kp_limits": [0, 300],
+                "damping_ratio_limits": [0, 10],
+                "position_limits": null,
+                "orientation_limits": null,
+                "uncouple_pos_ori": true,
+                "input_type": "delta",
+                "input_ref_frame": "base",
+                "interpolation": null,
+                "ramp_ratio": 0.2,
+                "gripper": {
+                    "type": "GRIP"
+                }
+            }
+        },
+        "legs": {
+            "type" : "JOINT_POSITION",
+            "input_max": 1,
+            "input_min": -1,
+            "output_max": 0.5,
+            "output_min": -0.5,
+            "kd": 200,
+            "kv": 200,
+            "kp": 1000,
+            "velocity_limits": [-1,1],
+            "kp_limits": [0, 1000],
+            "interpolation": null,
+            "ramp_ratio": 0.2
+        }
+    }
+}

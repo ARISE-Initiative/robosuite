@@ -1,0 +1,118 @@
+<mujoco model="spot arm">
+  <compiler angle="radian"/>
+  <option integrator="implicitfast" cone="elliptic" impratio="100"/>
+  <visual>
+    <global ellipsoidinertia="true"/>
+  </visual>
+
+<asset>
+    <material name="BlackAbs" rgba="0.1 0.1 0.1 1"/>
+    <material name="wrap" rgba="0.878431 0.666666 0.227450 1"/>
+
+    <mesh name="arm_link_sh0" file="meshes/arm_link_sh0.obj"/>
+    <mesh name="arm_link_sh1_0" file="meshes/arm_link_sh1_0.obj"/>
+    <mesh name="arm_link_sh1_1" file="meshes/arm_link_sh1_1.obj"/>
+    <mesh name="arm_link_hr0" file="meshes/arm_link_hr0.obj"/>
+    <mesh name="arm_link_el0" file="meshes/arm_link_el0.obj"/>
+    <mesh name="arm_link_el1_0" file="meshes/arm_link_el1_0.obj"/>
+    <mesh name="arm_link_el1_1" file="meshes/arm_link_el1_1.obj"/>
+    <mesh name="arm_link_wr0_0" file="meshes/arm_link_wr0_0.obj"/>
+    <mesh name="arm_link_wr0_1" file="meshes/arm_link_wr0_1.obj"/>
+    <mesh name="arm_link_sh0_base_coll" file="meshes/arm_link_sh0_base.obj"/>
+    <mesh name="arm_link_sh0_left_motor_coll" file="meshes/arm_link_sh0_left_motor.obj"/>
+    <mesh name="arm_link_sh0_right_motor_coll" file="meshes/arm_link_sh0_right_motor.obj"/>
+    <mesh name="arm_link_hr0_coll" file="meshes/arm_link_hr0_coll.obj"/>
+    <mesh name="arm_link_el0_coll" file="meshes/arm_link_el0_coll.obj"/>
+    <mesh name="arm_link_el1_main_coll" file="meshes/arm_link_el1_main.obj"/>
+    <mesh name="arm_link_el1_lip_coll" file="meshes/arm_link_el1_lip.obj"/>
+    <mesh name="arm_link_wr0_coll" file="meshes/arm_link_wr0.obj"/>
+  </asset>
+
+  <default>
+    <default class="spot_arm">
+      <geom solref="0.004 1"/>
+      <joint actuatorfrcrange="-1000 1000"/>
+      <position kp="500" kv="40" inheritrange="1"/>
+      <motor ctrlrange="-33.5 33.5"  ctrllimited="true"/>
+    </default>
+    <default class="spot_arm_visual">
+      <joint actuatorfrcrange="-1000 1000"/>
+      <position kp="500" kv="40" inheritrange="1"/>
+      <geom group="1" type="mesh" contype="0" conaffinity="0" solref="0.004 1"/>
+    </default>
+    <default class="spot_arm_collision">
+        <joint actuatorfrcrange="-1000 1000"/>
+        <position kp="500" kv="40" inheritrange="1"/>
+        <geom group="0" type="mesh" solref="0.004 1"/>
+    </default>
+  </default>
+
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      <body name="arm_link_sh0" pos="0 0 0">
+        <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+        <inertial pos="-0.0123727 -4.52114e-05 -0.021032" quat="0.707107 0.707107 0 0" mass="2.3364"
+          diaginertia="0.0090143 0.00778748 0.0058351"/>
+        <joint name="arm_sh0" axis="0 0 1" range="-2.61799 3.14159"/>
+        <geom material="BlackAbs" mesh="arm_link_sh0" class="spot_arm_visual" rgba=".1 .1 .1 1"/>
+        <geom class="spot_arm_collision" mesh="arm_link_sh0_base_coll"/>
+        <geom class="spot_arm_collision" mesh="arm_link_sh0_left_motor_coll"/>
+        <geom class="spot_arm_collision" mesh="arm_link_sh0_right_motor_coll"/>
+        <body name="arm_link_sh1">
+          <inertial pos="2.41764e-05 2.41161e-06 -1.00591e-05" quat="1 1 -1 1" mass="0.2596"
+            diaginertia="0.00020385 0.000202928 0.000170786"/>
+          <joint name="arm_sh1" axis="0 1 0" range="-3.14159 0.523599"/>
+          <geom mesh="arm_link_sh1_0" material="wrap" class="spot_arm_visual"/>
+          <geom mesh="arm_link_sh1_1" material="BlackAbs" class="spot_arm_visual"/>
+          <body name="arm_link_hr0">
+            <inertial pos="0.17047 -0.0019251 4.48389e-05" quat="0 1 0 1" mass="1e-06"
+              diaginertia="1.16111e-08 1.14871e-08 6.31263e-10"/>
+            <geom class="spot_arm_collision" mesh="arm_link_hr0_coll"/>
+            <body name="arm_link_el0" pos="0.3385 0 0">
+              <inertial pos="0.0553741 0.000236034 0.048272" quat="1 1 1 1" mass="0.725"
+                diaginertia="0.00200479 0.00197228 0.000821537"/>
+              <joint name="arm_el0" axis="0 1 0" range="0 3.14159"/>
+              <geom material="BlackAbs" mesh="arm_link_el0" class="spot_arm_visual"/>
+              <geom mesh="arm_link_el0_coll" class="spot_arm_collision"/>
+              <body name="arm_link_el1" pos="0.4033 0 0.075">
+                <inertial pos="-0.125784 -0.0136845 0.000101579" quat="0 1 0 1" mass="0.725"
+                  diaginertia="0.00451592 0.00440245 0.000625481"/>
+                <joint name="arm_el1" axis="1 0 0" range="-2.79253 2.79253"/>
+                <geom mesh="arm_link_el1_0" material="wrap" class="spot_arm_visual"/>
+                <geom mesh="arm_link_el1_1" material="BlackAbs" class="spot_arm_visual"/>
+                <geom class="spot_arm_collision" mesh="arm_link_el1_main_coll"/>
+                <geom class="spot_arm_collision" mesh="arm_link_el1_lip_coll"/>
+                <body name="arm_link_wr0">
+                  <inertial pos="0.00821068 -0.012051 3.14348e-05" quat="1 1 -1 1" mass="0.98"
+                    diaginertia="0.00123549 0.000985132 0.000891615"/>
+                  <joint name="arm_wr0" axis="0 1 0" range="-1.8326 1.8326"/>
+                  <geom mesh="arm_link_wr0_0" material="wrap" class="spot_arm_visual"/>
+                  <geom mesh="arm_link_wr0_1" material="BlackAbs" class="spot_arm_visual"/>
+                  <geom class="spot_arm_collision" mesh="arm_link_wr0_coll"/>
+                  <body name="arm_link_wr1">
+                    <inertial pos="0.125168 0.000101374 -0.013998" quat="1 1 1 1" mass="0.785"
+                      diaginertia="0.00176281 0.00168181 0.000767414"/>
+                    <joint name="arm_wr1" axis="1 0 0" range="-2.87979 2.87979"/>
+                    <!--Start of right_hand-->
+                    <body name="right_hand" pos="0.0 0.0 0.0" quat="1 0 0 0">
+                        <camera mode="fixed" name="right_eye_in_hand" pos="0.05 0 0" quat="0.5 0.5 -0.5 -0.5" fovy="75"/>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor class="spot_arm" name="arm_sh0" joint="arm_sh0"/>
+    <motor class="spot_arm" name="arm_sh1" joint="arm_sh1"/>
+    <motor class="spot_arm" name="arm_el0" joint="arm_el0"/>
+    <motor class="spot_arm" name="arm_el1" joint="arm_el1"/>
+    <motor class="spot_arm" name="arm_wr0" joint="arm_wr0"/>
+    <motor class="spot_arm" name="arm_wr1" joint="arm_wr1"/>
+  </actuator>
+</mujoco>

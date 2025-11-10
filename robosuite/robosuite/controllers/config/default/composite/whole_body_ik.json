@@ -1,0 +1,115 @@
+{
+    "type": "WHOLE_BODY_IK",
+    "composite_controller_specific_configs": {
+        "ref_name": ["gripper0_right_grip_site", "gripper0_left_grip_site"],
+        "interpolation": null,
+        "actuation_part_names": ["torso", "head", "right", "left", "base", "legs"],
+        "max_dq": 4,
+        "nullspace_joint_weights": {
+            "robot0_torso_waist_yaw": 100.0,
+            "robot0_torso_waist_pitch": 100.0,
+            "robot0_torso_waist_roll": 500.0,
+            "robot0_l_shoulder_pitch": 4.0,
+            "robot0_r_shoulder_pitch": 4.0,
+            "robot0_l_shoulder_roll": 3.0,
+            "robot0_r_shoulder_roll": 3.0,
+            "robot0_l_shoulder_yaw": 2.0,
+            "robot0_r_shoulder_yaw": 2.0
+        },
+        "ik_pseudo_inverse_damping": 5e-2,
+        "ik_integration_dt": 1e-1,
+        "ik_max_dq": 4.0,
+        "ik_max_dq_torso": 0.2,
+        "ik_input_type": "absolute",
+        "ik_input_rotation_repr": "axis_angle",
+        "verbose": false
+    },
+    "body_parts": {
+        "arms": {
+            "right": {
+                "type" : "JOINT_POSITION",
+                "input_max": 1,
+                "input_min": -1,
+                "input_type": "absolute",
+                "output_max": 0.5,
+                "output_min": -0.5,
+                "kd": 200,
+                "kv": 200,
+                "kp": 1000,
+                "velocity_limits": [-1,1],
+                "kp_limits": [0, 1000],
+                "interpolation": null,
+                "ramp_ratio": 0.2,
+                "gripper": {
+                    "type": "GRIP"
+                }
+            },
+            "left": {
+                "type" : "JOINT_POSITION",
+                "input_max": 1,
+                "input_min": -1,
+                "input_type": "absolute",
+                "output_max": 0.5,
+                "output_min": -0.5,
+                "kd": 200,
+                "kv": 200,
+                "kp": 1000,
+                "velocity_limits": [-1,1],
+                "kp_limits": [0, 1000],
+                "interpolation": null,
+                "ramp_ratio": 0.2,
+                "gripper": {
+                    "type": "GRIP"
+                }
+            }
+        },
+        "torso": {
+            "type" : "JOINT_POSITION",
+            "input_max": 1,
+            "input_min": -1,
+            "input_type": "absolute",
+            "output_max": 0.5,
+            "output_min": -0.5,
+            "kd": 200,
+            "kv": 200,
+            "kp": 1000,
+            "velocity_limits": [-1,1],
+            "kp_limits": [0, 1000],
+            "interpolation": null,
+            "ramp_ratio": 0.2
+        },
+        "head": {
+            "type" : "JOINT_POSITION",
+            "input_max": 1,
+            "input_min": -1,
+            "input_type": "absolute",
+            "output_max": 0.5,
+            "output_min": -0.5,
+            "kd": 200,
+            "kv": 200,
+            "kp": 1000,
+            "velocity_limits": [-1,1],
+            "kp_limits": [0, 1000],
+            "interpolation": null,
+            "ramp_ratio": 0.2
+        },
+        "base": {
+            "type" : "JOINT_VELOCITY",
+            "interpolation": null
+        },
+        "legs": {
+            "type": "JOINT_POSITION",
+            "input_max": 1,
+            "input_min": -1,
+            "output_max": 0.5,
+            "output_min": -0.5,
+            "kd": 200,
+            "kv": 200,
+            "kp": 1000,
+            "velocity_limits": [-1,1],
+            "kp_limits": [0, 1000],
+            "interpolation": null,
+            "ramp_ratio": 0.2
+        }
+    }
+}

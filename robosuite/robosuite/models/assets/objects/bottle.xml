@@ -1,0 +1,18 @@
+<mujoco model="bottle">
+  <asset>
+    <mesh file="meshes/bottle.stl" name="bottle_mesh"/>
+    <texture type="skybox" file="../textures/glass.png" name="tex-glass"/>
+    <material name="glass" reflectance="0.5" texrepeat="5 5" texture="tex-glass" texuniform="true"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom pos="0 0 0" mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" contype="0" conaffinity="0" group="1"/>
+        <geom pos="0 0 0" mesh="bottle_mesh" type="mesh" solimp="0.998 0.998 0.001" solref="0.001 1" density="50" friction="0.95 0.3 0.1" material="glass" group="0"/>
+      </body>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 -0.082" name="bottom_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.075" name="top_site"/>
+      <site rgba="0 0 0 0" size="0.005" pos="0.0254 0.0254 0" name="horizontal_radius_site"/>
+    </body>
+  </worldbody>
+</mujoco>
