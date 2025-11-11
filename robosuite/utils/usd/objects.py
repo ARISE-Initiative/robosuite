@@ -61,6 +61,7 @@ class USDObject(abc.ABC):
 
         self.obj_name = self.obj_name.replace("-", "m_")
         self.obj_name = self.obj_name.replace("+", "p_")
+        self.obj_name = self.obj_name.replace(".", "_")
 
         self.xform_path = f"/World/Mesh_Xform_{self.obj_name}"
         self.usd_xform = UsdGeom.Xform.Define(stage, self.xform_path)

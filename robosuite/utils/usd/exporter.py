@@ -45,7 +45,7 @@ if mujoco.__version__[0] == "3" and int(mujoco.__version__[2]) >= 2:
         "If using later versions of mujoco, please use the exporter in the mujoco repository: "
         + "https://github.com/google-deepmind/mujoco/blob/main/python/mujoco/usd/exporter.py"
     )
-    exit(0)
+    # exit(0)
 
 
 class USDExporter:
@@ -289,18 +289,57 @@ please set shareable to be false.
         assert geom_name not in self.geom_names
 
         texture_file = self.texture_files[geom.texid] if geom.texid != -1 else None
+        def map_vgeom_to_model(model: mujoco.MjModel, vgeom) -> dict | None:
+            # Only map real model geoms
+            if vgeom.objtype != mujoco.mjtObj.mjOBJ_GEOM:
+                return None
+
+            geomid = int(vgeom.objid)
+            xml_geom_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_GEOM, geomid) or ""
+
+            geom_type = int(model.geom_type[geomid])
+            matid = int(model.geom_matid[geomid])
+            mat_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_MATERIAL, matid) if matid != -1 else None
+
+            # pick RGBA: material color if set, else geom_rgba
+            if matid != -1:
+                rgba = model.mat_rgba[matid].copy()
+            else:
+                rgba = model.geom_rgba[geomid].copy()
+
+            mesh_name = None
+            meshid = None
+            if geom_type == mujoco.mjtGeom.mjGEOM_MESH:
+                meshid = int(model.geom_dataid[geomid])          # which mesh asset this geom uses
+                mesh_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_MESH, meshid)
+
+            return {
+                "geom_id": geomid,
+                "xml_geom_name": xml_geom_name,
+                "geom_type": geom_type,
+                "material_id": matid,
+                "material_name": mat_name,
+                "mesh_id": meshid,
+                "mesh_name": mesh_name,
+                "rgba": rgba,   # <-- new field
+            }
 
         # handling meshes in our scene
         if geom.type == mujoco.mjtGeom.mjGEOM_MESH:
+            info = map_vgeom_to_model(self.model, geom)
+            rgba = list(info["rgba"]) if info is not None else geom.rgba
+            if info is not None and "tupper" in info["xml_geom_name"]:
+                rgba[-1] = 0.2
             usd_geom = object_module.USDMesh(
                 stage=self.stage,
                 model=self.model,
                 geom=geom,
                 obj_name=geom_name,
                 dataid=self.model.geom_dataid[geom.objid],
-                rgba=geom.rgba,
+                rgba=rgba,
                 texture_file=texture_file,
             )
+ 
         else:
             # handling tendons in our scene
             if geom.objtype == mujoco.mjtObj.mjOBJ_TENDON:

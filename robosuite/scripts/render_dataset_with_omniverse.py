@@ -21,6 +21,12 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--layout",
+    type=int, default=None,
+    help="(optional) layout id to use for robocasa environments",
+)
+
+parser.add_argument(
     "--output_directory", type=str, default=None, help="(optional) directory to store outputs of USD rendering pipeline"
 )
 
@@ -128,12 +134,11 @@ try:
 except ImportError:
     print("Warning: Robocasa not found.")
 
-try:
-    import dexmimicgen_environments
-    import mimicgen
-except ImportError:
-    print("Warning: MimicGen not found.")
-
+# try:
+#     import dexmimicgen_environments
+#     import mimicgen
+# except ImportError:
+#     print("Warning: MimicGen not found.")
 # USD imports
 import mujoco
 
@@ -253,6 +258,14 @@ def get_env_metadata_from_dataset(dataset_path, ds_format="robomimic"):
             env_version=f["data"].attrs["repository_version"],
             env_kwargs=env_info,
         )
+    elif ds_format == "robocasa":
+        env_name = f["data"].attrs["env"]
+        env_info = json.loads(f["data"].attrs["env_info"])
+        env_meta = dict(
+            env_name=env_name,
+            env_version=f["data"].attrs["robosuite_version"],
+            env_kwargs=env_info,
+        )
     else:
         raise ValueError
     f.close()
@@ -363,7 +376,7 @@ class RobosuiteEnvInterface:
             stage=stage,
         )
         exp.update_scene(data=data, scene_option=scene_option)
-        exp.add_light(pos=[0, 0, 0], intensity=1500, light_type="dome", light_name="dome_1")
+        exp.add_light(pos=[0, 0, 0], intensity=4000, light_type="dome", light_name="dome_1")
 
         # adds semantic information to objects in the scene
         if args.semantic_segmentation:
@@ -493,7 +506,7 @@ class DataGenerator:
         self.writer_name = "RobosuiteWriter"
 
         self.num_frames = self.robosuite_env.traj_len
-        self.rt_subframes = 1
+        self.rt_subframes = 8
         # skip 5 frames at the beginning to allow the scene to settle
         self.initial_skip = 5
 
@@ -542,8 +555,27 @@ class DataGenerator:
         carb.settings.get_settings().set_bool("/app/renderer/waitIdle", False)
         carb.settings.get_settings().set_bool("/app/hydraEngine/waitIdle", False)
         carb.settings.get_settings().set_bool("/app/asyncRendering", True)
-        carb.settings.get_settings().set("/rtx/pathtracing/spp", 30)
         carb.settings.get_settings().set_bool("/exts/omni.replicator.core/Orchestrator/enabled", True)
+        
+        # Configure renderer settings for proper texture rendering
+        if args.renderer.lower() == "pathtracing":
+            carb.settings.get_settings().set_string("/rtx/rendermode", "PathTracing")
+            carb.settings.get_settings().set("/rtx/pathtracing/spp", 256)  # Increased for better quality
+            carb.settings.get_settings().set_bool("/rtx/pathtracing/optixDenoiser/enabled", True)
+        else:  # "RayTracedLighting"
+            carb.settings.get_settings().set_string("/rtx/rendermode", "RayTracedLighting")
+            carb.settings.get_settings().set("/rtx/raytracing/spp", 64)  # Increased for better quality
+        
+        # Additional settings for better material/texture rendering
+        carb.settings.get_settings().set_bool("/rtx/materialDb/syncLoads", True)
+        carb.settings.get_settings().set_bool("/rtx/directLighting/sampledLighting/enabled", True)
+        carb.settings.get_settings().set("/rtx/indirectDiffuse/gi/maxBounces", 4)
+        carb.settings.get_settings().set("/rtx/reflections/maxBounces", 6)
+        carb.settings.get_settings().set("/rtx/translucency/maxRefractionBounces", 6)
+        
+        # Ensure texture filtering is enabled
+        carb.settings.get_settings().set_bool("/rtx/texturestreaming/enabled", True)
+        carb.settings.get_settings().set("/rtx/sceneDb/maxInstanceCount", 100000)
 
         # Create writer for capturing generated data
         self.writer = rep.WriterRegistry.get(self.writer_name)
@@ -682,13 +714,29 @@ class DataGenerator:
                 if selected:
                     self.create_video(videos_folder=videos_folder, camera=camera, data_type=render_modality)
 
+def get_episodes_by_layout(dataset_path, layout_id):
+    f = h5py.File(dataset_path, "r")
+    episodes = []
+    for key in f["data"].keys():
+        ep_meta = f["data/{}/".format(key)].attrs.get("ep_meta", None)
+        if ep_meta is not None:
+            ep_meta_dict = json.loads(ep_meta)
+            if "layout_id" in ep_meta_dict and ep_meta_dict["layout_id"] == layout_id:
+                episode_number = int(key.split("_")[1])
+                episodes.append(episode_number)
+    f.close()
+    return episodes
 
 def main():
     f = h5py.File(args.dataset, "r")
     total_episodes = args.episode
+    layout = args.layout                                                                        
     if not total_episodes:
         # get all the int keys
         total_episodes = [int(k.split("_")[1]) for k in f["data"].keys()]
+    if layout is not None:
+        episodes_by_layout = get_episodes_by_layout(args.dataset, layout)
+        total_episodes = [ep for ep in total_episodes if ep in episodes_by_layout][:3]
     f.close()
     print(f"Total episodes: {total_episodes}")
     dataset_name = "_".join(args.dataset.split("/")[-1].split(".")[:-1])
@@ -722,10 +770,10 @@ def main():
             data_generator.process_folders()
 
         # remove all image frames
-        for camera in args.cameras:
-            camera_folder_path = os.path.join(output_directory, camera)
-            if os.path.isdir(camera_folder_path):
-                shutil.rmtree(camera_folder_path)
+        # for camera in args.cameras:
+        #     camera_folder_path = os.path.join(output_directory, camera)
+        #     if os.path.isdir(camera_folder_path):
+        #         shutil.rmtree(camera_folder_path)
 
         print("Recording complete")
 
