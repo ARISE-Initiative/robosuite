@@ -1,4 +1,5 @@
 import collections
+from collections.abc import Iterable
 import numpy as np
 
 from copy import copy
@@ -194,7 +195,7 @@ class UniformRandomSampler(ObjectPositionSampler):
         """
         if self.rotation is None:
             rot_angle = np.random.uniform(high=2 * np.pi, low=0)
-        elif isinstance(self.rotation, collections.Iterable):
+        elif isinstance(self.rotation, Iterable):
             rot_angle = np.random.uniform(
                 high=max(self.rotation), low=min(self.rotation)
             )
