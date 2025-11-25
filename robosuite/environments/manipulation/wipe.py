@@ -11,11 +11,11 @@ from robosuite.utils.observables import Observable, sensor
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
-    "arm_limit_collision_penalty": -10.0,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+    "arm_limit_collision_penalty": -0.01,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
     "wipe_contact_reward": 0.01,  # reward for contacting something with the wiping tool
     "unit_wiped_reward": 50.0,  # reward per peg wiped
     "ee_accel_penalty": 0,  # penalty for large end-effector accelerations
-    "excess_force_penalty_mul": 0.05,  # penalty for each step that the force is over the safety threshold
+    "excess_force_penalty_mul": 0.001,  # penalty for each step that the force is over the safety threshold
     "distance_multiplier": 5.0,  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
     "distance_th_multiplier": 5.0,  # multiplier in the tanh function for the aforementioned reward
     # settings for table top
