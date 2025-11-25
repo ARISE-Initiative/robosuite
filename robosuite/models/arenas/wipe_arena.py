@@ -88,7 +88,7 @@ class WipeArena(TableArena):
             marker_name = f"contact{i}"
             marker = CylinderObject(
                 name=marker_name,
-                size=[self.line_width / 2, 0.001],
+                size=[self.line_width / 2, 0.005],
                 rgba=[1, 1, 1, 1],
                 material=dirt,
                 obj_type="visual",

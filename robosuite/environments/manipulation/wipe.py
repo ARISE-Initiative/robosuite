@@ -11,11 +11,11 @@ from robosuite.utils.observables import Observable, sensor
 # Default Wipe environment configuration
 DEFAULT_WIPE_CONFIG = {
     # settings for reward
-    "arm_limit_collision_penalty": -0.01,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
-    "wipe_contact_reward": 0.01,  # reward for contacting something with the wiping tool
+    "arm_limit_collision_penalty": 0.0,  # penalty for reaching joint limit or arm collision (except the wiping tool) with the table
+    "wipe_contact_reward": 0.001,  # reward for contacting something with the wiping tool
     "unit_wiped_reward": 50.0,  # reward per peg wiped
     "ee_accel_penalty": 0,  # penalty for large end-effector accelerations
-    "excess_force_penalty_mul": 0.001,  # penalty for each step that the force is over the safety threshold
+    "excess_force_penalty_mul": 0.0,  # penalty for each step that the force is over the safety threshold
     "distance_multiplier": 5.0,  # multiplier for the dense reward inversely proportional to the mean location of the pegs to wipe
     "distance_th_multiplier": 5.0,  # multiplier in the tanh function for the aforementioned reward
     # settings for table top
@@ -30,9 +30,9 @@ DEFAULT_WIPE_CONFIG = {
     "coverage_factor": 0.6,  # how much of the table surface we cover
     "num_markers": 100,  # How many particles of dirt to generate in the environment
     # settings for thresholds
-    "contact_threshold": 1.0,  # Minimum eef force to qualify as contact [N]
-    "pressure_threshold": 0.5,  # force threshold (N) to overcome to get increased contact wiping reward
-    "pressure_threshold_max": 60.0,  # maximum force allowed (N)
+    "contact_threshold": 0.5,  # Minimum eef force to qualify as contact [N]
+    "pressure_threshold": 0.3,  # force threshold (N) to overcome to get increased contact wiping reward
+    "pressure_threshold_max": 600.0,  # maximum force allowed (N)
     # misc settings
     "print_results": False,  # Whether to print results or not
     "get_info": False,  # Whether to grab info after each env step if not
@@ -428,76 +428,78 @@ class Wipe(ManipulationEnv):
         )
 
         # Neg Reward from collisions of the arm with the table
-        if self.check_contact(self.robots[0].robot_model):
+        # if self.check_contact(self.robots[0].robot_model):
+        #     if self.reward_shaping:
+        #         reward = self.arm_limit_collision_penalty
+        #     self.collisions += 1
+        # elif self.robots[0].check_q_limits():
+        #     if self.reward_shaping:
+        #         reward = self.arm_limit_collision_penalty
+        #     self.collisions += 1
+        # else:
+        # If the arm is not colliding or in joint limits, we check if we are wiping
+        # (we don't want to reward wiping if there are unsafe situations)
+        active_markers = []
+
+        # Current 3D location of the corners of the wiping tool in world frame
+        for arm in self.robots[0].arms:
+            c_geoms = self.robots[0].gripper[arm].important_geoms["corners"]
+            active_markers += self._get_active_markers(c_geoms)
+
+        # Obtain the list of currently active (wiped) markers that where not wiped before
+        # These are the markers we are wiping at this step
+        lall = np.where(np.isin(active_markers, self.wiped_markers, invert=True))
+        new_active_markers = np.array(active_markers)[lall]
+
+        # Loop through all new markers we are wiping at this step
+        for new_active_marker in new_active_markers:
+            # Grab relevant marker id info
+            new_active_marker_geom_id = self.sim.model.geom_name2id(new_active_marker.visual_geoms[0])
+            # Make this marker transparent since we wiped it (alpha = 0)
+            self.sim.model.geom_rgba[new_active_marker_geom_id][3] = 0
+            # Add this marker the wiped list
+            self.wiped_markers.append(new_active_marker)
+            # Add reward if we're using the dense reward
             if self.reward_shaping:
-                reward = self.arm_limit_collision_penalty
-            self.collisions += 1
-        elif self.robots[0].check_q_limits():
-            if self.reward_shaping:
-                reward = self.arm_limit_collision_penalty
-            self.collisions += 1
-        else:
-            # If the arm is not colliding or in joint limits, we check if we are wiping
-            # (we don't want to reward wiping if there are unsafe situations)
-            active_markers = []
+                reward += self.unit_wiped_reward
 
-            # Current 3D location of the corners of the wiping tool in world frame
-            for arm in self.robots[0].arms:
-                c_geoms = self.robots[0].gripper[arm].important_geoms["corners"]
-                active_markers += self._get_active_markers(c_geoms)
-
-            # Obtain the list of currently active (wiped) markers that where not wiped before
-            # These are the markers we are wiping at this step
-            lall = np.where(np.isin(active_markers, self.wiped_markers, invert=True))
-            new_active_markers = np.array(active_markers)[lall]
-
-            # Loop through all new markers we are wiping at this step
-            for new_active_marker in new_active_markers:
-                # Grab relevant marker id info
-                new_active_marker_geom_id = self.sim.model.geom_name2id(new_active_marker.visual_geoms[0])
-                # Make this marker transparent since we wiped it (alpha = 0)
-                self.sim.model.geom_rgba[new_active_marker_geom_id][3] = 0
-                # Add this marker the wiped list
-                self.wiped_markers.append(new_active_marker)
-                # Add reward if we're using the dense reward
-                if self.reward_shaping:
-                    reward += self.unit_wiped_reward
-
-            # Additional reward components if using dense rewards
-            if self.reward_shaping:
-                # If we haven't wiped all the markers yet, add a smooth reward for getting closer
-                # to the centroid of the dirt to wipe
-                if len(self.wiped_markers) < self.num_markers:
-                    _, _, mean_pos_to_things_to_wipe = self._get_wipe_information()
-                    mean_distance_to_things_to_wipe = np.linalg.norm(mean_pos_to_things_to_wipe)
-                    reward += self.distance_multiplier * (
-                        1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe)
-                    )
-
-                # Reward for keeping contact
-                if self.sim.data.ncon != 0 and self._has_gripper_contact:
-                    reward += self.wipe_contact_reward
-
-                # Penalty for excessive force with the end-effector
-                if total_force_ee > self.pressure_threshold_max:
-                    reward -= self.excess_force_penalty_mul * total_force_ee
-                    self.f_excess += 1
-
-                # Reward for pressing into table
-                # TODO: Need to include this computation somehow in the scaled reward computation
-                elif total_force_ee > self.pressure_threshold and self.sim.data.ncon > 1:
-                    reward += self.wipe_contact_reward + 0.01 * total_force_ee
-                    if self.sim.data.ncon > 50:
-                        reward += 10.0 * self.wipe_contact_reward
-
-                # Penalize large accelerations
-                reward -= self.ee_accel_penalty * max(
-                    [np.mean(abs(self.robots[0].recent_ee_acc[arm].current)) for arm in self.robots[0].arms]
+        # Additional reward components if using dense rewards
+        if self.reward_shaping:
+            # If we haven't wiped all the markers yet, add a smooth reward for getting closer
+            # to the centroid of the dirt to wipe
+            if len(self.wiped_markers) < self.num_markers:
+                _, _, mean_pos_to_things_to_wipe = self._get_wipe_information()
+                mean_distance_to_things_to_wipe = np.linalg.norm(mean_pos_to_things_to_wipe)
+                reward += self.distance_multiplier * (
+                    1 - np.tanh(self.distance_th_multiplier * mean_distance_to_things_to_wipe)
                 )
 
-            # Final reward if all wiped
-            if len(self.wiped_markers) == self.num_markers:
-                reward += self.task_complete_reward
+            # Reward for keeping contact
+            print(f"has gripper contact: {self._has_gripper_contact}")
+            if self.sim.data.ncon != 0 and self._has_gripper_contact:
+                reward += self.wipe_contact_reward
+
+            # Penalty for excessive force with the end-effector
+            print(f"total_force_ee: {total_force_ee}")
+            if total_force_ee > self.pressure_threshold_max:
+                reward -= self.excess_force_penalty_mul * total_force_ee
+                self.f_excess += 1
+
+            # Reward for pressing into table
+            # TODO: Need to include this computation somehow in the scaled reward computation
+            elif total_force_ee > self.pressure_threshold and self.sim.data.ncon > 1:
+                reward += self.wipe_contact_reward + 0.01 * total_force_ee
+                if self.sim.data.ncon > 50:
+                    reward += 10.0 * self.wipe_contact_reward
+
+            # Penalize large accelerations
+            reward -= self.ee_accel_penalty * max(
+                [np.mean(abs(self.robots[0].recent_ee_acc[arm].current)) for arm in self.robots[0].arms]
+            )
+
+        # Final reward if all wiped
+        if len(self.wiped_markers) == self.num_markers:
+            reward += self.task_complete_reward
 
         # Printing results
         if self.print_results:
@@ -537,10 +539,12 @@ class Wipe(ManipulationEnv):
         if self.delta_height is None:
             self.delta_height = self.rng.normal(self.table_height, self.table_height_std)
         self.table_offset[2] += self.delta_height
+        wipe_offset = self.table_offset.copy()
+        wipe_offset[0] -= 0.1
         mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
-            table_offset=self.table_offset,
+            table_offset=wipe_offset,
             table_friction_std=self.table_friction_std,
             coverage_factor=self.coverage_factor,
             num_markers=self.num_markers,
