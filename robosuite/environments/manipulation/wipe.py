@@ -475,12 +475,12 @@ class Wipe(ManipulationEnv):
                 )
 
             # Reward for keeping contact
-            print(f"has gripper contact: {self._has_gripper_contact}")
+            # print(f"has gripper contact: {self._has_gripper_contact}")
             if self.sim.data.ncon != 0 and self._has_gripper_contact:
                 reward += self.wipe_contact_reward
 
             # Penalty for excessive force with the end-effector
-            print(f"total_force_ee: {total_force_ee}")
+            # print(f"total_force_ee: {total_force_ee}")
             if total_force_ee > self.pressure_threshold_max:
                 reward -= self.excess_force_penalty_mul * total_force_ee
                 self.f_excess += 1
