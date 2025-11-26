@@ -51,7 +51,7 @@ class HammerObject(CompositeObject):
         name,
         handle_shape="box",
         handle_radius=(0.015, 0.02),
-        handle_length=(0.1, 0.25),
+        handle_length=(0.15, 0.25),
         handle_density=(100, 250),
         handle_friction=(3.0, 5.0),
         head_density_ratio=2.0,

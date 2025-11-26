@@ -363,7 +363,7 @@ class TwoArmHandover(TwoArmEnv):
                 mujoco_objects=self.hammer,
                 x_range=[-0.1, 0.1],
                 y_range=[-0.05, 0.05],
-                rotation=None,
+                rotation=np.pi/2.0,
                 rotation_axis=rotation_axis,
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
