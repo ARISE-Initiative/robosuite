@@ -2,7 +2,7 @@ import copy
 import json
 import os
 from collections import OrderedDict
-from typing import Optional, Dict
+from typing import Dict, Optional
 
 import numpy as np
 
@@ -329,9 +329,7 @@ class Robot(object):
             self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
         ]
         # indices for all joints (includes arms, base, torso, but not gripper joints, as those are handled separately)
-        self._ref_all_joint_pos_indexes = [
-            self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.all_joints
-        ]
+        self._ref_all_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.all_joints]
 
     def setup_observables(self):
         """
@@ -664,17 +662,17 @@ class Robot(object):
     def get_all_robot_joint_positions(self) -> Dict[str, float]:
         """
         Returns all joint positions including robot joints (arms, base, torso) and gripper joints.
-        
+
         Returns:
             dict: joint name -> joint position (in angles / radians)
         """
         joint_positions = {}
-        
+
         # Get all robot joint positions (includes arms, base, torso, etc.)
         all_joint_names = self.robot_model.all_joints
         for i, joint_name in enumerate(all_joint_names):
             joint_positions[joint_name] = self.sim.data.qpos[self._ref_all_joint_pos_indexes[i]]
-        
+
         # Add gripper joint positions for all arms
         for arm in self.arms:
             if self.has_gripper[arm]:
@@ -682,7 +680,7 @@ class Robot(object):
                 gripper_positions = self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[arm]]
                 for joint_name, position in zip(gripper_joint_names, gripper_positions):
                     joint_positions[joint_name] = position
-        
+
         return joint_positions
 
     def get_gripper_joint_positions(self, gripper_arm: Optional[str] = None):
