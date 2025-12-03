@@ -483,6 +483,44 @@ class MujocoEnv(metaclass=EnvMeta):
         observations = self.viewer._get_observations() if self.viewer_get_obs else self._get_observations()
         return observations, reward, done, info
 
+    def step_simple(self, action):
+        """
+        Takes a step in simulation with control command @action.
+        Args:
+            action (np.array): Action to execute within the environment
+        Returns:
+            None
+        Raises:
+            ValueError: [Steps past episode termination]
+        """
+        if self.done:
+            raise ValueError("executing action in terminated episode")
+
+        self.timestep += 1
+
+        # Since the env.step frequency is slower than the mjsim timestep frequency, the internal controller will output
+        # multiple torque commands in between new high level action commands. Therefore, we need to denote via
+        # 'policy_step' whether the current step we're taking is simply an internal update of the controller,
+        # or an actual policy update
+        policy_step = True
+
+        # Loop through the simulation at the model timestep rate until we're ready to take the next policy step
+        # (as defined by the control frequency specified at the environment level)
+        for i in range(int(self.control_timestep / self.model_timestep)):
+            if self.lite_physics:
+                self.sim.step1()
+            else:
+                self.sim.forward()
+            self._pre_action(action, policy_step)
+            if self.lite_physics:
+                self.sim.step2()
+            else:
+                self.sim.step()
+            policy_step = False
+
+        # Note: this is done all at once to avoid floating point inaccuracies
+        self.cur_time += self.control_timestep
+
     def _pre_action(self, action, policy_step=False):
         """
         Do any preprocessing before taking an action.
