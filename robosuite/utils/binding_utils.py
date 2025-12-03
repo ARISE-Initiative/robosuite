@@ -27,12 +27,12 @@ if _SYSTEM == "Windows":
     ctypes.WinDLL(os.path.join(os.path.dirname(mujoco.__file__), "mujoco.dll"))
 
 CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "")
-if CUDA_VISIBLE_DEVICES != "":
-    MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
-    if MUJOCO_EGL_DEVICE_ID is not None:
-        assert MUJOCO_EGL_DEVICE_ID.isdigit() and (
-            MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
-        ), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
+# if CUDA_VISIBLE_DEVICES != "":
+#     MUJOCO_EGL_DEVICE_ID = os.environ.get("MUJOCO_EGL_DEVICE_ID", None)
+#     if MUJOCO_EGL_DEVICE_ID is not None:
+#         assert MUJOCO_EGL_DEVICE_ID.isdigit() and (
+#             MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
+#         ), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
 
 if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", "glx"]:
     # If gpu rendering is specified in macros, then we enforce gpu
