@@ -13,6 +13,7 @@ from .omron_mobile_base import OmronMobileBase
 from .null_mobile_base import NullMobileBase
 from .no_actuation_base import NoActuationBase
 from .floating_legged_base import FloatingLeggedBase
+from .floating_legged_base_with_vertical import FloatingLeggedBaseWithVertical
 from .null_base import NullBase
 from .spot_base import Spot, SpotFloating
 
@@ -24,6 +25,7 @@ BASE_MAPPING = {
     "NullMobileBase": NullMobileBase,
     "NoActuationBase": NoActuationBase,
     "FloatingLeggedBase": FloatingLeggedBase,
+    "FloatingLeggedBaseWithVertical": FloatingLeggedBaseWithVertical,
     "Spot": Spot,
     "SpotFloating": SpotFloating,
     "NullBase": NullBase,
