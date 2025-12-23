@@ -10,6 +10,7 @@
   - Hot-fixed `Task.generate_id_mappings()` to remove invalid EEF targets.
 
 - **Features / Enhancements**:  
+  - Add env seeding for determinism.  
   - Added support for multiple cameras across renderers and observation pipelines.  
   - Enabled instance segmentation to include arena bodies.  
   - Added DualSense controller support and improved SpaceMouse auto-detection.  
