@@ -41,7 +41,7 @@ except:
         "Could not load the mink-based whole-body IK. Make sure you install related import properly, otherwise you will not be able to use the default IK controller setting for GR1 robot."
     )
 
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 __logo__ = """
       ;     /        ,--.
      ["]   ["]  ,<  |__**|
