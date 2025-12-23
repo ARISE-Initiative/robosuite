@@ -233,7 +233,7 @@ class HammerObject(CompositeObject):
             np.array: (x, y, z, w) quaternion orientation for the hammer
         """
         # Randomly sample between +/- flip (such that the hammer head faces one way or the other)
-        return np.array([0.5, -0.5, 0.5, -0.5]) if self.rng.rand() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
+        return np.array([0.5, -0.5, 0.5, -0.5]) if self.rng.random() >= 0.5 else np.array([-0.5, -0.5, -0.5, -0.5])
 
     @property
     def handle_geoms(self):
