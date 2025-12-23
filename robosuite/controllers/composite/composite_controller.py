@@ -194,6 +194,12 @@ class CompositeController:
             full_action_vector[start_idx:end_idx] = action_vector
         return full_action_vector
 
+    def create_action_dict_from_action_vector(self, action_vector):
+        action_dict = {}
+        for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
+            action_dict[part_name] = action_vector[start_idx:end_idx]
+        return action_dict
+
     def get_action_info(self):
         action_index_info = []
         action_dim_info = []
@@ -444,6 +450,15 @@ class WholeBody(CompositeController):
             )
             full_action_vector[start_idx:end_idx] = action_vector
         return full_action_vector
+
+    def create_action_dict_from_action_vector(self, action_vector):
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return super().create_action_dict_from_action_vector(action_vector)
+
+        action_dict = {}
+        for part_name, (start_idx, end_idx) in self._whole_body_controller_action_split_indexes.items():
+            action_dict[part_name] = action_vector[start_idx:end_idx]
+        return action_dict
 
     def get_action_info(self):
         if self.composite_controller_specific_config.get("skip_wbc_action", False):
