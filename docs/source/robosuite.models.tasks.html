@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.tasks';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -454,7 +453,7 @@ document.write(`
 <span id="robosuite-models-tasks-manipulation-task-module"></span><h2>robosuite.models.tasks.manipulation_task module<a class="headerlink" href="#module-robosuite.models.tasks.manipulation_task" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.tasks.manipulation_task.ManipulationTask">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.manipulation_task.</span></span><span class="sig-name descname"><span class="pre">ManipulationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.manipulation_task.ManipulationTask" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.manipulation_task.</span></span><span class="sig-name descname"><span class="pre">ManipulationTask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.manipulation_task.ManipulationTask" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.tasks.task.Task" title="robosuite.models.tasks.task.Task"><code class="xref py py-class docutils literal notranslate"><span class="pre">Task</span></code></a></p>
 <p>A manipulation-specific task. This is currently a future-proofing placeholder.</p>
 </dd></dl>
@@ -464,7 +463,7 @@ document.write(`
 <span id="robosuite-models-tasks-task-module"></span><h2>robosuite.models.tasks.task module<a class="headerlink" href="#module-robosuite.models.tasks.task" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.task.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.task.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="robosuite.models.html#robosuite.models.world.MujocoWorldBase" title="robosuite.models.world.MujocoWorldBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoWorldBase</span></code></a></p>
 <p>Creates MJCF model for a task performed.</p>
 <p>A task consists of one or more robots interacting with a variable number of
@@ -484,7 +483,7 @@ into a single MJCF model.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.classes_to_ids">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">classes_to_ids</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.classes_to_ids" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">classes_to_ids</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.classes_to_ids" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from specific classes to {geom, site} IDs in sim</p>
 </dd></dl>
@@ -502,21 +501,21 @@ dict: Mapping from specific classes to {geom, site} IDs in sim</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.geom_ids_to_classes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geom_ids_to_classes</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.geom_ids_to_classes" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">geom_ids_to_classes</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.geom_ids_to_classes" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from geom IDs in sim to specific classes</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.geom_ids_to_instances">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geom_ids_to_instances</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.geom_ids_to_instances" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">geom_ids_to_instances</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.geom_ids_to_instances" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from geom IDs in sim to specific class instance names</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.instances_to_ids">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instances_to_ids</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.instances_to_ids" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">instances_to_ids</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.instances_to_ids" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from specific class instance names to {geom, site} IDs in sim</p>
 </dd></dl>
@@ -556,14 +555,14 @@ dict: Mapping from specific class instance names to {geom, site} IDs in sim</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.site_ids_to_classes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_ids_to_classes</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.site_ids_to_classes" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">site_ids_to_classes</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.site_ids_to_classes" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from site IDs in sim to specific classes</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.site_ids_to_instances">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_ids_to_instances</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.site_ids_to_instances" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">site_ids_to_instances</span></span><a class="headerlink" href="#robosuite.models.tasks.task.Task.site_ids_to_instances" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: Mapping from site IDs in sim to specific class instance names</p>
 </dd></dl>

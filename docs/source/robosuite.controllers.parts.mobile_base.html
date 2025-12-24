@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.controllers.parts.mobile_base';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -463,7 +462,7 @@ document.write(`
 <span id="robosuite-controllers-parts-mobile-base-joint-vel-module"></span><h2>robosuite.controllers.parts.mobile_base.joint_vel module<a class="headerlink" href="#module-robosuite.controllers.parts.mobile_base.joint_vel" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.joint_vel.</span></span><span class="sig-name descname"><span class="pre">MobileBaseJointVelocityController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impedance_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">300)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qpos_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.joint_vel.</span></span><span class="sig-name descname"><span class="pre">MobileBaseJointVelocityController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impedance_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">300)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qpos_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController" title="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseController</span></code></a></p>
 <p>Controller for controlling robot arm via impedance control. Allows position control of the robot’s joints.</p>
 <p>NOTE: Control input actions assumed to be taken relative to the current joint positions. A given action to this
@@ -533,7 +532,7 @@ via an argument dict that has additional extraneous arguments won’t raise an e
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.control_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.control_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.control_limits" title="Link to this definition">#</a></dt>
 <dd><p>Returns the limits over this controller’s action space, overrides the superclass property
 Returns the following (generalized for both high and low limits), based on the impedance mode:</p>
 <blockquote>
@@ -565,7 +564,7 @@ Returns the following (generalized for both high and low limits), based on the i
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.name" title="Link to this definition">#</a></dt>
 <dd><p>Name of this controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -637,7 +636,7 @@ internally before executing the proceeding control loop.</p>
 <span id="robosuite-controllers-parts-mobile-base-mobile-base-controller-module"></span><h2>robosuite.controllers.parts.mobile_base.mobile_base_controller module<a class="headerlink" href="#module-robosuite.controllers.parts.mobile_base.mobile_base_controller" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.mobile_base_controller.</span></span><span class="sig-name descname"><span class="pre">MobileBaseController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naming_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.mobile_base_controller.</span></span><span class="sig-name descname"><span class="pre">MobileBaseController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naming_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>General controller interface.</p>
 <p>Requires reference to mujoco sim object, relevant joint_indexes to that robot, and
@@ -665,7 +664,7 @@ whether an initial_joint is used for nullspace torques or not</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.actuator_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuator_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.actuator_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actuator_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.actuator_limits" title="Link to this definition">#</a></dt>
 <dd><p>Torque limits for this controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -700,7 +699,7 @@ whether an initial_joint is used for nullspace torques or not</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.control_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.control_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.control_limits" title="Link to this definition">#</a></dt>
 <dd><p>Limits over this controller’s action space, which defaults to input min/max</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -723,7 +722,7 @@ whether an initial_joint is used for nullspace torques or not</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.name" title="Link to this definition">#</a></dt>
 <dd><p>Name of this controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -737,13 +736,13 @@ whether an initial_joint is used for nullspace torques or not</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.nums2array">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nums2array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.nums2array" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">nums2array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.nums2array" title="Link to this definition">#</a></dt>
 <dd><p>Convert input &#64;nums into numpy array of length &#64;dim. If &#64;nums is a single number, broadcasts it to the
 corresponding dimension size &#64;dim before converting into a numpy array</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nums</strong> (<em>numeric</em><em> or </em><em>Iterable</em>) – Either single value or array of numbers</p></li>
+<li><p><strong>nums</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.numeric" title="robosuite.utils.binding_utils.MjModel.numeric"><em>numeric</em></a><em> or </em><em>Iterable</em>) – Either single value or array of numbers</p></li>
 <li><p><strong>dim</strong> (<em>int</em>) – Size of array to broadcast input to env.sim.data.actuator_force</p></li>
 </ul>
 </dd>
@@ -769,7 +768,7 @@ corresponding dimension size &#64;dim before converting into a numpy array</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.run_controller">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.run_controller" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.run_controller" title="Link to this definition">#</a></dt>
 <dd><p>Abstract method that should be implemented in all subclass controllers, and should convert a given action
 into torques (pre gravity compensation) to be executed on the robot.
 Additionally, resets the self.new_update flag so that the next self.update call will occur</p>
@@ -795,7 +794,7 @@ the range self.output_min and self.output_max</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.torque_compensation">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torque_compensation</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.torque_compensation" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">torque_compensation</span></span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.mobile_base_controller.MobileBaseController.torque_compensation" title="Link to this definition">#</a></dt>
 <dd><p>Gravity compensation for this robot arm</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

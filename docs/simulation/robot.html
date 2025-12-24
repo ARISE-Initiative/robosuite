@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'simulation/robot';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -541,7 +540,7 @@ document.write(`
 <h2>Base Robot<a class="headerlink" href="#base-robot" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.robot.</span></span><span class="sig-name descname"><span class="pre">Robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.robot.Robot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.robots.robot.</span></span><span class="sig-name descname"><span class="pre">Robot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.robot.Robot" title="Link to this definition">#</a></dt>
 <dd><p>Initializes a robot simulation object, as defined by a single corresponding robot XML</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -709,12 +708,12 @@ dimensions should be actuation controls for the gripper.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.is_mobile">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.is_mobile" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.is_mobile" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.action_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.action_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.action_limits" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -740,7 +739,7 @@ each arm: “right”, “left”</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.torque_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torque_limits</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.torque_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">torque_limits</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.torque_limits" title="Link to this definition">#</a></dt>
 <dd><p>Torque lower/upper limits per dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -758,13 +757,13 @@ each arm: “right”, “left”</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.action_dim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.action_dim" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.action_dim" title="Link to this definition">#</a></dt>
 <dd><p>Action space dimension for this robot</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.dof" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 int: the active DoF of the robot (Number of robot joints + active gripper DoF).</p>
 </dd></dl>
@@ -800,35 +799,35 @@ of that object in the base frame.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.js_energy">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">js_energy</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.js_energy" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">js_energy</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.js_energy" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: the energy consumed by each joint between previous and current steps</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._joint_positions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_joint_positions</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_positions" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_joint_positions</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_positions" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: joint positions (in angles / radians)</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._joint_velocities">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_joint_velocities</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_velocities" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_joint_velocities</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_velocities" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: joint velocities (angular velocity)</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.joint_indexes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">joint_indexes</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.joint_indexes" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">joint_indexes</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.joint_indexes" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: mujoco internal indexes for the robot joints</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.arm_joint_indexes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arm_joint_indexes</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.arm_joint_indexes" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">arm_joint_indexes</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.arm_joint_indexes" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: mujoco internal indexes for the robot arm joints</p>
 </dd></dl>
@@ -876,52 +875,52 @@ robot-specific options specified.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="id0">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="id1">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#id1" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#id1" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.ee_ft_integral">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_ft_integral</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_ft_integral" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ee_ft_integral</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_ft_integral" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the integral over time of the applied ee force-torque for that arm</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.ee_force">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_force</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_force" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ee_force</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_force" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the force applied at the force sensor at the robot arm’s eef</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.ee_torque">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ee_torque</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_torque" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">ee_torque</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.ee_torque" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the torque applied at the torque sensor at the robot arm’s eef</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_pose">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_pose</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_pose" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_pose</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_pose" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the eef pose in base frame of robot.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_quat">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_quat</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_quat" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_quat</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_quat" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the eef quaternion in base frame of robot.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_total_velocity">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_total_velocity</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_total_velocity" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_total_velocity</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_total_velocity" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the total eef velocity (linear + angular) in the base frame
 as a numpy array of shape (6,)</p>
@@ -929,28 +928,28 @@ as a numpy array of shape (6,)</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_pos</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_pos</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the position of eef in base frame of robot.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_orn">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_orn</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_orn" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_orn</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_orn" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the orientation of eef in base frame of robot as a rotation matrix.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_vel">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_vel</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_vel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_vel</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_vel" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the velocity of eef in base frame of robot.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._hand_ang_vel">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_hand_ang_vel</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_ang_vel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_hand_ang_vel</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._hand_ang_vel" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 dict: each arm-specific entry specifies the angular velocity of eef in base frame of robot.</p>
 </dd></dl>
@@ -998,14 +997,14 @@ dict: each arm-specific entry specifies the angular velocity of eef in base fram
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot._joint_split_idx">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_joint_split_idx</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_split_idx" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_joint_split_idx</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot._joint_split_idx" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 int: the index that correctly splits the right arm from the left arm joints</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.robot.Robot.part_controllers">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">part_controllers</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.part_controllers" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">part_controllers</span></span><a class="headerlink" href="#robosuite.robots.robot.Robot.part_controllers" title="Link to this definition">#</a></dt>
 <dd><p>Controller dictionary for the robot</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1025,7 +1024,7 @@ int: the index that correctly splits the right arm from the left arm joints</p>
 <p>Tabletop manipulators.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.robots.fixed_base_robot.FixedBaseRobot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.fixed_base_robot.</span></span><span class="sig-name descname"><span class="pre">FixedBaseRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.robots.fixed_base_robot.</span></span><span class="sig-name descname"><span class="pre">FixedBaseRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.fixed_base_robot.FixedBaseRobot" title="Link to this definition">#</a></dt>
 <dd><p>Initializes a robot with a fixed base.</p>
 </dd></dl>
 
@@ -1039,7 +1038,7 @@ int: the index that correctly splits the right arm from the left arm joints</p>
 <p>Base class for wheeled and legged robots.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.mobile_robot.</span></span><span class="sig-name descname"><span class="pre">MobileRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.robots.mobile_robot.</span></span><span class="sig-name descname"><span class="pre">MobileRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot" title="Link to this definition">#</a></dt>
 <dd><p>Initializes a robot with a fixed base.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot._load_controller">
@@ -1149,32 +1148,32 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.is_mobile">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.is_mobile" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_mobile</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.is_mobile" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.base">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.base" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">base</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.base" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.torso">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torso</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.torso" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">torso</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.torso" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.head">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.head" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">head</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.head" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot.legs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">legs</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.legs" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">legs</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot.legs" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.mobile_robot.MobileRobot._action_split_indexes">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_action_split_indexes</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot._action_split_indexes" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">_action_split_indexes</span></span><a class="headerlink" href="#robosuite.robots.mobile_robot.MobileRobot._action_split_indexes" title="Link to this definition">#</a></dt>
 <dd><p>Dictionary of split indexes for each part of the robot</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1194,7 +1193,7 @@ dimensions should be actuation controls for the gripper.</p>
 <p>Mobile robots with wheeled bases.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.wheeled_robot.</span></span><span class="sig-name descname"><span class="pre">WheeledRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.robots.wheeled_robot.</span></span><span class="sig-name descname"><span class="pre">WheeledRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot" title="Link to this definition">#</a></dt>
 <dd><p>Initializes a robot with a wheeled base.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot._load_controller">
@@ -1270,7 +1269,7 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.wheeled_robot.WheeledRobot.action_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.action_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.wheeled_robot.WheeledRobot.action_limits" title="Link to this definition">#</a></dt>
 <dd><p>Action lower/upper limits per dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1294,7 +1293,7 @@ dimensions should be actuation controls for the gripper.</p>
 <p>Robots with legs.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.robots.legged_robot.</span></span><span class="sig-name descname"><span class="pre">LeggedRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.robots.legged_robot.</span></span><span class="sig-name descname"><span class="pre">LeggedRobot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">robot_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">composite_controller_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialization_noise</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">control_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot" title="Link to this definition">#</a></dt>
 <dd><p>Initializes a robot with a wheeled base.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot._load_leg_controllers">
@@ -1375,7 +1374,7 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.action_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.action_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_limits</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.action_limits" title="Link to this definition">#</a></dt>
 <dd><p>Action lower/upper limits per dimension.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1393,12 +1392,12 @@ dimensions should be actuation controls for the gripper.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_legs_actuated</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_legs_actuated</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.is_legs_actuated" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.robots.legged_robot.LeggedRobot.num_leg_joints">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_leg_joints</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">num_leg_joints</span></span><a class="headerlink" href="#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -489,8 +488,11 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.control"><code class="docutils literal notranslate"><span class="pre">DualSense.control</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.control_gripper"><code class="docutils literal notranslate"><span class="pre">DualSense.control_gripper</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.get_controller_state"><code class="docutils literal notranslate"><span class="pre">DualSense.get_controller_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.last_state"><code class="docutils literal notranslate"><span class="pre">DualSense.last_state</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.report_bytes"><code class="docutils literal notranslate"><span class="pre">DualSense.report_bytes</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.run"><code class="docutils literal notranslate"><span class="pre">DualSense.run()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.start_control"><code class="docutils literal notranslate"><span class="pre">DualSense.start_control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.DualSense.state"><code class="docutils literal notranslate"><span class="pre">DualSense.state</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.devices.html#robosuite.devices.dualsense.parse_bt01_report"><code class="docutils literal notranslate"><span class="pre">parse_bt01_report()</span></code></a></li>
@@ -838,7 +840,10 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.ee_torque"><code class="docutils literal notranslate"><span class="pre">Robot.ee_torque</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.enable_parts"><code class="docutils literal notranslate"><span class="pre">Robot.enable_parts()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.enabled"><code class="docutils literal notranslate"><span class="pre">Robot.enabled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.get_all_robot_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.get_all_robot_joint_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.get_gripper_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.get_gripper_joint_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.get_gripper_name"><code class="docutils literal notranslate"><span class="pre">Robot.get_gripper_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.get_robot_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.get_robot_joint_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.get_sensor_measurement"><code class="docutils literal notranslate"><span class="pre">Robot.get_sensor_measurement()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.has_part"><code class="docutils literal notranslate"><span class="pre">Robot.has_part()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.is_mobile"><code class="docutils literal notranslate"><span class="pre">Robot.is_mobile</span></code></a></li>
@@ -851,6 +856,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.print_action_info_dict"><code class="docutils literal notranslate"><span class="pre">Robot.print_action_info_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.reset"><code class="docutils literal notranslate"><span class="pre">Robot.reset()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.reset_sim"><code class="docutils literal notranslate"><span class="pre">Robot.reset_sim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.set_all_robot_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.set_all_robot_joint_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.set_gripper_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.set_gripper_joint_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.set_robot_joint_positions"><code class="docutils literal notranslate"><span class="pre">Robot.set_robot_joint_positions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.robots.html#robosuite.robots.robot.Robot.setup_observables"><code class="docutils literal notranslate"><span class="pre">Robot.setup_observables()</span></code></a></li>
@@ -894,6 +900,8 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.bind"><code class="docutils literal notranslate"><span class="pre">MjData.bind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.bind_scalar"><code class="docutils literal notranslate"><span class="pre">MjData.bind_scalar</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body"><code class="docutils literal notranslate"><span class="pre">MjData.body</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_awake"><code class="docutils literal notranslate"><span class="pre">MjData.body_awake</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_awake_ind"><code class="docutils literal notranslate"><span class="pre">MjData.body_awake_ind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_xmat"><code class="docutils literal notranslate"><span class="pre">MjData.body_xmat</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_xpos"><code class="docutils literal notranslate"><span class="pre">MjData.body_xpos</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_xquat"><code class="docutils literal notranslate"><span class="pre">MjData.body_xquat</span></code></a></li>
@@ -913,6 +921,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.crb"><code class="docutils literal notranslate"><span class="pre">MjData.crb</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.ctrl"><code class="docutils literal notranslate"><span class="pre">MjData.ctrl</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.cvel"><code class="docutils literal notranslate"><span class="pre">MjData.cvel</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.dof_awake_ind"><code class="docutils literal notranslate"><span class="pre">MjData.dof_awake_ind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.dof_island"><code class="docutils literal notranslate"><span class="pre">MjData.dof_island</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.efc_AR"><code class="docutils literal notranslate"><span class="pre">MjData.efc_AR</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.efc_AR_colind"><code class="docutils literal notranslate"><span class="pre">MjData.efc_AR_colind</span></code></a></li>
@@ -1005,9 +1014,11 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_dofadr"><code class="docutils literal notranslate"><span class="pre">MjData.island_dofadr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_idofadr"><code class="docutils literal notranslate"><span class="pre">MjData.island_idofadr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_iefcadr"><code class="docutils literal notranslate"><span class="pre">MjData.island_iefcadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_itreeadr"><code class="docutils literal notranslate"><span class="pre">MjData.island_itreeadr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_ne"><code class="docutils literal notranslate"><span class="pre">MjData.island_ne</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nefc"><code class="docutils literal notranslate"><span class="pre">MjData.island_nefc</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nf"><code class="docutils literal notranslate"><span class="pre">MjData.island_nf</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_ntree"><code class="docutils literal notranslate"><span class="pre">MjData.island_ntree</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nv"><code class="docutils literal notranslate"><span class="pre">MjData.island_nv</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.jnt"><code class="docutils literal notranslate"><span class="pre">MjData.jnt</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.joint"><code class="docutils literal notranslate"><span class="pre">MjData.joint</span></code></a></li>
@@ -1018,6 +1029,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_efc2iefc"><code class="docutils literal notranslate"><span class="pre">MjData.map_efc2iefc</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_idof2dof"><code class="docutils literal notranslate"><span class="pre">MjData.map_idof2dof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_iefc2efc"><code class="docutils literal notranslate"><span class="pre">MjData.map_iefc2efc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_itree2tree"><code class="docutils literal notranslate"><span class="pre">MjData.map_itree2tree</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.maxuse_arena"><code class="docutils literal notranslate"><span class="pre">MjData.maxuse_arena</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.maxuse_con"><code class="docutils literal notranslate"><span class="pre">MjData.maxuse_con</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.maxuse_efc"><code class="docutils literal notranslate"><span class="pre">MjData.maxuse_efc</span></code></a></li>
@@ -1032,6 +1044,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nA"><code class="docutils literal notranslate"><span class="pre">MjData.nA</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nJ"><code class="docutils literal notranslate"><span class="pre">MjData.nJ</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.narena"><code class="docutils literal notranslate"><span class="pre">MjData.narena</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nbody_awake"><code class="docutils literal notranslate"><span class="pre">MjData.nbody_awake</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nbuffer"><code class="docutils literal notranslate"><span class="pre">MjData.nbuffer</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.ncon"><code class="docutils literal notranslate"><span class="pre">MjData.ncon</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.ne"><code class="docutils literal notranslate"><span class="pre">MjData.ne</span></code></a></li>
@@ -1040,8 +1053,12 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nidof"><code class="docutils literal notranslate"><span class="pre">MjData.nidof</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nisland"><code class="docutils literal notranslate"><span class="pre">MjData.nisland</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nl"><code class="docutils literal notranslate"><span class="pre">MjData.nl</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nparent_awake"><code class="docutils literal notranslate"><span class="pre">MjData.nparent_awake</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nplugin"><code class="docutils literal notranslate"><span class="pre">MjData.nplugin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.ntree_awake"><code class="docutils literal notranslate"><span class="pre">MjData.ntree_awake</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.nv_awake"><code class="docutils literal notranslate"><span class="pre">MjData.nv_awake</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.parena"><code class="docutils literal notranslate"><span class="pre">MjData.parena</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.parent_awake_ind"><code class="docutils literal notranslate"><span class="pre">MjData.parent_awake_ind</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.pbase"><code class="docutils literal notranslate"><span class="pre">MjData.pbase</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.plugin"><code class="docutils literal notranslate"><span class="pre">MjData.plugin</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.plugin_data"><code class="docutils literal notranslate"><span class="pre">MjData.plugin_data</span></code></a></li>
@@ -1101,6 +1118,9 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.threadpool"><code class="docutils literal notranslate"><span class="pre">MjData.threadpool</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.time"><code class="docutils literal notranslate"><span class="pre">MjData.time</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.timer"><code class="docutils literal notranslate"><span class="pre">MjData.timer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_asleep"><code class="docutils literal notranslate"><span class="pre">MjData.tree_asleep</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_awake"><code class="docutils literal notranslate"><span class="pre">MjData.tree_awake</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_island"><code class="docutils literal notranslate"><span class="pre">MjData.tree_island</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.userdata"><code class="docutils literal notranslate"><span class="pre">MjData.userdata</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.warning"><code class="docutils literal notranslate"><span class="pre">MjData.warning</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjData.wrap_obj"><code class="docutils literal notranslate"><span class="pre">MjData.wrap_obj</span></code></a></li>
@@ -1219,6 +1239,7 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_frictionloss"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_frictionloss</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_invweight0"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_invweight0</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_jntid"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_jntid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_length"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_length</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_parentid"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_parentid</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_simplenum"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_simplenum</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_solimp"><code class="docutils literal notranslate"><span class="pre">MjModel.dof_solimp</span></code></a></li>
@@ -1665,6 +1686,8 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_solref_fri"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_solref_fri</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_solref_lim"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_solref_lim</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_stiffness"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_stiffness</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_treeid"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_treeid</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_treenum"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_treenum</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_user"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_user</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_width"><code class="docutils literal notranslate"><span class="pre">MjModel.tendon_width</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tex"><code class="docutils literal notranslate"><span class="pre">MjModel.tex</span></code></a></li>
@@ -1680,6 +1703,11 @@ document.write(`
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.text_data"><code class="docutils literal notranslate"><span class="pre">MjModel.text_data</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.text_size"><code class="docutils literal notranslate"><span class="pre">MjModel.text_size</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.texture"><code class="docutils literal notranslate"><span class="pre">MjModel.texture</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_bodyadr"><code class="docutils literal notranslate"><span class="pre">MjModel.tree_bodyadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_bodynum"><code class="docutils literal notranslate"><span class="pre">MjModel.tree_bodynum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_dofadr"><code class="docutils literal notranslate"><span class="pre">MjModel.tree_dofadr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_dofnum"><code class="docutils literal notranslate"><span class="pre">MjModel.tree_dofnum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_sleep_policy"><code class="docutils literal notranslate"><span class="pre">MjModel.tree_sleep_policy</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tuple"><code class="docutils literal notranslate"><span class="pre">MjModel.tuple</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tuple_adr"><code class="docutils literal notranslate"><span class="pre">MjModel.tuple_adr</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tuple_objid"><code class="docutils literal notranslate"><span class="pre">MjModel.tuple_objid</span></code></a></li>

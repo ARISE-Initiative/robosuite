@@ -1,5 +1,39 @@
 # Changelog
 
+## Version 1.5.2
+
+- **Bug Fixes**:  
+  - Fixed domain randomization compatibility for `mujoco!=3.1.1`.  
+  - Corrected dexterous hand mounting for Panda and pot-with-handles geometry for rectangular pots.  
+  - Fixed Mink IK with delta input, duplicated inertial properties, free-joint issues, and Baxter mesh problems.  
+  - Resolved mobile base XML and controller logic issues, binding utils on Windows, and EGL error reporting.  
+  - Hot-fixed `Task.generate_id_mappings()` to remove invalid EEF targets.
+
+- **Features / Enhancements**:  
+  - Add env seeding for determinism.  
+  - Added support for multiple cameras across renderers and observation pipelines.  
+  - Enabled instance segmentation to include arena bodies.  
+  - Added DualSense controller support and improved SpaceMouse auto-detection.  
+  - Introduced scalable arenas and MuJoCo objects via `set_scale`.  
+  - Allowed base type specification and manipulator mounts for mobile manipulation envs.  
+  - Added new robots and hands (xArm7 revised, Inspire/Fourier grasp qpos).  
+  - Extended whole-body IK with `input_ref_frame=base` and `skip_wbc_action`.  
+  - Added sensors, shell inertia for Sawyer meshes, and joint position observations.
+
+- **Documentation Updates**:  
+  - Updated v1.5 docs, fixed broken links, improved dark-mode visibility, and refined demo/device documentation.  
+  - Added USD requirements and SpaceMouse dependencies to docs and extras.  
+  - Improved demos page and clarified base type comments.
+
+- **CI / Release / Tooling**:  
+  - Added and refined PyPI publishing workflows.  
+  - Improved build–docs synchronization and pinned Mink version.  
+
+- **Miscellaneous**:  
+  - Added render modalities and updated demo scripts to include all manipulators by default.  
+  - Refactored controller configs and composite controller logic.  
+  - Improved data collection wrapper resets and environment seeding.
+
 ## Version 1.5.1
 
 - **Bug Fixes**:  

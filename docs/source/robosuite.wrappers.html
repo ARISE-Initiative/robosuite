@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.wrappers';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -469,7 +468,7 @@ document.write(`
 Wrappers are useful for data collection and logging. Highly recommended.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.wrappers.wrapper.Wrapper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.wrappers.wrapper.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.wrappers.wrapper.</span></span><span class="sig-name descname"><span class="pre">Wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for all wrappers in robosuite.</p>
 <dl class="field-list simple">
@@ -479,7 +478,7 @@ Wrappers are useful for data collection and logging. Highly recommended.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.wrappers.wrapper.Wrapper.action_dim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.action_dim" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_dim</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.action_dim" title="Link to this definition">#</a></dt>
 <dd><p>By default, grabs the normal environment action_dim</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -493,7 +492,7 @@ Wrappers are useful for data collection and logging. Highly recommended.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.wrappers.wrapper.Wrapper.action_spec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">action_spec</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.action_spec" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">action_spec</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.action_spec" title="Link to this definition">#</a></dt>
 <dd><p>By default, grabs the normal environment action_spec</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -511,7 +510,7 @@ Wrappers are useful for data collection and logging. Highly recommended.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.wrappers.wrapper.Wrapper.class_name">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">class_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.class_name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">class_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.class_name" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -578,7 +577,7 @@ Wrappers are useful for data collection and logging. Highly recommended.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.wrappers.wrapper.Wrapper.unwrapped">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unwrapped</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.unwrapped" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">unwrapped</span></span><a class="headerlink" href="#robosuite.wrappers.wrapper.Wrapper.unwrapped" title="Link to this definition">#</a></dt>
 <dd><p>Grabs unwrapped environment</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

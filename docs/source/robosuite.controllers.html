@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.controllers';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -435,11 +434,17 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="robosuite.controllers.composite.html#module-robosuite.controllers.composite.composite_controller">robosuite.controllers.composite.composite_controller module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController"><code class="docutils literal notranslate"><span class="pre">CompositeController</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.action_limits"><code class="docutils literal notranslate"><span class="pre">CompositeController.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.create_action_dict_from_action_vector"><code class="docutils literal notranslate"><span class="pre">CompositeController.create_action_dict_from_action_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.create_action_vector"><code class="docutils literal notranslate"><span class="pre">CompositeController.create_action_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_action_info"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_action_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_action_info_dict"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_action_info_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_control_dim"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_control_dim()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_controller"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_controller()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_controller_base_pose"><code class="docutils literal notranslate"><span class="pre">CompositeController.get_controller_base_pose()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.load_controller_config"><code class="docutils literal notranslate"><span class="pre">CompositeController.load_controller_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.name"><code class="docutils literal notranslate"><span class="pre">CompositeController.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.print_action_info"><code class="docutils literal notranslate"><span class="pre">CompositeController.print_action_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.print_action_info_dict"><code class="docutils literal notranslate"><span class="pre">CompositeController.print_action_info_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.reset"><code class="docutils literal notranslate"><span class="pre">CompositeController.reset()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.run_controller"><code class="docutils literal notranslate"><span class="pre">CompositeController.run_controller()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.set_goal"><code class="docutils literal notranslate"><span class="pre">CompositeController.set_goal()</span></code></a></li>
@@ -456,7 +461,11 @@ document.write(`
 </li>
 <li class="toctree-l3"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody"><code class="docutils literal notranslate"><span class="pre">WholeBody</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.action_limits"><code class="docutils literal notranslate"><span class="pre">WholeBody.action_limits</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_dict_from_action_vector"><code class="docutils literal notranslate"><span class="pre">WholeBody.create_action_dict_from_action_vector()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_vector"><code class="docutils literal notranslate"><span class="pre">WholeBody.create_action_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.get_action_info"><code class="docutils literal notranslate"><span class="pre">WholeBody.get_action_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.get_action_info_dict"><code class="docutils literal notranslate"><span class="pre">WholeBody.get_action_info_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.joint_action_policy"><code class="docutils literal notranslate"><span class="pre">WholeBody.joint_action_policy</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.name"><code class="docutils literal notranslate"><span class="pre">WholeBody.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info"><code class="docutils literal notranslate"><span class="pre">WholeBody.print_action_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict"><code class="docutils literal notranslate"><span class="pre">WholeBody.print_action_info_dict()</span></code></a></li>

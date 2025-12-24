@@ -38,8 +38,8 @@
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -47,7 +47,6 @@
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
     <script src="_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="#" />
@@ -928,6 +927,10 @@ document.write(`
         <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body">(robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_awake">body_awake (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.body_awake_ind">body_awake_ind (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_bvhadr">body_bvhadr (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_bvhnum">body_bvhnum (robosuite.utils.binding_utils.MjModel property)</a>
@@ -944,10 +947,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_geomnum">body_geomnum (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
-      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_gravcomp">body_gravcomp (robosuite.utils.binding_utils.MjModel property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_gravcomp">body_gravcomp (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_id2name">body_id2name() (robosuite.utils.binding_utils.MjModel method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.body_inertia">body_inertia (robosuite.utils.binding_utils.MjModel property)</a>
@@ -1200,10 +1203,10 @@ document.write(`
 </li>
       <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.CompositeController">CompositeController (class in robosuite.controllers.composite.composite_controller)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController">[1]</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.CompositeObject">CompositeObject (class in robosuite.models.objects.generated_objects)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.controllers.parts.arm.html#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_ori">compute_goal_ori() (robosuite.controllers.parts.arm.osc.OperationalSpaceController method)</a>
 </li>
       <li><a href="source/robosuite.controllers.parts.arm.html#robosuite.controllers.parts.arm.osc.OperationalSpaceController.compute_goal_pos">compute_goal_pos() (robosuite.controllers.parts.arm.osc.OperationalSpaceController method)</a>
@@ -1302,9 +1305,17 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.crb">crb (robosuite.utils.binding_utils.MjData property)</a>
 </li>
-      <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.create_action_vector">create_action_vector() (robosuite.controllers.composite.composite_controller.HybridMobileBase method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.create_action_vector">[1]</a>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.create_action_dict_from_action_vector">create_action_dict_from_action_vector() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
 
       <ul>
+        <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_dict_from_action_vector">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>
+</li>
+      </ul></li>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.create_action_vector">create_action_vector() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
+
+      <ul>
+        <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.create_action_vector">(robosuite.controllers.composite.composite_controller.HybridMobileBase method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.HybridMobileBase.create_action_vector">[1]</a>
+</li>
         <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_vector">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.create_action_vector">[1]</a>
 </li>
         <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.create_action_vector">(robosuite.robots.robot.Robot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.create_action_vector">[1]</a>
@@ -1514,6 +1525,8 @@ document.write(`
       </ul></li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_armature">dof_armature (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.dof_awake_ind">dof_awake_ind (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_bodyid">dof_bodyid (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_damping">dof_damping (robosuite.utils.binding_utils.MjModel property)</a>
@@ -1525,6 +1538,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.dof_island">dof_island (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_jntid">dof_jntid (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_length">dof_length (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.dof_M0">dof_M0 (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
@@ -2008,7 +2023,21 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.geom_xpos">geom_xpos (robosuite.utils.binding_utils.MjData property)</a>
 </li>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_action_info">get_action_info() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
+
+      <ul>
+        <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.get_action_info">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>
+</li>
+      </ul></li>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.get_action_info_dict">get_action_info_dict() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
+
+      <ul>
+        <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.get_action_info_dict">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>
+</li>
+      </ul></li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.LightingModder.get_active">get_active() (robosuite.utils.mjmod.LightingModder method)</a>
+</li>
+      <li><a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.get_all_robot_joint_positions">get_all_robot_joint_positions() (robosuite.robots.robot.Robot method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.LightingModder.get_ambient">get_ambient() (robosuite.utils.mjmod.LightingModder method)</a>
 </li>
@@ -2106,10 +2135,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.get_elements">get_elements() (in module robosuite.utils.mjcf_utils)</a>
 </li>
-      <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.get_ep_meta">get_ep_meta() (robosuite.environments.base.MujocoEnv method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.get_ep_meta">get_ep_meta() (robosuite.environments.base.MujocoEnv method)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.CameraModder.get_fovy">get_fovy() (robosuite.utils.mjmod.CameraModder method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_geom_jacp">get_geom_jacp() (robosuite.utils.binding_utils.MjData method)</a>
@@ -2125,6 +2154,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_geom_xvelp">get_geom_xvelp() (robosuite.utils.binding_utils.MjData method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_geom_xvelr">get_geom_xvelr() (robosuite.utils.binding_utils.MjData method)</a>
+</li>
+      <li><a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.get_gripper_joint_positions">get_gripper_joint_positions() (robosuite.robots.robot.Robot method)</a>
 </li>
       <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.get_gripper_name">get_gripper_name() (robosuite.robots.robot.Robot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.get_gripper_name">[1]</a>
 </li>
@@ -2187,6 +2218,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.CameraModder.get_quat">get_quat() (robosuite.utils.mjmod.CameraModder method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.TextureModder.get_rand_rgb">get_rand_rgb() (robosuite.utils.mjmod.TextureModder method)</a>
+</li>
+      <li><a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.get_robot_joint_positions">get_robot_joint_positions() (robosuite.robots.robot.Robot method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.get_sensor">get_sensor() (robosuite.utils.binding_utils.MjData method)</a>
 </li>
@@ -2638,11 +2671,15 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_iefcadr">island_iefcadr (robosuite.utils.binding_utils.MjData property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_itreeadr">island_itreeadr (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_ne">island_ne (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nefc">island_nefc (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nf">island_nf (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_ntree">island_ntree (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.island_nv">island_nv (robosuite.utils.binding_utils.MjData property)</a>
 </li>
@@ -2710,6 +2747,8 @@ document.write(`
         <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.joint">(robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.joint_action_policy">joint_action_policy (robosuite.controllers.composite.composite_controller.WholeBody attribute)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.joint_id2name">joint_id2name() (robosuite.utils.binding_utils.MjModel method)</a>
 </li>
       <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.joint_indexes">joint_indexes (robosuite.robots.robot.Robot property)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.joint_indexes">[1]</a>
@@ -2768,6 +2807,8 @@ document.write(`
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.last_state">last_state (robosuite.devices.dualsense.DualSense attribute)</a>
+</li>
       <li><a href="source/robosuite.models.bases.html#robosuite.models.bases.leg_base_model.LegBaseModel">LegBaseModel (class in robosuite.models.bases.leg_base_model)</a>
 </li>
       <li><a href="source/robosuite.models.robots.manipulators.html#robosuite.models.robots.manipulators.legged_manipulator_model.LeggedManipulatorModel">LeggedManipulatorModel (class in robosuite.models.robots.manipulators.legged_manipulator_model)</a>
@@ -2822,10 +2863,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.light_dir0">light_dir0 (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
-      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.light_exponent">light_exponent (robosuite.utils.binding_utils.MjModel property)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.light_exponent">light_exponent (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.light_id2name">light_id2name() (robosuite.utils.binding_utils.MjModel method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.light_intensity">light_intensity (robosuite.utils.binding_utils.MjModel property)</a>
@@ -2913,6 +2954,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_idof2dof">map_idof2dof (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_iefc2efc">map_iefc2efc (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.map_itree2tree">map_itree2tree (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.mapD2M">mapD2M (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
@@ -3465,6 +3508,12 @@ document.write(`
 </li>
       <li><a href="source/robosuite.models.bases.html#robosuite.models.bases.mount_model.MountModel">MountModel (class in robosuite.models.bases.mount_model)</a>
 </li>
+      <li><a href="source/robosuite.models.robots.manipulators.html#robosuite.models.robots.manipulators.humanoid_model.HumanoidModel.mujoco_model">mujoco_model (robosuite.models.robots.manipulators.humanoid_model.HumanoidModel attribute)</a>
+
+      <ul>
+        <li><a href="source/robosuite.models.robots.manipulators.html#robosuite.models.robots.manipulators.humanoid_upperbody_model.HumanoidUpperBodyModel.mujoco_model">(robosuite.models.robots.manipulators.humanoid_upperbody_model.HumanoidUpperBodyModel attribute)</a>
+</li>
+      </ul></li>
       <li><a href="simulation/environment.html#robosuite.environments.base.MujocoEnv">MujocoEnv (class in robosuite.environments.base)</a>, <a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv">[1]</a>
 </li>
       <li><a href="modeling/object_model.html#robosuite.models.objects.objects.MujocoGeneratedObject">MujocoGeneratedObject (class in robosuite.models.objects.objects)</a>, <a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoGeneratedObject">[1]</a>
@@ -3611,6 +3660,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nbody">nbody (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.nbody_awake">nbody_awake (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.nbuffer">nbuffer (robosuite.utils.binding_utils.MjData property)</a>
 
       <ul>
@@ -3675,10 +3726,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexshelldata">nflexshelldata (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflextexcoord">nflextexcoord (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexvert">nflexvert (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ngeom">ngeom (robosuite.utils.binding_utils.MjModel property)</a>
@@ -3755,6 +3806,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.npair">npair (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.nparent_awake">nparent_awake (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.npaths">npaths (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.nplugin">nplugin (robosuite.utils.binding_utils.MjData property)</a>
@@ -3798,6 +3851,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ntextdata">ntextdata (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ntree">ntree (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.ntree_awake">ntree_awake (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ntuple">ntuple (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
@@ -3858,6 +3913,8 @@ document.write(`
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.nut_assembly.NutAssemblySquare">NutAssemblySquare (class in robosuite.environments.manipulation.nut_assembly)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nv">nv (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.nv_awake">nv_awake (robosuite.utils.binding_utils.MjData property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nwrap">nwrap (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
@@ -3961,6 +4018,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.parena">parena (robosuite.utils.binding_utils.MjData property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.parent_awake_ind">parent_awake_ind (robosuite.utils.binding_utils.MjData property)</a>
+</li>
       <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.parse_bt01_report">parse_bt01_report() (in module robosuite.devices.dualsense)</a>
 </li>
       <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.parse_bt31_report">parse_bt31_report() (in module robosuite.devices.dualsense)</a>
@@ -4037,15 +4096,19 @@ document.write(`
 </li>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.PrimitiveObject">PrimitiveObject (class in robosuite.models.objects.generated_objects)</a>
 </li>
-      <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info">print_action_info() (robosuite.controllers.composite.composite_controller.WholeBody method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info">[1]</a>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.print_action_info">print_action_info() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
 
       <ul>
+        <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info">[1]</a>
+</li>
         <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.print_action_info">(robosuite.robots.robot.Robot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.print_action_info">[1]</a>
 </li>
       </ul></li>
-      <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict">print_action_info_dict() (robosuite.controllers.composite.composite_controller.WholeBody method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict">[1]</a>
+      <li><a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.print_action_info_dict">print_action_info_dict() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>
 
       <ul>
+        <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict">(robosuite.controllers.composite.composite_controller.WholeBody method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.WholeBody.print_action_info_dict">[1]</a>
+</li>
         <li><a href="simulation/robot.html#robosuite.robots.robot.Robot.print_action_info_dict">(robosuite.robots.robot.Robot method)</a>, <a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.print_action_info_dict">[1]</a>
 </li>
       </ul></li>
@@ -4194,6 +4257,8 @@ document.write(`
 </li>
       </ul></li>
       <li><a href="source/robosuite.renderers.html#robosuite.renderers.base.Renderer">Renderer (class in robosuite.renderers.base)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.report_bytes">report_bytes (robosuite.devices.dualsense.DualSense attribute)</a>
 </li>
       <li><a href="simulation/controller.html#robosuite.controllers.composite.composite_controller.CompositeController.reset">reset() (robosuite.controllers.composite.composite_controller.CompositeController method)</a>, <a href="source/robosuite.controllers.composite.html#robosuite.controllers.composite.composite_controller.CompositeController.reset">[1]</a>
 
@@ -5631,6 +5696,8 @@ document.write(`
         <li><a href="source/robosuite.utils.html#robosuite.utils.observables.Observable.set_active">(robosuite.utils.observables.Observable method)</a>
 </li>
       </ul></li>
+      <li><a href="source/robosuite.robots.html#robosuite.robots.robot.Robot.set_all_robot_joint_positions">set_all_robot_joint_positions() (robosuite.robots.robot.Robot method)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjcf_utils.set_alpha">set_alpha() (in module robosuite.utils.mjcf_utils)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.LightingModder.set_ambient">set_ambient() (robosuite.utils.mjmod.LightingModder method)</a>
@@ -5979,6 +6046,8 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.stat">stat (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.state">state (robosuite.devices.dualsense.DualSense attribute)</a>
+</li>
       <li><a href="simulation/environment.html#robosuite.environments.base.MujocoEnv.step">step() (robosuite.environments.base.MujocoEnv method)</a>, <a href="source/robosuite.environments.html#robosuite.environments.base.MujocoEnv.step">[1]</a>
 
       <ul>
@@ -6087,6 +6156,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_stiffness">tendon_stiffness (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_treeid">tendon_treeid (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_treenum">tendon_treenum (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_user">tendon_user (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tendon_width">tendon_width (robosuite.utils.binding_utils.MjModel property)</a>
@@ -6139,8 +6212,6 @@ document.write(`
 </li>
       <li><a href="source/robosuite.environments.manipulation.html#robosuite.environments.manipulation.tool_hang.ToolHang">ToolHang (class in robosuite.environments.manipulation.tool_hang)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modeling/mujoco_model.html#robosuite.models.base.MujocoModel.top_offset">top_offset (robosuite.models.base.MujocoModel property)</a>, <a href="source/robosuite.models.html#robosuite.models.base.MujocoModel.top_offset">[1]</a>
 
       <ul>
@@ -6217,6 +6288,8 @@ document.write(`
         <li><a href="source/robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel.top_offset">(robosuite.models.robots.robot_model.RobotModel property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.models.objects.html#robosuite.models.objects.generated_objects.PrimitiveObject.top_offset">top_offset() (robosuite.models.objects.generated_objects.PrimitiveObject method)</a>
 
       <ul>
@@ -6252,6 +6325,22 @@ document.write(`
       <li><a href="source/robosuite.models.objects.group.html#robosuite.models.objects.group.transport.TransportGroup.trash_pos">trash_pos (robosuite.models.objects.group.transport.TransportGroup property)</a>
 </li>
       <li><a href="source/robosuite.models.objects.group.html#robosuite.models.objects.group.transport.TransportGroup.trash_quat">trash_quat (robosuite.models.objects.group.transport.TransportGroup property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_asleep">tree_asleep (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_awake">tree_awake (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_bodyadr">tree_bodyadr (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_bodynum">tree_bodynum (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_dofadr">tree_dofadr (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_dofnum">tree_dofnum (robosuite.utils.binding_utils.MjModel property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjData.tree_island">tree_island (robosuite.utils.binding_utils.MjData property)</a>
+</li>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tree_sleep_policy">tree_sleep_policy (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.tuple">tuple (robosuite.utils.binding_utils.MjModel property)</a>
 </li>

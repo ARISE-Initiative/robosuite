@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.controllers.parts';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -613,7 +612,7 @@ document.write(`
 <span id="robosuite-controllers-parts-controller-module"></span><h2>robosuite.controllers.parts.controller module<a class="headerlink" href="#module-robosuite.controllers.parts.controller" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.controller.</span></span><span class="sig-name descname"><span class="pre">Controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naming_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.controller.</span></span><span class="sig-name descname"><span class="pre">Controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">part_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">naming_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lite_physics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>General controller interface.</p>
 <p>Requires reference to mujoco sim object, ref_name of specific robot, relevant joint_indexes to that robot, and
@@ -645,7 +644,7 @@ Set to False to preserve backward compatibility with datasets collected in robos
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.actuator_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuator_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.actuator_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actuator_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.actuator_limits" title="Link to this definition">#</a></dt>
 <dd><p>Torque limits for this controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -680,7 +679,7 @@ Set to False to preserve backward compatibility with datasets collected in robos
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.control_limits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.control_limits" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">control_limits</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.control_limits" title="Link to this definition">#</a></dt>
 <dd><p>Limits over this controller’s action space, which defaults to input min/max</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -698,7 +697,7 @@ Set to False to preserve backward compatibility with datasets collected in robos
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.name" title="Link to this definition">#</a></dt>
 <dd><p>Name of this controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -712,13 +711,13 @@ Set to False to preserve backward compatibility with datasets collected in robos
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.nums2array">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nums2array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.nums2array" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">nums2array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.nums2array" title="Link to this definition">#</a></dt>
 <dd><p>Convert input &#64;nums into numpy array of length &#64;dim. If &#64;nums is a single number, broadcasts it to the
 corresponding dimension size &#64;dim before converting into a numpy array</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>nums</strong> (<em>numeric</em><em> or </em><em>Iterable</em>) – Either single value or array of numbers</p></li>
+<li><p><strong>nums</strong> (<a class="reference internal" href="robosuite.utils.html#robosuite.utils.binding_utils.MjModel.numeric" title="robosuite.utils.binding_utils.MjModel.numeric"><em>numeric</em></a><em> or </em><em>Iterable</em>) – Either single value or array of numbers</p></li>
 <li><p><strong>dim</strong> (<em>int</em>) – Size of array to broadcast input to env.sim.data.actuator_force</p></li>
 </ul>
 </dd>
@@ -739,7 +738,7 @@ corresponding dimension size &#64;dim before converting into a numpy array</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.run_controller">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.run_controller" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">run_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.run_controller" title="Link to this definition">#</a></dt>
 <dd><p>Abstract method that should be implemented in all subclass controllers, and should convert a given action
 into torques (pre gravity compensation) to be executed on the robot.
 Additionally, resets the self.new_update flag so that the next self.update call will occur</p>
@@ -765,7 +764,7 @@ the range self.output_min and self.output_max</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.controller.Controller.torque_compensation">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torque_compensation</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.torque_compensation" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">torque_compensation</span></span><a class="headerlink" href="#robosuite.controllers.parts.controller.Controller.torque_compensation" title="Link to this definition">#</a></dt>
 <dd><p>Gravity compensation for this robot arm</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>

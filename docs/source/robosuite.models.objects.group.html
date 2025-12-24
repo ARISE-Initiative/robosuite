@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.objects.group';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -451,7 +450,7 @@ document.write(`
 <span id="robosuite-models-objects-group-transport-module"></span><h2>robosuite.models.objects.group.transport module<a class="headerlink" href="#module-robosuite.models.objects.group.transport" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.group.transport.</span></span><span class="sig-name descname"><span class="pre">TransportGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trash</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.15)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.objects.group.transport.</span></span><span class="sig-name descname"><span class="pre">TransportGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trash</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0.3,</span> <span class="pre">0.3,</span> <span class="pre">0.15)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="robosuite.models.objects.html#robosuite.models.objects.object_groups.ObjectGroup" title="robosuite.models.objects.object_groups.ObjectGroup"><code class="xref py py-class docutils literal notranslate"><span class="pre">ObjectGroup</span></code></a></p>
 <p>Group of objects that capture transporting a payload placed in a start bin to a target bin, while
 also requiring a piece of trash to be removed from the target bin
@@ -486,70 +485,70 @@ values pulled from the current sim state.
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.lid_handle_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lid_handle_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.lid_handle_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lid_handle_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.lid_handle_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z) absolute position of the lid handle</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.lid_handle_quat">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lid_handle_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.lid_handle_quat" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">lid_handle_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.lid_handle_quat" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z,w) quaternion of the lid handle</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.payload_in_target_bin">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_in_target_bin</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_in_target_bin" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">payload_in_target_bin</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_in_target_bin" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 bool: True if payload is in target bin</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.payload_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">payload_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z) absolute position of the payload</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.payload_quat">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_quat" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">payload_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.payload_quat" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z,w) quaternion of the payload</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.target_bin_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">target_bin_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.target_bin_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">target_bin_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.target_bin_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z) absolute position of the target bin</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.trash_bin_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trash_bin_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_bin_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trash_bin_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_bin_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z) absolute position of the trash bin</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.trash_in_trash_bin">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trash_in_trash_bin</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_in_trash_bin" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trash_in_trash_bin</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_in_trash_bin" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 bool: True if trash is in trash bin</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.trash_pos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trash_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_pos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trash_pos</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_pos" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z) absolute position of the trash</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.objects.group.transport.TransportGroup.trash_quat">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trash_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_quat" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">trash_quat</span></span><a class="headerlink" href="#robosuite.models.objects.group.transport.TransportGroup.trash_quat" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 np.array: (x,y,z,w) quaternion of the trash</p>
 </dd></dl>

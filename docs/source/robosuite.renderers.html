@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.renderers';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -481,19 +480,19 @@ document.write(`
 <p>This file contains the base renderer class for Mujoco environments.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.renderers.base.Renderer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.renderers.base.</span></span><span class="sig-name descname"><span class="pre">Renderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mujoco'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.renderers.base.</span></span><span class="sig-name descname"><span class="pre">Renderer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">renderer_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mujoco'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for all robosuite renderers
 Defines basic interface for all renderers to adhere to</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base.Renderer.close">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.close" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.close" title="Link to this definition">#</a></dt>
 <dd><p>Closes the renderer objects</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base.Renderer.get_pixel_obs">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_pixel_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.get_pixel_obs" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_pixel_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.get_pixel_obs" title="Link to this definition">#</a></dt>
 <dd><p>Get the pixel observations from the given renderer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -507,13 +506,13 @@ Defines basic interface for all renderers to adhere to</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base.Renderer.render">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.render" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.render" title="Link to this definition">#</a></dt>
 <dd><p>Renders the current state with the specified renderer</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base.Renderer.reset">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.reset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base.Renderer.reset" title="Link to this definition">#</a></dt>
 <dd><p>Reset the renderer with initial states for environment</p>
 </dd></dl>
 
@@ -543,7 +542,7 @@ according to reuirements.</p>
 <span id="robosuite-renderers-base-parser-module"></span><h2>robosuite.renderers.base_parser module<a class="headerlink" href="#module-robosuite.renderers.base_parser" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.renderers.base_parser.BaseParser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.renderers.base_parser.</span></span><span class="sig-name descname"><span class="pre">BaseParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.renderers.base_parser.</span></span><span class="sig-name descname"><span class="pre">BaseParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">renderer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for Parser objects used by renderers.</p>
 <dl class="py method">
@@ -560,7 +559,7 @@ according to reuirements.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base_parser.BaseParser.parse_materials">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_materials</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser.parse_materials" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parse_materials</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser.parse_materials" title="Link to this definition">#</a></dt>
 <dd><p>Parse all materials and use texture mapping to initialize materials</p>
 </dd></dl>
 
@@ -572,7 +571,7 @@ according to reuirements.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.renderers.base_parser.BaseParser.parse_textures">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_textures</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser.parse_textures" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">parse_textures</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.renderers.base_parser.BaseParser.parse_textures" title="Link to this definition">#</a></dt>
 <dd><p>Parse and load all textures and store them</p>
 </dd></dl>
 

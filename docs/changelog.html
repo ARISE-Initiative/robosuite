@@ -39,8 +39,8 @@
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'changelog';</script>
     <script src="_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -411,6 +410,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-2">Version 1.5.2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-1">Version 1.5.1</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New Features</a></li>
@@ -431,6 +431,53 @@ document.write(`
                   
   <section id="changelog">
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
+<section id="version-1-5-2">
+<h2>Version 1.5.2<a class="headerlink" href="#version-1-5-2" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Bug Fixes</strong>:</p>
+<ul>
+<li><p>Fixed domain randomization compatibility for <code class="docutils literal notranslate"><span class="pre">mujoco!=3.1.1</span></code>.</p></li>
+<li><p>Corrected dexterous hand mounting for Panda and pot-with-handles geometry for rectangular pots.</p></li>
+<li><p>Fixed Mink IK with delta input, duplicated inertial properties, free-joint issues, and Baxter mesh problems.</p></li>
+<li><p>Resolved mobile base XML and controller logic issues, binding utils on Windows, and EGL error reporting.</p></li>
+<li><p>Hot-fixed <code class="docutils literal notranslate"><span class="pre">Task.generate_id_mappings()</span></code> to remove invalid EEF targets.</p></li>
+</ul>
+</li>
+<li><p><strong>Features / Enhancements</strong>:</p>
+<ul>
+<li><p>Add env seeding for determinism.</p></li>
+<li><p>Added support for multiple cameras across renderers and observation pipelines.</p></li>
+<li><p>Enabled instance segmentation to include arena bodies.</p></li>
+<li><p>Added DualSense controller support and improved SpaceMouse auto-detection.</p></li>
+<li><p>Introduced scalable arenas and MuJoCo objects via <code class="docutils literal notranslate"><span class="pre">set_scale</span></code>.</p></li>
+<li><p>Allowed base type specification and manipulator mounts for mobile manipulation envs.</p></li>
+<li><p>Added new robots and hands (xArm7 revised, Inspire/Fourier grasp qpos).</p></li>
+<li><p>Extended whole-body IK with <code class="docutils literal notranslate"><span class="pre">input_ref_frame=base</span></code> and <code class="docutils literal notranslate"><span class="pre">skip_wbc_action</span></code>.</p></li>
+<li><p>Added sensors, shell inertia for Sawyer meshes, and joint position observations.</p></li>
+</ul>
+</li>
+<li><p><strong>Documentation Updates</strong>:</p>
+<ul>
+<li><p>Updated v1.5 docs, fixed broken links, improved dark-mode visibility, and refined demo/device documentation.</p></li>
+<li><p>Added USD requirements and SpaceMouse dependencies to docs and extras.</p></li>
+<li><p>Improved demos page and clarified base type comments.</p></li>
+</ul>
+</li>
+<li><p><strong>CI / Release / Tooling</strong>:</p>
+<ul>
+<li><p>Added and refined PyPI publishing workflows.</p></li>
+<li><p>Improved build–docs synchronization and pinned Mink version.</p></li>
+</ul>
+</li>
+<li><p><strong>Miscellaneous</strong>:</p>
+<ul>
+<li><p>Added render modalities and updated demo scripts to include all manipulators by default.</p></li>
+<li><p>Refactored controller configs and composite controller logic.</p></li>
+<li><p>Improved data collection wrapper resets and environment seeding.</p></li>
+</ul>
+</li>
+</ul>
+</section>
 <section id="version-1-5-1">
 <h2>Version 1.5.1<a class="headerlink" href="#version-1-5-1" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -536,6 +583,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-2">Version 1.5.2</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-1">Version 1.5.1</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#version-1-5-0">Version 1.5.0</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#new-features">New Features</a></li>

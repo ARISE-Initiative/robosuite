@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.devices';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -444,8 +443,11 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control"><code class="docutils literal notranslate"><span class="pre">DualSense.control</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control_gripper"><code class="docutils literal notranslate"><span class="pre">DualSense.control_gripper</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.get_controller_state"><code class="docutils literal notranslate"><span class="pre">DualSense.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.last_state"><code class="docutils literal notranslate"><span class="pre">DualSense.last_state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.report_bytes"><code class="docutils literal notranslate"><span class="pre">DualSense.report_bytes</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.run"><code class="docutils literal notranslate"><span class="pre">DualSense.run()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.start_control"><code class="docutils literal notranslate"><span class="pre">DualSense.start_control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.state"><code class="docutils literal notranslate"><span class="pre">DualSense.state</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.parse_bt01_report"><code class="docutils literal notranslate"><span class="pre">parse_bt01_report()</span></code></a></li>
@@ -488,24 +490,24 @@ document.write(`
 <span id="robosuite-devices-device-module"></span><h2>robosuite.devices.device module<a class="headerlink" href="#module-robosuite.devices.device" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.device.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.devices.device.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for all robot controllers.
 Defines basic interface for all controllers to adhere to.
 Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.active_arm">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_arm</span></span><a class="headerlink" href="#robosuite.devices.device.Device.active_arm" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">active_arm</span></span><a class="headerlink" href="#robosuite.devices.device.Device.active_arm" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.active_arm_index">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_arm_index</span></span><a class="headerlink" href="#robosuite.devices.device.Device.active_arm_index" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">active_arm_index</span></span><a class="headerlink" href="#robosuite.devices.device.Device.active_arm_index" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.base_mode">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_mode</span></span><a class="headerlink" href="#robosuite.devices.device.Device.base_mode" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">base_mode</span></span><a class="headerlink" href="#robosuite.devices.device.Device.base_mode" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -515,7 +517,7 @@ Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.get_controller_state">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#robosuite.devices.device.Device.get_controller_state" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_controller_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="headerlink" href="#robosuite.devices.device.Device.get_controller_state" title="Link to this definition">#</a></dt>
 <dd><p>Returns the current state of the device, a dictionary of pos, orn, grasp, and reset.</p>
 </dd></dl>
 
@@ -527,7 +529,7 @@ Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.grasp">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp</span></span><a class="headerlink" href="#robosuite.devices.device.Device.grasp" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">grasp</span></span><a class="headerlink" href="#robosuite.devices.device.Device.grasp" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -561,7 +563,7 @@ first axis: left/right. second axis: back/forward. third axis: down/up.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.start_control">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device.start_control" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">start_control</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.device.Device.start_control" title="Link to this definition">#</a></dt>
 <dd><p>Method that should be called externally before controller can
 start receiving commands.</p>
 </dd></dl>
@@ -576,39 +578,38 @@ start receiving commands.</p>
 In particular, we assume you are using a DualSense Wireless by default.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">ConnectionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">ConnectionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntFlag</span></code></p>
-<p>An enumeration.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType.BT01">
-<span class="sig-name descname"><span class="pre">BT01</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.BT01" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BT01</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.BT01" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType.BT31">
-<span class="sig-name descname"><span class="pre">BT31</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.BT31" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">BT31</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.BT31" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType.UNKNOWN">
-<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.UNKNOWN" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">UNKNOWN</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.UNKNOWN" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType.USB">
-<span class="sig-name descname"><span class="pre">USB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.USB" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">USB</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.USB" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.ConnectionType.to_string">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.to_string" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#robosuite.devices.dualsense.ConnectionType.to_string" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DSState">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">DSState</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DSState" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">DSState</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DSState" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DSState.setDPadState">
@@ -625,7 +626,7 @@ In particular, we assume you are using a DualSense Wireless by default.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">DualSense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.devices.dualsense.</span></span><span class="sig-name descname"><span class="pre">DualSense</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.devices.device.Device" title="robosuite.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
 <p>A minimalistic driver class for DualSense with HID library.</p>
 <p>Note: Use hid.enumerate() to view all USB human interface devices (HID).
@@ -646,7 +647,7 @@ using this device.</p></li>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.control">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">control</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control" title="Link to this definition">#</a></dt>
 <dd><p>Grabs current pose of DualSense</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -660,7 +661,7 @@ using this device.</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.control_gripper">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">control_gripper</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control_gripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">control_gripper</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.control_gripper" title="Link to this definition">#</a></dt>
 <dd><p>Maps internal states into gripper commands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -686,6 +687,16 @@ using this device.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.last_state">
+<span class="sig-name descname"><span class="pre">last_state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#robosuite.devices.dualsense.DSState" title="robosuite.devices.dualsense.DSState"><span class="pre">DSState</span></a></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.last_state" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.report_bytes">
+<span class="sig-name descname"><span class="pre">report_bytes</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytearray</span></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.report_bytes" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.run">
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.run" title="Link to this definition">#</a></dt>
@@ -698,6 +709,11 @@ using this device.</p></li>
 <dd><p>Method that should be called externally before controller can
 start receiving commands.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="robosuite.devices.dualsense.DualSense.state">
+<span class="sig-name descname"><span class="pre">state</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#robosuite.devices.dualsense.DSState" title="robosuite.devices.dualsense.DSState"><span class="pre">DSState</span></a></span><a class="headerlink" href="#robosuite.devices.dualsense.DualSense.state" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -746,7 +762,7 @@ start receiving commands.</p>
 <span id="robosuite-devices-mjgui-module"></span><h2>robosuite.devices.mjgui module<a class="headerlink" href="#module-robosuite.devices.mjgui" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">MJGUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.devices.mjgui.</span></span><span class="sig-name descname"><span class="pre">MJGUI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.devices.device.Device" title="robosuite.devices.device.Device"><code class="xref py py-class docutils literal notranslate"><span class="pre">Device</span></code></a></p>
 <p>Class for ‘device’ involving mujoco viewer and mocap bodies being dragged by user’s mouse.</p>
 <dl class="field-list simple">
@@ -765,7 +781,7 @@ using this device.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.mjgui.MJGUI.input2action">
-<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'desired'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">input2action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal_update_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'target'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#robosuite.devices.mjgui.MJGUI.input2action" title="Link to this definition">#</a></dt>
 <dd><p>Uses mocap body poses to determine action for robot. Obtain input_type
 (i.e. absolute actions or delta actions) and input_ref_frame (i.e. world frame, base frame or eef frame)
 from the controller itself.</p>
@@ -877,8 +893,11 @@ start receiving commands.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control"><code class="docutils literal notranslate"><span class="pre">DualSense.control</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.control_gripper"><code class="docutils literal notranslate"><span class="pre">DualSense.control_gripper</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.get_controller_state"><code class="docutils literal notranslate"><span class="pre">DualSense.get_controller_state()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.last_state"><code class="docutils literal notranslate"><span class="pre">DualSense.last_state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.report_bytes"><code class="docutils literal notranslate"><span class="pre">DualSense.report_bytes</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.run"><code class="docutils literal notranslate"><span class="pre">DualSense.run()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.start_control"><code class="docutils literal notranslate"><span class="pre">DualSense.start_control()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.DualSense.state"><code class="docutils literal notranslate"><span class="pre">DualSense.state</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.dualsense.parse_bt01_report"><code class="docutils literal notranslate"><span class="pre">parse_bt01_report()</span></code></a></li>

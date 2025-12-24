@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -1152,27 +1151,27 @@ document.write(`
 <span id="robosuite-models-base-module"></span><h2>robosuite.models.base module<a class="headerlink" href="#module-robosuite.models.base" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoModel</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoModel</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for all simulation models used in mujoco.</p>
 <p>Standardizes core API for accessing models’ relevant geoms, names, etc.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.actuators">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuators</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.actuators" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actuators</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.actuators" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Actuator names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.bodies">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bodies</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.bodies" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bodies</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.bodies" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Body names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.bottom_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.bottom_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.bottom_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model bottom.
 Useful for, e.g. placing models on a surface.
 Must be defined by subclass.</p>
@@ -1188,7 +1187,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.contact_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contact_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.contact_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contact_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.contact_geoms" title="Link to this definition">#</a></dt>
 <dd><p>List of names corresponding to the geoms used to determine contact with this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1234,7 +1233,7 @@ corresponding name to &#64;inp should have naming_prefix added to it. Must be de
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -1250,7 +1249,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.important_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_geoms" title="Link to this definition">#</a></dt>
 <dd><p>Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1265,7 +1264,7 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.important_sensors">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_sensors" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_sensors" title="Link to this definition">#</a></dt>
 <dd><p>Dict of important sensors enabled for this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1283,7 +1282,7 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.important_sites">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_sites" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.important_sites" title="Link to this definition">#</a></dt>
 <dd><p>used to aid visualization during sim).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1304,14 +1303,14 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.joints">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">joints</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.joints" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">joints</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.joints" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Joint names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.name" title="Link to this definition">#</a></dt>
 <dd><p>Name for this model. Should be unique.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1325,7 +1324,7 @@ list: Joint names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1339,14 +1338,14 @@ list: Joint names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.root_body">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root_body</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.root_body" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">root_body</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.root_body" title="Link to this definition">#</a></dt>
 <dd><p>Root body name for this model. This should correspond to the top-level body element in the equivalent mujoco xml
 tree for this object.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.sensors">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.sensors" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.sensors" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Sensor names for this model</p>
 </dd></dl>
@@ -1367,14 +1366,14 @@ list: Sensor names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.sites">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.sites" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.sites" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Site names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 Useful for, e.g. placing models on a surface.
 Must be defined by subclass.</p>
@@ -1390,7 +1389,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoModel.visual_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visual_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.visual_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">visual_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoModel.visual_geoms" title="Link to this definition">#</a></dt>
 <dd><p>List of names corresponding to the geoms used for visual rendering of this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1406,7 +1405,7 @@ Must be defined by subclass.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXML">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoXML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.base.MujocoXML" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoXML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.base.MujocoXML" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class of Mujoco xml file
 Wraps around ElementTree and provides additional functionality for merging different models.
@@ -1523,7 +1522,7 @@ that exists in this XML. None results in no merging of &#64;other’s bodies in 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXML.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXML.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXML.name" title="Link to this definition">#</a></dt>
 <dd><p>Returns name of this MujocoXML</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1559,7 +1558,7 @@ that exists in this XML. None results in no merging of &#64;other’s bodies in 
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoXMLModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.base.</span></span><span class="sig-name descname"><span class="pre">MujocoXMLModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.base.MujocoXML" title="robosuite.models.base.MujocoXML"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoXML</span></code></a>, <a class="reference internal" href="#robosuite.models.base.MujocoModel" title="robosuite.models.base.MujocoModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoModel</span></code></a></p>
 <p>Base class for all MujocoModels that are based on a raw XML file.</p>
 <dl class="field-list simple">
@@ -1572,14 +1571,14 @@ that exists in this XML. None results in no merging of &#64;other’s bodies in 
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.actuators">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">actuators</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.actuators" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">actuators</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.actuators" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Actuator names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.base_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">base_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.base_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">base_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.base_offset" title="Link to this definition">#</a></dt>
 <dd><p>Provides position offset of root body.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1593,14 +1592,14 @@ list: Actuator names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.bodies">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bodies</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.bodies" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bodies</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.bodies" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Body names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.bottom_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.bottom_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.bottom_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model bottom.
 Useful for, e.g. placing models on a surface.
 By default, this corresponds to the root_body’s base offset.</p>
@@ -1616,7 +1615,7 @@ By default, this corresponds to the root_body’s base offset.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.contact_geom_rgba">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
 <dd><p>RGBA color to assign to all contact geoms for this model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1630,7 +1629,7 @@ By default, this corresponds to the root_body’s base offset.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.contact_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contact_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.contact_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contact_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.contact_geoms" title="Link to this definition">#</a></dt>
 <dd><p>List of names corresponding to the geoms used to determine contact with this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1650,7 +1649,7 @@ By default, this corresponds to the root_body’s base offset.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -1666,7 +1665,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.important_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_geoms" title="Link to this definition">#</a></dt>
 <dd><p>Geoms corresponding to important components of this model. String keywords should be mapped to lists of geoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1681,7 +1680,7 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.important_sensors">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_sensors" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_sensors" title="Link to this definition">#</a></dt>
 <dd><p>Dict of important sensors enabled for this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1699,7 +1698,7 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.important_sites">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">important_sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_sites" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">important_sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.important_sites" title="Link to this definition">#</a></dt>
 <dd><p>used to aid visualization during sim).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1720,14 +1719,14 @@ organized by keyword string entries into a dict</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.joints">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">joints</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.joints" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">joints</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.joints" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Joint names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.name">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.name" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.name" title="Link to this definition">#</a></dt>
 <dd><p>Returns name of this MujocoXML</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1741,7 +1740,7 @@ list: Joint names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1755,28 +1754,28 @@ list: Joint names for this model</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.root_body">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">root_body</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.root_body" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">root_body</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.root_body" title="Link to this definition">#</a></dt>
 <dd><p>Root body name for this model. This should correspond to the top-level body element in the equivalent mujoco xml
 tree for this object.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.sensors">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.sensors" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sensors</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.sensors" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Sensor names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.sites">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.sites" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.sites" title="Link to this definition">#</a></dt>
 <dd><p>Returns:
 list: Site names for this model</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 Useful for, e.g. placing models on a surface.
 Must be defined by subclass.</p>
@@ -1792,7 +1791,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.base.MujocoXMLModel.visual_geoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">visual_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.visual_geoms" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">visual_geoms</span></span><a class="headerlink" href="#robosuite.models.base.MujocoXMLModel.visual_geoms" title="Link to this definition">#</a></dt>
 <dd><p>List of names corresponding to the geoms used for visual rendering of this model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1811,7 +1810,7 @@ Must be defined by subclass.</p>
 <span id="robosuite-models-world-module"></span><h2>robosuite.models.world module<a class="headerlink" href="#module-robosuite.models.world" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.world.MujocoWorldBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.world.</span></span><span class="sig-name descname"><span class="pre">MujocoWorldBase</span></span><a class="headerlink" href="#robosuite.models.world.MujocoWorldBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.world.</span></span><span class="sig-name descname"><span class="pre">MujocoWorldBase</span></span><a class="headerlink" href="#robosuite.models.world.MujocoWorldBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.base.MujocoXML" title="robosuite.models.base.MujocoXML"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoXML</span></code></a></p>
 <p>Base class to inherit all mujoco worlds from.</p>
 </dd></dl>

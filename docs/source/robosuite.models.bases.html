@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.bases';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -545,7 +544,7 @@ document.write(`
 <p>Rethink’s Generic Mount (Officially used on Sawyer).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.floating_legged_base.FloatingLeggedBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.floating_legged_base.</span></span><span class="sig-name descname"><span class="pre">FloatingLeggedBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.floating_legged_base.</span></span><span class="sig-name descname"><span class="pre">FloatingLeggedBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="robosuite.models.bases.mobile_base_model.MobileBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseModel</span></code></a></p>
 <p>Dummy mobile base to signify no mount.</p>
 <dl class="field-list simple">
@@ -555,7 +554,7 @@ document.write(`
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.floating_legged_base.FloatingLeggedBase.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -571,7 +570,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.floating_legged_base.FloatingLeggedBase.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.floating_legged_base.FloatingLeggedBase.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -593,21 +592,21 @@ location of this mount.</p>
 <p>Defines the base class of all mobile bases</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.leg_base_model.LegBaseModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.leg_base_model.</span></span><span class="sig-name descname"><span class="pre">LegBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.leg_base_model.</span></span><span class="sig-name descname"><span class="pre">LegBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotBaseModel</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.leg_base_model.LegBaseModel.default_base">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.default_base" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">default_base</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.default_base" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.leg_base_model.LegBaseModel.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.init_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.leg_base_model.LegBaseModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.bases.leg_base_model.LegBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -627,11 +626,11 @@ location of this mount.</p>
 <p>Defines the mobile base model</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.mobile_base_model.MobileBaseModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.mobile_base_model.</span></span><span class="sig-name descname"><span class="pre">MobileBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.mobile_base_model.</span></span><span class="sig-name descname"><span class="pre">MobileBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotBaseModel</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.mobile_base_model.MobileBaseModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -651,11 +650,11 @@ location of this mount.</p>
 <p>Defines the MountModel class (Fixed Base that is mounted to the robot)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.mount_model.MountModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.mount_model.</span></span><span class="sig-name descname"><span class="pre">MountModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.mount_model.MountModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.mount_model.</span></span><span class="sig-name descname"><span class="pre">MountModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.mount_model.MountModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="robosuite.models.bases.robot_base_model.RobotBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotBaseModel</span></code></a></p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.mount_model.MountModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.bases.mount_model.MountModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#robosuite.models.bases.mount_model.MountModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -675,7 +674,7 @@ location of this mount.</p>
 <p>Rethink’s Generic Mount (Officially used on Sawyer).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.no_actuation_base.NoActuationBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.no_actuation_base.</span></span><span class="sig-name descname"><span class="pre">NoActuationBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.no_actuation_base.</span></span><span class="sig-name descname"><span class="pre">NoActuationBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="robosuite.models.bases.mobile_base_model.MobileBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseModel</span></code></a></p>
 <p>Dummy mobile base to signify no mount.</p>
 <dl class="field-list simple">
@@ -685,7 +684,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.no_actuation_base.NoActuationBase.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -701,7 +700,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.no_actuation_base.NoActuationBase.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.no_actuation_base.NoActuationBase.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -723,7 +722,7 @@ location of this mount.</p>
 <p>Rethink’s Generic Mount (Officially used on Sawyer).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mobile_base.NullMobileBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.null_mobile_base.</span></span><span class="sig-name descname"><span class="pre">NullMobileBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.null_mobile_base.</span></span><span class="sig-name descname"><span class="pre">NullMobileBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="robosuite.models.bases.mobile_base_model.MobileBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseModel</span></code></a></p>
 <p>Dummy mobile base to signify no mount.</p>
 <dl class="field-list simple">
@@ -733,7 +732,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mobile_base.NullMobileBase.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -749,7 +748,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mobile_base.NullMobileBase.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.null_mobile_base.NullMobileBase.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -771,7 +770,7 @@ location of this mount.</p>
 <p>Rethink’s Generic Mount (Officially used on Sawyer).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mount.NullMount">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.null_mount.</span></span><span class="sig-name descname"><span class="pre">NullMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.null_mount.</span></span><span class="sig-name descname"><span class="pre">NullMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mount_model.MountModel" title="robosuite.models.bases.mount_model.MountModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MountModel</span></code></a></p>
 <p>Dummy Mount to signify no mount.</p>
 <dl class="field-list simple">
@@ -781,7 +780,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mount.NullMount.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -797,7 +796,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.null_mount.NullMount.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.null_mount.NullMount.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -819,7 +818,7 @@ location of this mount.</p>
 <p>Omron LD-60 Mobile Base.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.omron_mobile_base.OmronMobileBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.omron_mobile_base.</span></span><span class="sig-name descname"><span class="pre">OmronMobileBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.omron_mobile_base.</span></span><span class="sig-name descname"><span class="pre">OmronMobileBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mobile_base_model.MobileBaseModel" title="robosuite.models.bases.mobile_base_model.MobileBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseModel</span></code></a></p>
 <p>Omron LD-60 Mobile Base.</p>
 <dl class="field-list simple">
@@ -829,7 +828,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.omron_mobile_base.OmronMobileBase.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -845,7 +844,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.omron_mobile_base.OmronMobileBase.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.omron_mobile_base.OmronMobileBase.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -867,7 +866,7 @@ location of this mount.</p>
 <p>Rethink’s Alternative Mount (Officially used on Baxter).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.rethink_minimal_mount.</span></span><span class="sig-name descname"><span class="pre">RethinkMinimalMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.rethink_minimal_mount.</span></span><span class="sig-name descname"><span class="pre">RethinkMinimalMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mount_model.MountModel" title="robosuite.models.bases.mount_model.MountModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MountModel</span></code></a></p>
 <p>Mount officially used for Rethink’s Baxter Robot. Includes only a wheeled pedestal.</p>
 <dl class="field-list simple">
@@ -877,7 +876,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -893,7 +892,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_minimal_mount.RethinkMinimalMount.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -915,7 +914,7 @@ location of this mount.</p>
 <p>Rethink’s Generic Mount (Officially used on Sawyer).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_mount.RethinkMount">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.rethink_mount.</span></span><span class="sig-name descname"><span class="pre">RethinkMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.rethink_mount.</span></span><span class="sig-name descname"><span class="pre">RethinkMount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.mount_model.MountModel" title="robosuite.models.bases.mount_model.MountModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MountModel</span></code></a></p>
 <p>Mount officially used for Rethink’s Sawyer Robot. Includes a controller box and wheeled pedestal.</p>
 <dl class="field-list simple">
@@ -925,7 +924,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_mount.RethinkMount.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -941,7 +940,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.rethink_mount.RethinkMount.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.rethink_mount.RethinkMount.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -991,7 +990,7 @@ location of this mount.</p>
 <p>Defines the base class of all mounts</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.robot_base_model.</span></span><span class="sig-name descname"><span class="pre">RobotBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.robot_base_model.</span></span><span class="sig-name descname"><span class="pre">RobotBaseModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="robosuite.models.html#robosuite.models.base.MujocoXMLModel" title="robosuite.models.base.MujocoXMLModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoXMLModel</span></code></a></p>
 <p>Base class for mounts that will be attached to robots. Note that this model’s root body will be directly
 appended to the robot’s root body, so all offsets should be taken relative to that.</p>
@@ -1005,7 +1004,7 @@ appended to the robot’s root body, so all offsets should be taken relative to 
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.contact_geom_rgba">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
 <dd><p>RGBA color to assign to all contact geoms for this model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1019,7 +1018,7 @@ appended to the robot’s root body, so all offsets should be taken relative to 
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -1035,7 +1034,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1049,7 +1048,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></em><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">array</span></span><a class="headerlink" href="#robosuite.models.bases.robot_base_model.RobotBaseModel.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -1070,7 +1069,7 @@ location of this mount.</p>
 <span id="robosuite-models-bases-spot-base-module"></span><h2>robosuite.models.bases.spot_base module<a class="headerlink" href="#module-robosuite.models.bases.spot_base" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.Spot">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.spot_base.</span></span><span class="sig-name descname"><span class="pre">Spot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.spot_base.</span></span><span class="sig-name descname"><span class="pre">Spot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.leg_base_model.LegBaseModel" title="robosuite.models.bases.leg_base_model.LegBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LegBaseModel</span></code></a></p>
 <p>Rethink’s Generic Mount (Officially used on Baxter).</p>
 <dl class="field-list simple">
@@ -1080,7 +1079,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.Spot.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -1096,12 +1095,12 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.Spot.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.init_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.Spot.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.Spot.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>
@@ -1119,7 +1118,7 @@ location of this mount.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.SpotFloating">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.spot_base.</span></span><span class="sig-name descname"><span class="pre">SpotFloating</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.bases.spot_base.</span></span><span class="sig-name descname"><span class="pre">SpotFloating</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.bases.leg_base_model.LegBaseModel" title="robosuite.models.bases.leg_base_model.LegBaseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">LegBaseModel</span></code></a></p>
 <p>Rethink’s Generic Mount (Officially used on Baxter).</p>
 <dl class="field-list simple">
@@ -1129,7 +1128,7 @@ location of this mount.</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.SpotFloating.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -1145,12 +1144,12 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.SpotFloating.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.init_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.bases.spot_base.SpotFloating.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.bases.spot_base.SpotFloating.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 This should correspond to the distance from the root body to the actual mounting surface
 location of this mount.</p>

@@ -39,8 +39,8 @@
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../_static/documentation_options.js?v=9f1c6d22"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
@@ -48,7 +48,6 @@
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'source/robosuite.models.grippers';</script>
     <script src="../_static/js/custom.js?v=4441fbbd"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -626,7 +625,7 @@ document.write(`
 <span id="robosuite-models-grippers-bd-gripper-module"></span><h2>robosuite.models.grippers.bd_gripper module<a class="headerlink" href="#module-robosuite.models.grippers.bd_gripper" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.bd_gripper.BDGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.bd_gripper.</span></span><span class="sig-name descname"><span class="pre">BDGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.bd_gripper.</span></span><span class="sig-name descname"><span class="pre">BDGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper for the Spot Arm.
 :param idn: Number or some other unique identification string for this gripper instance
@@ -641,7 +640,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.bd_gripper.BDGripper.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -655,7 +654,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.bd_gripper.BDGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.bd_gripper.BDGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -675,7 +674,7 @@ for underlying actuators as 1-d np array</p>
 <p>Dexterous hands for GR1 robot.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierLeftHand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.fourier_hands.</span></span><span class="sig-name descname"><span class="pre">FourierLeftHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.fourier_hands.</span></span><span class="sig-name descname"><span class="pre">FourierLeftHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Dexterous left hand of GR1 robot</p>
 <dl class="field-list simple">
@@ -685,7 +684,7 @@ for underlying actuators as 1-d np array</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierLeftHand.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -707,12 +706,12 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierLeftHand.grasp_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.grasp_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.grasp_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierLeftHand.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -726,7 +725,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierLeftHand.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierLeftHand.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -742,7 +741,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierRightHand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.fourier_hands.</span></span><span class="sig-name descname"><span class="pre">FourierRightHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.fourier_hands.</span></span><span class="sig-name descname"><span class="pre">FourierRightHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Dexterous right hand of GR1 robot</p>
 <dl class="field-list simple">
@@ -752,7 +751,7 @@ for underlying actuators as 1-d np array</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierRightHand.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -774,12 +773,12 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierRightHand.grasp_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.grasp_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.grasp_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierRightHand.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -793,7 +792,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.fourier_hands.FourierRightHand.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.fourier_hands.FourierRightHand.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -841,7 +840,7 @@ for underlying actuators as 1-d np array</p>
 <p>Defines the base class of all grippers</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.gripper_model.</span></span><span class="sig-name descname"><span class="pre">GripperModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.gripper_model.</span></span><span class="sig-name descname"><span class="pre">GripperModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="robosuite.models.html#robosuite.models.base.MujocoXMLModel" title="robosuite.models.base.MujocoXMLModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">MujocoXMLModel</span></code></a></p>
 <p>Base class for grippers</p>
 <dl class="field-list simple">
@@ -854,7 +853,7 @@ for underlying actuators as 1-d np array</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.bottom_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.bottom_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">bottom_offset</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.bottom_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model bottom.
 Useful for, e.g. placing models on a surface.
 By default, this corresponds to the root_body’s base offset.</p>
@@ -870,7 +869,7 @@ By default, this corresponds to the root_body’s base offset.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.contact_geom_rgba">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">contact_geom_rgba</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.contact_geom_rgba" title="Link to this definition">#</a></dt>
 <dd><p>RGBA color to assign to all contact geoms for this model</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -884,7 +883,7 @@ By default, this corresponds to the root_body’s base offset.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -906,7 +905,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.horizontal_radius">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.horizontal_radius" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">horizontal_radius</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.horizontal_radius" title="Link to this definition">#</a></dt>
 <dd><p>Returns maximum distance from model root body to any radial point of the model.</p>
 <p>Helps us put models programmatically without them flying away due to a huge initial contact force.
 Must be defined by subclass.</p>
@@ -922,7 +921,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -936,7 +935,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.naming_prefix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.naming_prefix" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">naming_prefix</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.naming_prefix" title="Link to this definition">#</a></dt>
 <dd><p>Generates a standardized prefix to prevent naming collisions</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -950,7 +949,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -964,7 +963,7 @@ Must be defined by subclass.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_model.GripperModel.top_offset">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.top_offset" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">top_offset</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_model.GripperModel.top_offset" title="Link to this definition">#</a></dt>
 <dd><p>Returns vector from model root body to model top.
 Useful for, e.g. placing models on a surface.
 Must be defined by subclass.</p>
@@ -986,7 +985,7 @@ Must be defined by subclass.</p>
 <p>Defines GripperTester that is used to test the physical properties of various grippers</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_tester.GripperTester">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.gripper_tester.</span></span><span class="sig-name descname"><span class="pre">GripperTester</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gripper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_low_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_high_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_tester.GripperTester" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.gripper_tester.</span></span><span class="sig-name descname"><span class="pre">GripperTester</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gripper</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_low_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gripper_high_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">render</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.gripper_tester.GripperTester" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A class that is used to test gripper</p>
 <dl class="field-list simple">
@@ -1031,7 +1030,7 @@ must be larger than gripper_low_pos</p></li>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.gripper_tester.GripperTester.object_height">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">object_height</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_tester.GripperTester.object_height" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">object_height</span></span><a class="headerlink" href="#robosuite.models.grippers.gripper_tester.GripperTester.object_height" title="Link to this definition">#</a></dt>
 <dd><p>Queries the height (z) of the object compared to on the ground</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1074,7 +1073,7 @@ must be larger than gripper_low_pos</p></li>
 <p>Dexterous hands for GR1 robot.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireLeftHand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.inspire_hands.</span></span><span class="sig-name descname"><span class="pre">InspireLeftHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.inspire_hands.</span></span><span class="sig-name descname"><span class="pre">InspireLeftHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Dexterous left hand of GR1 robot</p>
 <dl class="field-list simple">
@@ -1084,7 +1083,7 @@ must be larger than gripper_low_pos</p></li>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireLeftHand.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1106,12 +1105,12 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireLeftHand.grasp_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.grasp_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.grasp_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireLeftHand.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1125,7 +1124,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireLeftHand.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireLeftHand.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1141,7 +1140,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireRightHand">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.inspire_hands.</span></span><span class="sig-name descname"><span class="pre">InspireRightHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.inspire_hands.</span></span><span class="sig-name descname"><span class="pre">InspireRightHand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Dexterous right hand of GR1 robot</p>
 <dl class="field-list simple">
@@ -1151,7 +1150,7 @@ for underlying actuators as 1-d np array</p>
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireRightHand.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1173,12 +1172,12 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireRightHand.grasp_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.grasp_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">grasp_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.grasp_qpos" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireRightHand.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1192,7 +1191,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.inspire_hands.InspireRightHand.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.inspire_hands.InspireRightHand.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1212,12 +1211,12 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper for Kinova’s Jaco robot arm (has three fingers).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerDexterousGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerDexterousGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase" title="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">JacoThreeFingerGripperBase</span></code></a></p>
 <p>Dexterous variation of the Jaco gripper in which all finger are actuated independently</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1246,7 +1245,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerDexterousGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1262,12 +1261,12 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase" title="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">JacoThreeFingerGripperBase</span></code></a></p>
 <p>Modifies JacoThreeFingerGripperBase to only take one action.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1296,7 +1295,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1312,7 +1311,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.jaco_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">JacoThreeFingerGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper for Kinova’s Jaco robot arm (has three fingers).</p>
 <dl class="field-list simple">
@@ -1330,7 +1329,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.jaco_three_finger_gripper.JacoThreeFingerGripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1350,7 +1349,7 @@ for underlying actuators as 1-d np array</p>
 <p>Null Gripper (if we don’t want to attach gripper to robot eef).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.null_gripper.NullGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.null_gripper.</span></span><span class="sig-name descname"><span class="pre">NullGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.null_gripper.NullGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.null_gripper.</span></span><span class="sig-name descname"><span class="pre">NullGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.null_gripper.NullGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Dummy Gripper class to represent no gripper</p>
 <dl class="field-list simple">
@@ -1368,7 +1367,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.null_gripper.NullGripper.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.null_gripper.NullGripper.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.null_gripper.NullGripper.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1388,12 +1387,12 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper for Franka’s Panda (has two fingers).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.panda_gripper.PandaGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.panda_gripper.</span></span><span class="sig-name descname"><span class="pre">PandaGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.panda_gripper.</span></span><span class="sig-name descname"><span class="pre">PandaGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.panda_gripper.PandaGripperBase" title="robosuite.models.grippers.panda_gripper.PandaGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">PandaGripperBase</span></code></a></p>
 <p>Modifies PandaGripperBase to only take one action.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.panda_gripper.PandaGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1422,7 +1421,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.panda_gripper.PandaGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1438,7 +1437,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.panda_gripper.PandaGripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.panda_gripper.</span></span><span class="sig-name descname"><span class="pre">PandaGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.panda_gripper.</span></span><span class="sig-name descname"><span class="pre">PandaGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper for Franka’s Panda (has two fingers).</p>
 <dl class="field-list simple">
@@ -1456,7 +1455,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.panda_gripper.PandaGripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.panda_gripper.PandaGripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1476,12 +1475,12 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper with two fingers for Rethink Robots.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.rethink_gripper.RethinkGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.rethink_gripper.</span></span><span class="sig-name descname"><span class="pre">RethinkGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.rethink_gripper.</span></span><span class="sig-name descname"><span class="pre">RethinkGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.rethink_gripper.RethinkGripperBase" title="robosuite.models.grippers.rethink_gripper.RethinkGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RethinkGripperBase</span></code></a></p>
 <p>Modifies two finger base to only take one action.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.rethink_gripper.RethinkGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1510,7 +1509,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.rethink_gripper.RethinkGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1526,7 +1525,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.rethink_gripper.RethinkGripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.rethink_gripper.</span></span><span class="sig-name descname"><span class="pre">RethinkGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.rethink_gripper.</span></span><span class="sig-name descname"><span class="pre">RethinkGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper with long two-fingered parallel jaw.</p>
 <dl class="field-list simple">
@@ -1544,7 +1543,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.rethink_gripper.RethinkGripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.rethink_gripper.RethinkGripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1564,12 +1563,12 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper with 140mm Jaw width from Robotiq (has two fingers).</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_140_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq140Gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_140_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq140Gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase" title="robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">Robotiq140GripperBase</span></code></a></p>
 <p>Modifies Robotiq140GripperBase to only take one action.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1598,7 +1597,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140Gripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1614,7 +1613,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_140_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq140GripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_140_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq140GripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper with 140mm Jaw width from Robotiq (has two fingers).</p>
 <dl class="field-list simple">
@@ -1632,7 +1631,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_140_gripper.Robotiq140GripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1652,12 +1651,12 @@ for underlying actuators as 1-d np array</p>
 <p>6-DoF gripper with its open/close variant</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_85_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq85Gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_85_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq85Gripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase" title="robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">Robotiq85GripperBase</span></code></a></p>
 <p>1-DoF variant of RobotiqGripperBase.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1686,7 +1685,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85Gripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1702,7 +1701,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_85_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq85GripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_85_gripper.</span></span><span class="sig-name descname"><span class="pre">Robotiq85GripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>6-DoF Robotiq gripper.</p>
 <dl class="field-list simple">
@@ -1720,7 +1719,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_85_gripper.Robotiq85GripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1740,13 +1739,13 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper with 11-DoF controlling three fingers and its open/close variant.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerDexterousGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerDexterousGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase" title="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotiqThreeFingerGripperBase</span></code></a></p>
 <p>Dexterous variation of the 3-finger Robotiq gripper in which all finger are actuated independently as well
 as the scissor joint between fingers 1 and 2</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1775,7 +1774,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerDexterousGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1791,12 +1790,12 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase" title="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">RobotiqThreeFingerGripperBase</span></code></a></p>
 <p>1-DoF variant of RobotiqThreeFingerGripperBase.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.dof">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.dof" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">dof</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.dof" title="Link to this definition">#</a></dt>
 <dd><p>Defines the number of DOF of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1825,7 +1824,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.speed">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.speed" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">speed</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripper.speed" title="Link to this definition">#</a></dt>
 <dd><p>How quickly the gripper opens / closes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1841,7 +1840,7 @@ all -1 =&gt; open, all 1 =&gt; closed</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.robotiq_three_finger_gripper.</span></span><span class="sig-name descname"><span class="pre">RobotiqThreeFingerGripperBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>Gripper with 11 dof controlling three fingers.</p>
 <dl class="field-list simple">
@@ -1859,7 +1858,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.robotiq_three_finger_gripper.RobotiqThreeFingerGripperBase.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1879,7 +1878,7 @@ for underlying actuators as 1-d np array</p>
 <p>Gripper without fingers to wipe a surface</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.grippers.wiping_gripper.WipingGripper">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.wiping_gripper.</span></span><span class="sig-name descname"><span class="pre">WipingGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.wiping_gripper.WipingGripper" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.grippers.wiping_gripper.</span></span><span class="sig-name descname"><span class="pre">WipingGripper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.grippers.wiping_gripper.WipingGripper" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#robosuite.models.grippers.gripper_model.GripperModel" title="robosuite.models.grippers.gripper_model.GripperModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">GripperModel</span></code></a></p>
 <p>A Wiping Gripper with no actuation and enabled with sensors to detect contact forces</p>
 <dl class="field-list simple">
@@ -1897,7 +1896,7 @@ for underlying actuators as 1-d np array</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="robosuite.models.grippers.wiping_gripper.WipingGripper.init_qpos">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.wiping_gripper.WipingGripper.init_qpos" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">init_qpos</span></span><a class="headerlink" href="#robosuite.models.grippers.wiping_gripper.WipingGripper.init_qpos" title="Link to this definition">#</a></dt>
 <dd><p>Defines the default rest (open) qpos of the gripper</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
