@@ -54,7 +54,7 @@ class TwoArmTapeHandover(TwoArmEnv):
             :Note: Specifying "default" will automatically use the default noise settings.
                 Specifying None will automatically create the required dict with "magnitude" set to 0.0.
 
-        tables_boundary (3-tuple): x, y, and z dimensions of the table bounds. Two tables will be created at the edges of
+        tables_boundary (3-tuple): x, y, and z dimensions of the table bounds. One table will be created at the center of
             this boundary
 
         table_friction (3-tuple): the three mujoco friction parameters for
@@ -178,12 +178,9 @@ class TwoArmTapeHandover(TwoArmEnv):
         # settings for table top
         self.tables_boundary = tables_boundary
         self.table_full_size = np.array(tables_boundary)
-        self.table_full_size[1] *= 0.25  # each table size will only be a fraction of the full boundary
         self.table_friction = table_friction
-        self.table_offsets = np.zeros((2, 3))
-        self.table_offsets[0, 1] = self.tables_boundary[1] * -3 / 8  # scale y offset (left table)
-        self.table_offsets[1, 1] = self.tables_boundary[1] * 3 / 8  # scale y offset (right table)
-        self.table_offsets[:, 2] = 0.8  # scale z offset
+        self.table_offsets = np.zeros((1, 3))
+        self.table_offsets[0, 2] = 0.8  # scale z offset
         self.cube_size = cube_size
 
         # reward configuration
@@ -373,23 +370,23 @@ class TwoArmTapeHandover(TwoArmEnv):
         )
 
         # Initialize objects of interest
-        # Custom Duct Tape Object
-        tape_xml_path = "/home/karimelrafi/MV-SAM3D/visualization/duct_tape/duct_tape/duct_tape_duct_tape_1_s1off_s2off_20251224_122111/duct_tape.xml"
+        # Custom Yellow Tape Object
+        yellow_tape_xml_path = "/home/karimelrafi/MV-SAM3D/visualization/yellow_tape/yellow_tape/yellow_tape_yellow_tape_2v_s1a30_s2e30_20251224_121628/yellow_tape.xml"
         self.cube = MujocoXMLObject(
-            fname=tape_xml_path,
-            name="tape",
+            fname=yellow_tape_xml_path,
+            name="yellow_tape",
             joints=[dict(type="free", damping="0.0005")],
             obj_type="all",
             duplicate_collision_geoms=True,
         )
 
-        # Grey bowl on right table (using cylinder to approximate bowl)
-        self.bowl = CylinderObject(
-            name="bowl",
-            size=[0.08, 0.04],  # radius, height
-            rgba=[0.5, 0.5, 0.5, 1],  # Grey color
-            material=grey_mat,
-            rng=self.rng,
+        duct_tape_xml_path = "/home/karimelrafi/MV-SAM3D/visualization/duct_tape/duct_tape/duct_tape_duct_tape_1_s1off_s2off_20251224_122111/duct_tape.xml"
+        self.bowl = MujocoXMLObject(
+            fname=duct_tape_xml_path,
+            name="duct_tape",
+            joints=[dict(type="free", damping="0.0005")],
+            obj_type="all",
+            duplicate_collision_geoms=True,
         )
 
         # Create list of objects
@@ -412,13 +409,17 @@ class TwoArmTapeHandover(TwoArmEnv):
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
-        # Cube on left table (table 0)
+        # Calculate centers for left and right areas based on table boundary
+        y_left_center = -self.tables_boundary[1] * 3 / 8
+        y_right_center = self.tables_boundary[1] * 3 / 8
+
+        # Cube on left side of table
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
                 name="CubeSampler",
                 mujoco_objects=self.cube,
                 x_range=[0.0, 0.15],
-                y_range=[-0.15, 0.0],
+                y_range=[y_left_center - 0.15, y_left_center],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
@@ -429,18 +430,18 @@ class TwoArmTapeHandover(TwoArmEnv):
             )
         )
 
-        # Bowl on right table (table 1)
+        # Bowl on right side of table
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
                 name="BowlSampler",
                 mujoco_objects=self.bowl,
                 x_range=[-0.15, 0.0],
-                y_range=[0.0, 0.15],
+                y_range=[y_right_center, y_right_center + 0.15],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                reference_pos=self.table_offsets[1],
+                reference_pos=self.table_offsets[0],
                 z_offset=0.01,
                 rng=self.rng,
             )
