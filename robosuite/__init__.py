@@ -11,6 +11,7 @@ from robosuite.environments.manipulation.tool_hang import ToolHang
 from robosuite.environments.manipulation.two_arm_lift import TwoArmLift
 from robosuite.environments.manipulation.two_arm_peg_in_hole import TwoArmPegInHole
 from robosuite.environments.manipulation.two_arm_handover import TwoArmHandover
+from robosuite.environments.manipulation.two_arm_tape_handover import TwoArmTapeHandover
 from robosuite.environments.manipulation.two_arm_transport import TwoArmTransport
 
 from robosuite.environments import ALL_ENVIRONMENTS
