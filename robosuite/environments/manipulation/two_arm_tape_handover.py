@@ -325,7 +325,7 @@ class TwoArmTapeHandover(TwoArmEnv):
         # Modify default agentview camera
         mujoco_arena.set_camera(
             camera_name="agentview",
-            pos=[0.8894354364730311, -3.481824231498976e-08, 1.7383813133506494],
+            pos=[1.2434677502317038, 4.965421871106301e-08, 2.091455182752329],
             quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
         )
 
