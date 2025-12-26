@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<mujoco model="yellow_tape">
+  <asset>
+    <mesh file="./yellow_tape.obj" name="yellow_tape_mesh" scale="1 1 1"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom type="mesh" mesh="yellow_tape_mesh" solref="0.02 1.0" solimp="0.9 0.95 0.001" group="1"/>
+        <geom type="mesh" mesh="yellow_tape_mesh" solref="0.02 1.0" solimp="0.9 0.95 0.001" group="0" rgba="1 1 0 1"/>
+      </body>
+      <site name="bottom_site" pos="-0.00015647895634174347 -3.774091601371765e-05 -0.012816530652344227" size="0.002" rgba="0 0 0 0"/>
+      <site name="top_site" pos="-0.00015647895634174347 -3.774091601371765e-05 0.012583469040691853" size="0.002" rgba="0 0 0 0"/>
+      <site name="horizontal_radius_site" pos="0.06717514468687408 0 0" size="0.002" rgba="0 0 0 0"/>
+    </body>
+  </worldbody>
+</mujoco>

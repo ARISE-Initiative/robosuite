@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<mujoco model="bowl">
+  <asset>
+    <mesh file="./bowl.obj" name="bowl_mesh" scale="1 1 1"/>
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+        <geom type="mesh" mesh="bowl_mesh" solref="0.02 1.0" solimp="0.9 0.95 0.001" group="1"/>
+        <geom type="mesh" mesh="bowl_mesh" solref="0.02 1.0" solimp="0.9 0.95 0.001" group="0" rgba="1 1 1 1"/>
+      </body>
+      <site name="bottom_site" pos="-0.00022791698575019836 -0.0004261620342731476 -0.028020240366458893" size="0.002" rgba="0 0 0 0"/>
+      <site name="top_site" pos="-0.00022791698575019836 -0.0004261620342731476 0.03547975793480873" size="0.002" rgba="0 0 0 0"/>
+      <site name="horizontal_radius_site" pos="0.1347038408466598 0 0" size="0.002" rgba="0 0 0 0"/>
+    </body>
+  </worldbody>
+</mujoco>

@@ -5,7 +5,7 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 from robosuite.models.arenas import MultiTableArena
-from robosuite.models.objects import BoxObject, CylinderObject, MujocoXMLObject
+from robosuite.models.objects import MujocoXMLObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.utils.observables import Observable, sensor
@@ -369,9 +369,8 @@ class TwoArmTapeHandover(TwoArmEnv):
             mat_attrib={**mat_attrib, "rgba": "0.5 0.5 0.5 1"},
         )
 
-        # Initialize objects of interest
-        # Custom Yellow Tape Object
-        yellow_tape_xml_path = "/home/karimelrafi/MV-SAM3D/visualization/yellow_tape/yellow_tape/yellow_tape_yellow_tape_2v_s1a30_s2e30_20251224_121628/yellow_tape.xml"
+        import os
+        yellow_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape/yellow_tape.xml")
         self.cube = MujocoXMLObject(
             fname=yellow_tape_xml_path,
             name="yellow_tape",
@@ -380,7 +379,7 @@ class TwoArmTapeHandover(TwoArmEnv):
             duplicate_collision_geoms=True,
         )
 
-        duct_tape_xml_path = "/home/karimelrafi/MV-SAM3D/visualization/duct_tape/duct_tape/duct_tape_duct_tape_1_s1off_s2off_20251224_122111/duct_tape.xml"
+        duct_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/duct_tape/duct_tape.xml")
         self.bowl = MujocoXMLObject(
             fname=duct_tape_xml_path,
             name="duct_tape",
