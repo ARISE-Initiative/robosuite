@@ -5,17 +5,17 @@ import numpy as np
 import robosuite.utils.transform_utils as T
 from robosuite.environments.manipulation.two_arm_env import TwoArmEnv
 from robosuite.models.arenas import MultiTableArena
-from robosuite.models.objects import MujocoXMLObject
+from robosuite.models.objects import BoxObject, MujocoXMLObject
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.mjcf_utils import CustomMaterial
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import SequentialCompositeSampler, UniformRandomSampler
 
 
-class TwoArmTapeHandover(TwoArmEnv):
+class TwoArmCubeBowlHandover(TwoArmEnv):
     """
-    This class corresponds to a two robot arm environment with a yellow tape on the left side
-    and a duct tape on the right side.
+    This class corresponds to a two robot arm environment with a red cube on the left side
+    and a grey bowl on the right side.
 
     Args:
         robots (str or list of str): Specification for specific robot(s)
@@ -23,8 +23,8 @@ class TwoArmTapeHandover(TwoArmEnv):
 
         env_configuration (str): Specifies how to position the robots within the environment if two robots inputted. Can be either:
 
-            :'parallel': Sets up the two robots next to each other on the -x side of the table
-            :'opposed': Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
+            :`'parallel'`: Sets up the two robots next to each other on the -x side of the table
+            :`'opposed'`: Sets up the two robots opposed from each others on the opposite +/-y sides of the table.
 
         Note that "default" "opposed" if two robots are used.
 
@@ -42,11 +42,11 @@ class TwoArmTapeHandover(TwoArmEnv):
         initialization_noise (dict or list of dict): Dict containing the initialization noise parameters.
             The expected keys and corresponding value types are specified below:
 
-            :'magnitude': The scale factor of uni-variate random noise applied to each of a robot's given initial
-                joint positions. Setting this value to None or 0.0 results in no noise being applied.
+            :`'magnitude'`: The scale factor of uni-variate random noise applied to each of a robot's given initial
+                joint positions. Setting this value to `None` or 0.0 results in no noise being applied.
                 If "gaussian" type of noise is applied then this magnitude scales the standard deviation applied,
                 If "uniform" type of noise is applied then this magnitude sets the bounds of the sampling range
-            :'type': Type of noise to apply. Can either specify "gaussian" or "uniform"
+            :`'type'`: Type of noise to apply. Can either specify "gaussian" or "uniform"
 
             Should either be single dict if same noise value is to be used for all robots or else it should be a
             list of the same length as "robots" param
@@ -54,17 +54,17 @@ class TwoArmTapeHandover(TwoArmEnv):
             :Note: Specifying "default" will automatically use the default noise settings.
                 Specifying None will automatically create the required dict with "magnitude" set to 0.0.
 
-        tables_boundary (3-tuple): x, y, and z dimensions of the table bounds. One table will be created at the center of
+        tables_boundary (3-tuple): x, y, and z dimensions of the table bounds. Two tables will be created at the edges of
             this boundary
 
         table_friction (3-tuple): the three mujoco friction parameters for
             each table.
 
-        yellow_tape_size (float): Size of the yellow tape
+        cube_size (float): Size of the cube
 
         use_camera_obs (bool): if True, every observation includes rendered image(s)
 
-        use_object_obs (bool): if True, include object (yellow tape) information in
+        use_object_obs (bool): if True, include object (cube) information in
             the observation.
 
         reward_scale (None or float): Scales the normalized reward function by the amount specified.
@@ -146,13 +146,11 @@ class TwoArmTapeHandover(TwoArmEnv):
         robots,
         env_configuration="default",
         controller_configs=None,
-        # Note: default gripper will use the franka gripper
         gripper_types="default",
-        # gripper_types="Robotiq85Gripper",
         initialization_noise="default",
-        tables_boundary=(0.8, 1.4, 0.05),
+        tables_boundary=(0.8, 1.2, 0.05),
         table_friction=(1.0, 5e-3, 1e-4),
-        yellow_tape_size=0.04,
+        cube_size=0.025,
         use_camera_obs=True,
         use_object_obs=True,
         reward_scale=1.0,
@@ -160,8 +158,8 @@ class TwoArmTapeHandover(TwoArmEnv):
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
-        render_collision_mesh=True,
-        render_visual_mesh=False,
+        render_collision_mesh=False,
+        render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
         lite_physics=True,
@@ -180,10 +178,13 @@ class TwoArmTapeHandover(TwoArmEnv):
         # settings for table top
         self.tables_boundary = tables_boundary
         self.table_full_size = np.array(tables_boundary)
+        self.table_full_size[1] *= 0.25  # each table size will only be a fraction of the full boundary
         self.table_friction = table_friction
-        self.table_offsets = np.zeros((1, 3))
-        self.table_offsets[0, 2] = 0.8  # scale z offset
-        self.yellow_tape_size = yellow_tape_size
+        self.table_offsets = np.zeros((2, 3))
+        self.table_offsets[0, 1] = self.tables_boundary[1] * -3 / 8  # scale y offset (left table)
+        self.table_offsets[1, 1] = self.tables_boundary[1] * 3 / 8  # scale y offset (right table)
+        self.table_offsets[:, 2] = 0.8  # scale z offset
+        self.cube_size = cube_size
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -227,13 +228,13 @@ class TwoArmTapeHandover(TwoArmEnv):
 
         Sparse un-normalized reward:
 
-            - a discrete reward of 1.0 is provided when the yellow tape is placed on the duct tape
+            - a discrete reward of 1.0 is provided when the cube is placed in the bowl
 
         Un-normalized max-wise components if using reward shaping:
 
-            - Reaching: distance between yellow tape and gripper
-            - Grasping: reward for grasping yellow tape
-            - Placing: distance between yellow tape and duct tape
+            - Reaching: distance between cube and gripper
+            - Grasping: reward for grasping cube
+            - Placing: distance between cube and bowl
 
         Note that the final reward is normalized and scaled by reward_scale / 1.0 as
         well so that the max score is equal to reward_scale
@@ -248,26 +249,26 @@ class TwoArmTapeHandover(TwoArmEnv):
         reward = 0
 
         # Get positions
-        yellow_tape_pos = np.array(self.sim.data.body_xpos[self.yellow_tape_body_id])
-        duct_tape_pos = np.array(self.sim.data.body_xpos[self.duct_tape_body_id])
+        cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+        bowl_pos = np.array(self.sim.data.body_xpos[self.bowl_body_id])
 
         # use a shaping reward if specified
         if self.reward_shaping:
             # Reaching reward
             gripper_site_pos = np.array(self.sim.data.site_xpos[self.robots[0].eef_site_id])
-            dist_to_yellow_tape = np.linalg.norm(gripper_site_pos - yellow_tape_pos)
-            reaching_reward = 1 - np.tanh(10.0 * dist_to_yellow_tape)
+            dist_to_cube = np.linalg.norm(gripper_site_pos - cube_pos)
+            reaching_reward = 1 - np.tanh(10.0 * dist_to_cube)
             reward += reaching_reward
 
             # Grasping reward
-            yellow_tape_height = yellow_tape_pos[2]
+            cube_height = cube_pos[2]
             table_height = self.table_offsets[0, 2]
-            if yellow_tape_height > table_height + 0.05:
+            if cube_height > table_height + 0.05:
                 reward += 0.5
 
             # Placing reward
-            dist_yellow_tape_to_duct_tape = np.linalg.norm(yellow_tape_pos - duct_tape_pos)
-            placing_reward = 1 - np.tanh(10.0 * dist_yellow_tape_to_duct_tape)
+            dist_cube_to_bowl = np.linalg.norm(cube_pos - bowl_pos)
+            placing_reward = 1 - np.tanh(10.0 * dist_cube_to_bowl)
             reward += placing_reward
 
             # Normalize
@@ -275,9 +276,9 @@ class TwoArmTapeHandover(TwoArmEnv):
 
         # Else this is the sparse reward setting
         else:
-            # Provide reward if yellow tape is in duct tape (within duct tape radius and at appropriate height)
-            dist_xy = np.linalg.norm(yellow_tape_pos[:2] - duct_tape_pos[:2])
-            if dist_xy < 0.08 and abs(yellow_tape_pos[2] - duct_tape_pos[2]) < 0.05:
+            # Provide reward if cube is in bowl (within bowl radius and at appropriate height)
+            dist_xy = np.linalg.norm(cube_pos[:2] - bowl_pos[:2])
+            if dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.05:
                 reward = 1.0
 
         if self.reward_scale is not None:
@@ -327,7 +328,7 @@ class TwoArmTapeHandover(TwoArmEnv):
         # Modify default agentview camera
         mujoco_arena.set_camera(
             camera_name="agentview",
-            pos=[1.2434677502317038, 4.965421871106301e-08, 2.091455182752329],
+            pos=[0.8894354364730311, -3.481824231498976e-08, 1.7383813133506494],
             quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
         )
 
@@ -345,7 +346,7 @@ class TwoArmTapeHandover(TwoArmEnv):
         # )
 
         # Add relevant materials
-        # Material for yellow tape
+        # Red material for cube
         tex_attrib = {
             "type": "cube",
         }
@@ -354,44 +355,44 @@ class TwoArmTapeHandover(TwoArmEnv):
             "specular": "0.4",
             "shininess": "0.1",
         }
-        yellow_tape_mat = CustomMaterial(
+        red_mat = CustomMaterial(
             texture="WoodRed",
-            tex_name="yellow_tape",
-            mat_name="yellow_tape_mat",
+            tex_name="red_cube",
+            mat_name="red_cube_mat",
             tex_attrib=tex_attrib,
             mat_attrib=mat_attrib,
         )
 
-        # Material for duct tape
-        duct_tape_mat = CustomMaterial(
+        # Grey material for bowl
+        grey_mat = CustomMaterial(
             texture="Metal",
-            tex_name="duct_tape",
-            mat_name="duct_tape_mat",
+            tex_name="grey_bowl",
+            mat_name="grey_bowl_mat",
             tex_attrib=tex_attrib,
             mat_attrib={**mat_attrib, "rgba": "0.5 0.5 0.5 1"},
         )
 
-        import os
-        yellow_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape/yellow_tape.xml")
-        self.yellow_tape = MujocoXMLObject(
-            fname=yellow_tape_xml_path,
-            name="yellow_tape",
-            joints=[dict(type="free", damping="0.0005")],
-            obj_type="all",
-            duplicate_collision_geoms=True,
+        # Initialize objects of interest
+        self.cube = BoxObject(
+            name="cube",
+            size=[self.cube_size, self.cube_size, self.cube_size],
+            rgba=[1, 0, 0, 1],  # Red color
+            material=red_mat,
+            rng=self.rng,
         )
 
-        duct_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/duct_tape/duct_tape.xml")
-        self.duct_tape = MujocoXMLObject(
-            fname=duct_tape_xml_path,
-            name="duct_tape",
+        import os
+        bowl_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/bowl/bowl.xml")
+        self.bowl = MujocoXMLObject(
+            fname=bowl_xml_path,
+            name="bowl",
             joints=[dict(type="free", damping="0.0005")],
             obj_type="all",
             duplicate_collision_geoms=True,
         )
 
         # Create list of objects
-        self.objects = [self.yellow_tape, self.duct_tape]
+        self.objects = [self.cube, self.bowl]
 
         # task includes arena, robot, and objects of interest
         self.model = ManipulationTask(
@@ -410,17 +411,13 @@ class TwoArmTapeHandover(TwoArmEnv):
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
-        # Calculate centers for left and right areas based on table boundary
-        y_left_center = -self.tables_boundary[1] * 3 / 8
-        y_right_center = self.tables_boundary[1] * 3 / 8
-
-        # Yellow tape on left side of table
+        # Cube on left table (table 0)
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
-                name="YellowTapeSampler",
-                mujoco_objects=self.yellow_tape,
+                name="CubeSampler",
+                mujoco_objects=self.cube,
                 x_range=[0.0, 0.15],
-                y_range=[y_left_center - 0.15, y_left_center],
+                y_range=[-0.15, 0.0],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
@@ -431,18 +428,18 @@ class TwoArmTapeHandover(TwoArmEnv):
             )
         )
 
-        # Duct tape on right side of table
+        # Bowl on right table (table 1)
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
-                name="DuctTapeSampler",
-                mujoco_objects=self.duct_tape,
+                name="BowlSampler",
+                mujoco_objects=self.bowl,
                 x_range=[-0.15, 0.0],
-                y_range=[y_right_center, y_right_center + 0.15],
+                y_range=[0.0, 0.15],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                reference_pos=self.table_offsets[0],
+                reference_pos=self.table_offsets[1],
                 z_offset=0.01,
                 rng=self.rng,
             )
@@ -456,9 +453,9 @@ class TwoArmTapeHandover(TwoArmEnv):
         """
         super()._setup_references()
 
-        # Additional references for yellow tape and duct tape
-        self.yellow_tape_body_id = self.sim.model.body_name2id(self.yellow_tape.root_body)
-        self.duct_tape_body_id = self.sim.model.body_name2id(self.duct_tape.root_body)
+        # Additional references for cube and bowl
+        self.cube_body_id = self.sim.model.body_name2id(self.cube.root_body)
+        self.bowl_body_id = self.sim.model.body_name2id(self.bowl.root_body)
 
     def _setup_observables(self):
         """
@@ -473,25 +470,25 @@ class TwoArmTapeHandover(TwoArmEnv):
         if self.use_object_obs:
             modality = "object"
 
-            # position and rotation of yellow tape
+            # position and rotation of cube
             @sensor(modality=modality)
-            def yellow_tape_pos(obs_cache):
-                return np.array(self.sim.data.body_xpos[self.yellow_tape_body_id])
+            def cube_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.cube_body_id])
 
             @sensor(modality=modality)
-            def yellow_tape_quat(obs_cache):
-                return T.convert_quat(self.sim.data.body_xquat[self.yellow_tape_body_id], to="xyzw")
+            def cube_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.cube_body_id], to="xyzw")
 
-            # position and rotation of duct tape
+            # position and rotation of bowl
             @sensor(modality=modality)
-            def duct_tape_pos(obs_cache):
-                return np.array(self.sim.data.body_xpos[self.duct_tape_body_id])
+            def bowl_pos(obs_cache):
+                return np.array(self.sim.data.body_xpos[self.bowl_body_id])
 
             @sensor(modality=modality)
-            def duct_tape_quat(obs_cache):
-                return T.convert_quat(self.sim.data.body_xquat[self.duct_tape_body_id], to="xyzw")
+            def bowl_quat(obs_cache):
+                return T.convert_quat(self.sim.data.body_xquat[self.bowl_body_id], to="xyzw")
 
-            sensors = [yellow_tape_pos, yellow_tape_quat, duct_tape_pos, duct_tape_quat]
+            sensors = [cube_pos, cube_quat, bowl_pos, bowl_quat]
             names = [s.__name__ for s in sensors]
 
             # Add gripper to object sensors
@@ -509,23 +506,23 @@ class TwoArmTapeHandover(TwoArmEnv):
                 pf_left = self.robots[1].robot_model.naming_prefix if len(self.robots) > 1 else pf_right
 
             @sensor(modality=modality)
-            def gripper_to_yellow_tape(obs_cache):
+            def gripper_to_cube(obs_cache):
                 return (
-                    obs_cache["yellow_tape_pos"] - obs_cache[f"{pf_right}eef_pos"]
+                    obs_cache["cube_pos"] - obs_cache[f"{pf_right}eef_pos"]
                     if f"{pf_right}eef_pos" in obs_cache
                     else np.zeros(3)
                 )
 
             @sensor(modality=modality)
-            def gripper_to_duct_tape(obs_cache):
+            def gripper_to_bowl(obs_cache):
                 return (
-                    obs_cache["duct_tape_pos"] - obs_cache[f"{pf_right}eef_pos"]
+                    obs_cache["bowl_pos"] - obs_cache[f"{pf_right}eef_pos"]
                     if f"{pf_right}eef_pos" in obs_cache
                     else np.zeros(3)
                 )
 
-            sensors += [gripper_to_yellow_tape, gripper_to_duct_tape]
-            names += [s.__name__ for s in [gripper_to_yellow_tape, gripper_to_duct_tape]]
+            sensors += [gripper_to_cube, gripper_to_bowl]
+            names += [s.__name__ for s in [gripper_to_cube, gripper_to_bowl]]
 
             # Create observables
             for name, s in zip(names, sensors):
@@ -555,14 +552,15 @@ class TwoArmTapeHandover(TwoArmEnv):
 
     def _check_success(self):
         """
-        Check if yellow tape is placed in the duct tape
+        Check if cube is placed in the bowl
 
         Returns:
             bool: True if task has been completed
         """
-        yellow_tape_pos = np.array(self.sim.data.body_xpos[self.yellow_tape_body_id])
-        duct_tape_pos = np.array(self.sim.data.body_xpos[self.duct_tape_body_id])
+        cube_pos = np.array(self.sim.data.body_xpos[self.cube_body_id])
+        bowl_pos = np.array(self.sim.data.body_xpos[self.bowl_body_id])
 
-        # Check if yellow tape is within duct tape radius and at appropriate height
-        dist_xy = np.linalg.norm(yellow_tape_pos[:2] - duct_tape_pos[:2])
-        return dist_xy < 0.08 and abs(yellow_tape_pos[2] - duct_tape_pos[2]) < 0.05
+        # Check if cube is within bowl radius and at appropriate height
+        dist_xy = np.linalg.norm(cube_pos[:2] - bowl_pos[:2])
+        return dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.05
+
