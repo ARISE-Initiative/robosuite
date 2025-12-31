@@ -10,3 +10,4 @@ from .spot_arm import SpotArm
 from .tiago_robot import Tiago
 from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly, GR1FloatingBody
 from .xarm7_robot import XArm7
+from .yam_robot import Yam

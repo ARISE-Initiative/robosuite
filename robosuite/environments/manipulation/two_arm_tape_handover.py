@@ -160,8 +160,8 @@ class TwoArmTapeHandover(TwoArmEnv):
         has_renderer=False,
         has_offscreen_renderer=True,
         render_camera="frontview",
-        render_collision_mesh=True,
-        render_visual_mesh=False,
+        render_collision_mesh=False,
+        render_visual_mesh=True,
         render_gpu_device_id=-1,
         control_freq=20,
         lite_physics=True,
@@ -373,14 +373,23 @@ class TwoArmTapeHandover(TwoArmEnv):
 
         import os
         yellow_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape/yellow_tape.xml")
+        yellow_tape_decomp_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape/yellow_tape_decomp/yellow_tape.xml")
+        assert os.path.exists(yellow_tape_decomp_xml_path), "Yellow tape decomp XML path does not exist"
         self.yellow_tape = MujocoXMLObject(
-            fname=yellow_tape_xml_path,
+            fname=yellow_tape_decomp_xml_path, # yellow_tape_xml_path,
             name="yellow_tape",
             joints=[dict(type="free", damping="0.0005")],
             obj_type="all",
             duplicate_collision_geoms=True,
         )
-
+        # yellow_tape_cad_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape_cad/yellow_tape_cad.xml")
+        # self.yellow_tape = MujocoXMLObject(
+        #     fname=yellow_tape_cad_xml_path,
+        #     name="yellow_tape_cad",
+        #     joints=[dict(type="free", damping="0.0005")],
+        #     obj_type="all",
+        #     duplicate_collision_geoms=True,
+        # )
         duct_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/duct_tape/duct_tape.xml")
         self.duct_tape = MujocoXMLObject(
             fname=duct_tape_xml_path,

@@ -1,0 +1,278 @@
+<mujoco model="yellow_tape">
+  <default>
+    <default class="visual">
+      <geom group="1" type="mesh" density="50" contype="0" conaffinity="0" />
+    </default>
+    <default class="collision">
+      <!-- <geom group="0" type="mesh" density="50" /> -->
+      <geom group="0" type="mesh" density="50" solref="0.001 1" solimp="0.998 0.998 0.001" friction="0.95 0.3 0.1" condim="4"/>
+    </default>
+  </default>
+  <asset>
+    <mesh file="yellow_tape.obj" name="yellow_tape" />
+    <mesh file="yellow_tape_collision_0.obj" name="yellow_tape_collision_0" />
+    <mesh file="yellow_tape_collision_1.obj" name="yellow_tape_collision_1" />
+    <mesh file="yellow_tape_collision_2.obj" name="yellow_tape_collision_2" />
+    <mesh file="yellow_tape_collision_3.obj" name="yellow_tape_collision_3" />
+    <mesh file="yellow_tape_collision_4.obj" name="yellow_tape_collision_4" />
+    <mesh file="yellow_tape_collision_5.obj" name="yellow_tape_collision_5" />
+    <mesh file="yellow_tape_collision_6.obj" name="yellow_tape_collision_6" />
+    <mesh file="yellow_tape_collision_7.obj" name="yellow_tape_collision_7" />
+    <mesh file="yellow_tape_collision_8.obj" name="yellow_tape_collision_8" />
+    <mesh file="yellow_tape_collision_9.obj" name="yellow_tape_collision_9" />
+    <mesh file="yellow_tape_collision_10.obj" name="yellow_tape_collision_10" />
+    <mesh file="yellow_tape_collision_11.obj" name="yellow_tape_collision_11" />
+    <mesh file="yellow_tape_collision_12.obj" name="yellow_tape_collision_12" />
+    <mesh file="yellow_tape_collision_13.obj" name="yellow_tape_collision_13" />
+    <mesh file="yellow_tape_collision_14.obj" name="yellow_tape_collision_14" />
+    <mesh file="yellow_tape_collision_15.obj" name="yellow_tape_collision_15" />
+    <mesh file="yellow_tape_collision_16.obj" name="yellow_tape_collision_16" />
+    <mesh file="yellow_tape_collision_17.obj" name="yellow_tape_collision_17" />
+    <mesh file="yellow_tape_collision_18.obj" name="yellow_tape_collision_18" />
+    <mesh file="yellow_tape_collision_19.obj" name="yellow_tape_collision_19" />
+    <mesh file="yellow_tape_collision_20.obj" name="yellow_tape_collision_20" />
+    <mesh file="yellow_tape_collision_21.obj" name="yellow_tape_collision_21" />
+    <mesh file="yellow_tape_collision_22.obj" name="yellow_tape_collision_22" />
+    <mesh file="yellow_tape_collision_23.obj" name="yellow_tape_collision_23" />
+    <mesh file="yellow_tape_collision_24.obj" name="yellow_tape_collision_24" />
+    <mesh file="yellow_tape_collision_25.obj" name="yellow_tape_collision_25" />
+    <mesh file="yellow_tape_collision_26.obj" name="yellow_tape_collision_26" />
+    <mesh file="yellow_tape_collision_27.obj" name="yellow_tape_collision_27" />
+    <mesh file="yellow_tape_collision_28.obj" name="yellow_tape_collision_28" />
+    <mesh file="yellow_tape_collision_29.obj" name="yellow_tape_collision_29" />
+    <mesh file="yellow_tape_collision_30.obj" name="yellow_tape_collision_30" />
+    <mesh file="yellow_tape_collision_31.obj" name="yellow_tape_collision_31" />
+    <mesh file="yellow_tape_collision_32.obj" name="yellow_tape_collision_32" />
+    <mesh file="yellow_tape_collision_33.obj" name="yellow_tape_collision_33" />
+    <mesh file="yellow_tape_collision_34.obj" name="yellow_tape_collision_34" />
+    <mesh file="yellow_tape_collision_35.obj" name="yellow_tape_collision_35" />
+    <mesh file="yellow_tape_collision_36.obj" name="yellow_tape_collision_36" />
+    <mesh file="yellow_tape_collision_37.obj" name="yellow_tape_collision_37" />
+    <mesh file="yellow_tape_collision_38.obj" name="yellow_tape_collision_38" />
+    <mesh file="yellow_tape_collision_39.obj" name="yellow_tape_collision_39" />
+    <mesh file="yellow_tape_collision_40.obj" name="yellow_tape_collision_40" />
+    <mesh file="yellow_tape_collision_41.obj" name="yellow_tape_collision_41" />
+    <mesh file="yellow_tape_collision_42.obj" name="yellow_tape_collision_42" />
+    <mesh file="yellow_tape_collision_43.obj" name="yellow_tape_collision_43" />
+    <mesh file="yellow_tape_collision_44.obj" name="yellow_tape_collision_44" />
+    <mesh file="yellow_tape_collision_45.obj" name="yellow_tape_collision_45" />
+    <mesh file="yellow_tape_collision_46.obj" name="yellow_tape_collision_46" />
+    <mesh file="yellow_tape_collision_47.obj" name="yellow_tape_collision_47" />
+    <mesh file="yellow_tape_collision_48.obj" name="yellow_tape_collision_48" />
+    <mesh file="yellow_tape_collision_49.obj" name="yellow_tape_collision_49" />
+    <mesh file="yellow_tape_collision_50.obj" name="yellow_tape_collision_50" />
+    <mesh file="yellow_tape_collision_51.obj" name="yellow_tape_collision_51" />
+    <mesh file="yellow_tape_collision_52.obj" name="yellow_tape_collision_52" />
+    <mesh file="yellow_tape_collision_53.obj" name="yellow_tape_collision_53" />
+    <mesh file="yellow_tape_collision_54.obj" name="yellow_tape_collision_54" />
+    <mesh file="yellow_tape_collision_55.obj" name="yellow_tape_collision_55" />
+    <mesh file="yellow_tape_collision_56.obj" name="yellow_tape_collision_56" />
+    <mesh file="yellow_tape_collision_57.obj" name="yellow_tape_collision_57" />
+    <mesh file="yellow_tape_collision_58.obj" name="yellow_tape_collision_58" />
+    <mesh file="yellow_tape_collision_59.obj" name="yellow_tape_collision_59" />
+    <mesh file="yellow_tape_collision_60.obj" name="yellow_tape_collision_60" />
+    <mesh file="yellow_tape_collision_61.obj" name="yellow_tape_collision_61" />
+    <mesh file="yellow_tape_collision_62.obj" name="yellow_tape_collision_62" />
+    <mesh file="yellow_tape_collision_63.obj" name="yellow_tape_collision_63" />
+    <mesh file="yellow_tape_collision_64.obj" name="yellow_tape_collision_64" />
+    <mesh file="yellow_tape_collision_65.obj" name="yellow_tape_collision_65" />
+    <mesh file="yellow_tape_collision_66.obj" name="yellow_tape_collision_66" />
+    <mesh file="yellow_tape_collision_67.obj" name="yellow_tape_collision_67" />
+    <mesh file="yellow_tape_collision_68.obj" name="yellow_tape_collision_68" />
+    <mesh file="yellow_tape_collision_69.obj" name="yellow_tape_collision_69" />
+    <mesh file="yellow_tape_collision_70.obj" name="yellow_tape_collision_70" />
+    <mesh file="yellow_tape_collision_71.obj" name="yellow_tape_collision_71" />
+    <mesh file="yellow_tape_collision_72.obj" name="yellow_tape_collision_72" />
+    <mesh file="yellow_tape_collision_73.obj" name="yellow_tape_collision_73" />
+    <mesh file="yellow_tape_collision_74.obj" name="yellow_tape_collision_74" />
+    <mesh file="yellow_tape_collision_75.obj" name="yellow_tape_collision_75" />
+    <mesh file="yellow_tape_collision_76.obj" name="yellow_tape_collision_76" />
+    <mesh file="yellow_tape_collision_77.obj" name="yellow_tape_collision_77" />
+    <mesh file="yellow_tape_collision_78.obj" name="yellow_tape_collision_78" />
+    <mesh file="yellow_tape_collision_79.obj" name="yellow_tape_collision_79" />
+    <mesh file="yellow_tape_collision_80.obj" name="yellow_tape_collision_80" />
+    <mesh file="yellow_tape_collision_81.obj" name="yellow_tape_collision_81" />
+    <mesh file="yellow_tape_collision_82.obj" name="yellow_tape_collision_82" />
+    <mesh file="yellow_tape_collision_83.obj" name="yellow_tape_collision_83" />
+    <mesh file="yellow_tape_collision_84.obj" name="yellow_tape_collision_84" />
+    <mesh file="yellow_tape_collision_85.obj" name="yellow_tape_collision_85" />
+    <mesh file="yellow_tape_collision_86.obj" name="yellow_tape_collision_86" />
+    <mesh file="yellow_tape_collision_87.obj" name="yellow_tape_collision_87" />
+    <mesh file="yellow_tape_collision_88.obj" name="yellow_tape_collision_88" />
+    <mesh file="yellow_tape_collision_89.obj" name="yellow_tape_collision_89" />
+    <mesh file="yellow_tape_collision_90.obj" name="yellow_tape_collision_90" />
+    <mesh file="yellow_tape_collision_91.obj" name="yellow_tape_collision_91" />
+    <mesh file="yellow_tape_collision_92.obj" name="yellow_tape_collision_92" />
+    <mesh file="yellow_tape_collision_93.obj" name="yellow_tape_collision_93" />
+    <mesh file="yellow_tape_collision_94.obj" name="yellow_tape_collision_94" />
+    <mesh file="yellow_tape_collision_95.obj" name="yellow_tape_collision_95" />
+    <mesh file="yellow_tape_collision_96.obj" name="yellow_tape_collision_96" />
+    <mesh file="yellow_tape_collision_97.obj" name="yellow_tape_collision_97" />
+    <mesh file="yellow_tape_collision_98.obj" name="yellow_tape_collision_98" />
+    <mesh file="yellow_tape_collision_99.obj" name="yellow_tape_collision_99" />
+    <mesh file="yellow_tape_collision_100.obj" name="yellow_tape_collision_100" />
+    <mesh file="yellow_tape_collision_101.obj" name="yellow_tape_collision_101" />
+    <mesh file="yellow_tape_collision_102.obj" name="yellow_tape_collision_102" />
+    <mesh file="yellow_tape_collision_103.obj" name="yellow_tape_collision_103" />
+    <mesh file="yellow_tape_collision_104.obj" name="yellow_tape_collision_104" />
+    <mesh file="yellow_tape_collision_105.obj" name="yellow_tape_collision_105" />
+    <mesh file="yellow_tape_collision_106.obj" name="yellow_tape_collision_106" />
+    <mesh file="yellow_tape_collision_107.obj" name="yellow_tape_collision_107" />
+    <mesh file="yellow_tape_collision_108.obj" name="yellow_tape_collision_108" />
+    <mesh file="yellow_tape_collision_109.obj" name="yellow_tape_collision_109" />
+    <mesh file="yellow_tape_collision_110.obj" name="yellow_tape_collision_110" />
+    <mesh file="yellow_tape_collision_111.obj" name="yellow_tape_collision_111" />
+    <mesh file="yellow_tape_collision_112.obj" name="yellow_tape_collision_112" />
+    <mesh file="yellow_tape_collision_113.obj" name="yellow_tape_collision_113" />
+    <mesh file="yellow_tape_collision_114.obj" name="yellow_tape_collision_114" />
+    <mesh file="yellow_tape_collision_115.obj" name="yellow_tape_collision_115" />
+    <mesh file="yellow_tape_collision_116.obj" name="yellow_tape_collision_116" />
+    <mesh file="yellow_tape_collision_117.obj" name="yellow_tape_collision_117" />
+    <mesh file="yellow_tape_collision_118.obj" name="yellow_tape_collision_118" />
+    <mesh file="yellow_tape_collision_119.obj" name="yellow_tape_collision_119" />
+    <mesh file="yellow_tape_collision_120.obj" name="yellow_tape_collision_120" />
+    <mesh file="yellow_tape_collision_121.obj" name="yellow_tape_collision_121" />
+    <mesh file="yellow_tape_collision_122.obj" name="yellow_tape_collision_122" />
+    <mesh file="yellow_tape_collision_123.obj" name="yellow_tape_collision_123" />
+    <mesh file="yellow_tape_collision_124.obj" name="yellow_tape_collision_124" />
+    <mesh file="yellow_tape_collision_125.obj" name="yellow_tape_collision_125" />
+    <mesh file="yellow_tape_collision_126.obj" name="yellow_tape_collision_126" />
+  </asset>
+  <worldbody>
+    <body>
+      <body name="object">
+      <geom mesh="yellow_tape" class="visual" rgba="1 1 0 1"/>
+      <geom mesh="yellow_tape_collision_0" rgba="0.15021597249472096 0.27324420461873344 0.13828688532891786 1" class="collision" />
+      <geom mesh="yellow_tape_collision_1" rgba="0.5288102147300795 0.9380856115727408 0.7017393355656638 1" class="collision" />
+      <geom mesh="yellow_tape_collision_2" rgba="0.9807854599514234 0.4989700823946107 0.19382605079002824 1" class="collision" />
+      <geom mesh="yellow_tape_collision_3" rgba="0.5946204667263799 0.20602138270378256 0.34185288925271407 1" class="collision" />
+      <geom mesh="yellow_tape_collision_4" rgba="0.37947753652595717 0.10103261675237851 0.6957639617972121 1" class="collision" />
+      <geom mesh="yellow_tape_collision_5" rgba="0.24265594896984988 0.08262403085759229 0.7493172765312065 1" class="collision" />
+      <geom mesh="yellow_tape_collision_6" rgba="0.14988475983662009 0.5704182466702372 0.3676022926485695 1" class="collision" />
+      <geom mesh="yellow_tape_collision_7" rgba="0.2532274026657132 0.5769917402855953 0.08445822514285861 1" class="collision" />
+      <geom mesh="yellow_tape_collision_8" rgba="0.12192605664452516 0.17639639748279656 0.9155254080974623 1" class="collision" />
+      <geom mesh="yellow_tape_collision_9" rgba="0.2705141227315657 0.009394871180167574 0.36685799153089094 1" class="collision" />
+      <geom mesh="yellow_tape_collision_10" rgba="0.2165585491650287 0.7207090602113768 0.6770962264613651 1" class="collision" />
+      <geom mesh="yellow_tape_collision_11" rgba="0.22772053386516955 0.5603444153434181 0.7100255314746152 1" class="collision" />
+      <geom mesh="yellow_tape_collision_12" rgba="0.03752356871855045 0.8425428167009449 0.5711480963278848 1" class="collision" />
+      <geom mesh="yellow_tape_collision_13" rgba="0.5051457539754304 0.013800896429200349 0.37461497603402616 1" class="collision" />
+      <geom mesh="yellow_tape_collision_14" rgba="0.3844357982815042 0.3778056414069104 0.18025707965180449 1" class="collision" />
+      <geom mesh="yellow_tape_collision_15" rgba="0.738250571941231 0.6030282334549711 0.5748643612626996 1" class="collision" />
+      <geom mesh="yellow_tape_collision_16" rgba="0.06730767950996186 0.3144027697545787 0.9611013200751746 1" class="collision" />
+      <geom mesh="yellow_tape_collision_17" rgba="0.903449436017517 0.32770911679937487 0.5326469911282907 1" class="collision" />
+      <geom mesh="yellow_tape_collision_18" rgba="0.3716110499672477 0.8948833780505948 0.1307635807163925 1" class="collision" />
+      <geom mesh="yellow_tape_collision_19" rgba="0.8985779447542357 0.45968901797005546 0.545791925717683 1" class="collision" />
+      <geom mesh="yellow_tape_collision_20" rgba="0.19055619045925276 0.37795605374677765 0.6656589441028429 1" class="collision" />
+      <geom mesh="yellow_tape_collision_21" rgba="0.9663896787904536 0.7489611337006514 0.5710458944160037 1" class="collision" />
+      <geom mesh="yellow_tape_collision_22" rgba="0.17999936760227753 0.8052408666287985 0.5870641726914722 1" class="collision" />
+      <geom mesh="yellow_tape_collision_23" rgba="0.11866629604404444 0.6748468592524981 0.13848087973413215 1" class="collision" />
+      <geom mesh="yellow_tape_collision_24" rgba="0.7908809664854793 0.25074559907335625 0.07739729857818878 1" class="collision" />
+      <geom mesh="yellow_tape_collision_25" rgba="0.04100057942057078 0.37688234646532104 0.5788035839674088 1" class="collision" />
+      <geom mesh="yellow_tape_collision_26" rgba="0.9333775604321587 0.9889972742307191 0.9902099259536179 1" class="collision" />
+      <geom mesh="yellow_tape_collision_27" rgba="0.8116071148304153 0.7609475655140482 0.39298822661025945 1" class="collision" />
+      <geom mesh="yellow_tape_collision_28" rgba="0.3188898961283918 0.08380926343249595 0.10575589046453404 1" class="collision" />
+      <geom mesh="yellow_tape_collision_29" rgba="0.2525851316831137 0.19041270110171304 0.49566555600443996 1" class="collision" />
+      <geom mesh="yellow_tape_collision_30" rgba="0.9954640293227911 0.15664157799087852 0.9822258784897426 1" class="collision" />
+      <geom mesh="yellow_tape_collision_31" rgba="0.26236881103344734 0.3760247463811651 0.18692860159969293 1" class="collision" />
+      <geom mesh="yellow_tape_collision_32" rgba="0.2875629618223663 0.05735176411521403 0.5393833076393534 1" class="collision" />
+      <geom mesh="yellow_tape_collision_33" rgba="0.1614746557241573 0.5381585278370019 0.9974763015207958 1" class="collision" />
+      <geom mesh="yellow_tape_collision_34" rgba="0.9552455135278158 0.1284854768602024 0.0021690700355707637 1" class="collision" />
+      <geom mesh="yellow_tape_collision_35" rgba="0.49814701828816976 0.024682448995540618 0.7765644678136517 1" class="collision" />
+      <geom mesh="yellow_tape_collision_36" rgba="0.7672336514373059 0.46823533102150183 0.7462713339050302 1" class="collision" />
+      <geom mesh="yellow_tape_collision_37" rgba="0.6719982061460033 0.22701996762730403 0.3653221388651362 1" class="collision" />
+      <geom mesh="yellow_tape_collision_38" rgba="0.05274683786108458 0.11423072136558243 0.9654104680245587 1" class="collision" />
+      <geom mesh="yellow_tape_collision_39" rgba="0.5501661523808329 0.9447566315300083 0.5436844438121917 1" class="collision" />
+      <geom mesh="yellow_tape_collision_40" rgba="0.6332462875179861 0.2322530922650643 0.278093422125846 1" class="collision" />
+      <geom mesh="yellow_tape_collision_41" rgba="0.23017117987779023 0.3778390271791172 0.8421610791800149 1" class="collision" />
+      <geom mesh="yellow_tape_collision_42" rgba="0.9055784654577655 0.4796284719254845 0.9860716558007662 1" class="collision" />
+      <geom mesh="yellow_tape_collision_43" rgba="0.3939246735888706 0.6868273434119619 0.16068175882317848 1" class="collision" />
+      <geom mesh="yellow_tape_collision_44" rgba="0.1778117654109601 0.3187595958944376 0.5850740401176939 1" class="collision" />
+      <geom mesh="yellow_tape_collision_45" rgba="0.9729525935428922 0.9848154072322972 0.4449036502580638 1" class="collision" />
+      <geom mesh="yellow_tape_collision_46" rgba="0.961176749310713 0.3397842073575623 0.6011392844375665 1" class="collision" />
+      <geom mesh="yellow_tape_collision_47" rgba="0.23073323741134355 0.8018615690037466 0.9094842369322764 1" class="collision" />
+      <geom mesh="yellow_tape_collision_48" rgba="0.5260110045400863 0.6367335441565891 0.1865090288730883 1" class="collision" />
+      <geom mesh="yellow_tape_collision_49" rgba="0.45529820885220784 0.2934697782440365 0.8685006898540808 1" class="collision" />
+      <geom mesh="yellow_tape_collision_50" rgba="0.04017601067834886 0.9587211571345452 0.445370881135271 1" class="collision" />
+      <geom mesh="yellow_tape_collision_51" rgba="0.12872827772548834 0.9163657124188834 0.9253511180575584 1" class="collision" />
+      <geom mesh="yellow_tape_collision_52" rgba="0.9897358073176972 0.4713953395805678 0.18860955252458123 1" class="collision" />
+      <geom mesh="yellow_tape_collision_53" rgba="0.8445123687926612 0.16673695865016136 0.8656985806111451 1" class="collision" />
+      <geom mesh="yellow_tape_collision_54" rgba="0.8234960217902179 0.6205627753203529 0.3097885093222821 1" class="collision" />
+      <geom mesh="yellow_tape_collision_55" rgba="0.808770711641383 0.6271671493175772 0.29311966926109245 1" class="collision" />
+      <geom mesh="yellow_tape_collision_56" rgba="0.4251190557078194 0.09851924053607408 0.07964183816114667 1" class="collision" />
+      <geom mesh="yellow_tape_collision_57" rgba="0.8018666927380574 0.3411188041252723 0.4883075859322513 1" class="collision" />
+      <geom mesh="yellow_tape_collision_58" rgba="0.5764277211063461 0.05722170531804738 0.7276080362084145 1" class="collision" />
+      <geom mesh="yellow_tape_collision_59" rgba="0.13832167351324764 0.1682643418196469 0.5761883251819863 1" class="collision" />
+      <geom mesh="yellow_tape_collision_60" rgba="0.4059348291122238 0.6472279223708519 0.0039437347638956455 1" class="collision" />
+      <geom mesh="yellow_tape_collision_61" rgba="0.0054656475040659735 0.2531048638736513 0.14357881015173157 1" class="collision" />
+      <geom mesh="yellow_tape_collision_62" rgba="0.23791736044449718 0.08922472389161473 0.993321980296651 1" class="collision" />
+      <geom mesh="yellow_tape_collision_63" rgba="0.8492233861511143 0.025678037471430715 0.6844176331047694 1" class="collision" />
+      <geom mesh="yellow_tape_collision_64" rgba="0.9795119666788346 0.3387377360856463 0.24726729682078685 1" class="collision" />
+      <geom mesh="yellow_tape_collision_65" rgba="0.9880959645921434 0.8558360233466382 0.3041541924807274 1" class="collision" />
+      <geom mesh="yellow_tape_collision_66" rgba="0.9333983842989892 0.2211992574954854 0.9192275879136698 1" class="collision" />
+      <geom mesh="yellow_tape_collision_67" rgba="0.5808766322404357 0.17269541012541456 0.7079072467865354 1" class="collision" />
+      <geom mesh="yellow_tape_collision_68" rgba="0.4300351923016532 0.973567545735459 0.07240894453223734 1" class="collision" />
+      <geom mesh="yellow_tape_collision_69" rgba="0.5876416746397117 0.7089566120531611 0.10225267808541572 1" class="collision" />
+      <geom mesh="yellow_tape_collision_70" rgba="0.7384710202438827 0.3561208928855427 0.7899370628681309 1" class="collision" />
+      <geom mesh="yellow_tape_collision_71" rgba="0.945072734585348 0.3148381346237903 0.7094962316480656 1" class="collision" />
+      <geom mesh="yellow_tape_collision_72" rgba="0.7456611825673055 0.5944520632608404 0.8512448647325006 1" class="collision" />
+      <geom mesh="yellow_tape_collision_73" rgba="0.7171418161006788 0.9087215582116684 0.3446465391408067 1" class="collision" />
+      <geom mesh="yellow_tape_collision_74" rgba="0.8427941253312061 0.1036438314680872 0.8911544578143779 1" class="collision" />
+      <geom mesh="yellow_tape_collision_75" rgba="0.8707367684887454 0.34378408250532566 0.6957569679899822 1" class="collision" />
+      <geom mesh="yellow_tape_collision_76" rgba="0.3484373273427228 0.12406680269987824 0.46583892348301925 1" class="collision" />
+      <geom mesh="yellow_tape_collision_77" rgba="0.06336478788553923 0.9011865831641116 0.37477029768333514 1" class="collision" />
+      <geom mesh="yellow_tape_collision_78" rgba="0.109900522948569 0.6227162311815414 0.04275441015087822 1" class="collision" />
+      <geom mesh="yellow_tape_collision_79" rgba="0.445426015988727 0.8907000344327204 0.890526038651542 1" class="collision" />
+      <geom mesh="yellow_tape_collision_80" rgba="0.6375831502083178 0.3126897841622719 0.7513157014822571 1" class="collision" />
+      <geom mesh="yellow_tape_collision_81" rgba="0.9847437855707534 0.4046785555769101 0.36723817410719883 1" class="collision" />
+      <geom mesh="yellow_tape_collision_82" rgba="0.5908719759342052 0.530534535209664 0.5801022014809438 1" class="collision" />
+      <geom mesh="yellow_tape_collision_83" rgba="0.9540071161971019 0.17331036861989846 0.028857372436850937 1" class="collision" />
+      <geom mesh="yellow_tape_collision_84" rgba="0.5304317085581024 0.28910879720579763 0.8404951894938073 1" class="collision" />
+      <geom mesh="yellow_tape_collision_85" rgba="0.477975616366518 0.18955935663242962 0.2586303781476287 1" class="collision" />
+      <geom mesh="yellow_tape_collision_86" rgba="0.08371554977695783 0.5238321037099154 0.8236254815656634 1" class="collision" />
+      <geom mesh="yellow_tape_collision_87" rgba="0.5254970413872392 0.9482955021643846 0.02466708969183906 1" class="collision" />
+      <geom mesh="yellow_tape_collision_88" rgba="0.49415269617965674 0.6980976624403362 0.5619452562636529 1" class="collision" />
+      <geom mesh="yellow_tape_collision_89" rgba="0.935197892167073 0.36476128992612766 0.5988412960444683 1" class="collision" />
+      <geom mesh="yellow_tape_collision_90" rgba="0.06568569050587991 0.5668040342828196 0.3752419201383804 1" class="collision" />
+      <geom mesh="yellow_tape_collision_91" rgba="0.9343977319392867 0.3070676163480036 0.795804185944434 1" class="collision" />
+      <geom mesh="yellow_tape_collision_92" rgba="0.270942925123724 0.8319418813356475 0.01900437900763252 1" class="collision" />
+      <geom mesh="yellow_tape_collision_93" rgba="0.2097371936355109 0.560768154827518 0.5045227650049287 1" class="collision" />
+      <geom mesh="yellow_tape_collision_94" rgba="0.17849118993405955 0.04791887651716542 0.7032165118924056 1" class="collision" />
+      <geom mesh="yellow_tape_collision_95" rgba="0.14050391848998678 0.8448057392462187 0.8209889721824203 1" class="collision" />
+      <geom mesh="yellow_tape_collision_96" rgba="0.7191105087839881 0.04432270890992207 0.6784793764623666 1" class="collision" />
+      <geom mesh="yellow_tape_collision_97" rgba="0.5478371965861828 0.021372789079367793 0.9112115600414825 1" class="collision" />
+      <geom mesh="yellow_tape_collision_98" rgba="0.7993965796069323 0.984018608003041 0.2168732316336206 1" class="collision" />
+      <geom mesh="yellow_tape_collision_99" rgba="0.7454887008752975 0.23486527888752695 0.944052536533998 1" class="collision" />
+      <geom mesh="yellow_tape_collision_100" rgba="0.33268817501227377 0.05696032004864793 0.13914570025045725 1" class="collision" />
+      <geom mesh="yellow_tape_collision_101" rgba="0.7283751307133739 0.40328024082615 0.5100727318554764 1" class="collision" />
+      <geom mesh="yellow_tape_collision_102" rgba="0.6773562662636843 0.8646331707531947 0.07534499896339497 1" class="collision" />
+      <geom mesh="yellow_tape_collision_103" rgba="0.09728622449138413 0.3928751954839488 0.7681935493382895 1" class="collision" />
+      <geom mesh="yellow_tape_collision_104" rgba="0.6871570187681931 0.8275084812723655 0.24862077959966855 1" class="collision" />
+      <geom mesh="yellow_tape_collision_105" rgba="0.36553402720289974 0.16483953427304698 0.5118145709403872 1" class="collision" />
+      <geom mesh="yellow_tape_collision_106" rgba="0.9188942526258645 0.7398716896888533 0.452500059549943 1" class="collision" />
+      <geom mesh="yellow_tape_collision_107" rgba="0.9937221482910247 0.6652584931029899 0.9687810202443841 1" class="collision" />
+      <geom mesh="yellow_tape_collision_108" rgba="0.21642187517259925 0.5629831178491999 0.6973500997673819 1" class="collision" />
+      <geom mesh="yellow_tape_collision_109" rgba="0.4275632054450935 0.8092482153244724 0.2561246603707259 1" class="collision" />
+      <geom mesh="yellow_tape_collision_110" rgba="0.06856424868302569 0.36126675334007774 0.4604286895230866 1" class="collision" />
+      <geom mesh="yellow_tape_collision_111" rgba="0.17637158645599582 0.6899293289464438 0.32969481203840223 1" class="collision" />
+      <geom mesh="yellow_tape_collision_112" rgba="0.4078808910292361 0.15260394094105667 0.3064208916396933 1" class="collision" />
+      <geom mesh="yellow_tape_collision_113" rgba="0.996032847644785 0.9830880070453263 0.3471101598062206 1" class="collision" />
+      <geom mesh="yellow_tape_collision_114" rgba="0.054312559730474996 0.13545475395505702 0.3899578170423472 1" class="collision" />
+      <geom mesh="yellow_tape_collision_115" rgba="0.9933269761026374 0.3892697750251166 0.37232668503276867 1" class="collision" />
+      <geom mesh="yellow_tape_collision_116" rgba="0.6798658633136304 0.7195342952144922 0.7153831513545954 1" class="collision" />
+      <geom mesh="yellow_tape_collision_117" rgba="0.110428151153671 0.31535420368329203 0.9270084126980456 1" class="collision" />
+      <geom mesh="yellow_tape_collision_118" rgba="0.3597160956793932 0.3666605785928918 0.6476224927987531 1" class="collision" />
+      <geom mesh="yellow_tape_collision_119" rgba="0.8914814142898618 0.06860775411282982 0.832400996153365 1" class="collision" />
+      <geom mesh="yellow_tape_collision_120" rgba="0.26932266598567733 0.08766375606675558 0.8578074261719548 1" class="collision" />
+      <geom mesh="yellow_tape_collision_121" rgba="0.19816738312654025 0.382278605736885 0.610524668639873 1" class="collision" />
+      <geom mesh="yellow_tape_collision_122" rgba="0.1499075709648876 0.3369989204304128 0.09702361329792686 1" class="collision" />
+      <geom mesh="yellow_tape_collision_123" rgba="0.9064563376071076 0.21934462737574256 0.5280509853039769 1" class="collision" />
+      <geom mesh="yellow_tape_collision_124" rgba="0.6450661877461373 0.8102983213563155 0.8493499083198145 1" class="collision" />
+      <geom mesh="yellow_tape_collision_125" rgba="0.7439547577126718 0.27938022746485136 0.30519544679958166 1" class="collision" />
+      <geom mesh="yellow_tape_collision_126" rgba="0.15137589890110315 0.38204356877221823 0.039047852923225324 1" class="collision" />
+      </body>
+      <site name="bottom_site" pos="-0.00015647895634174347 -3.774091601371765e-05 -0.012816530652344227" size="0.002" rgba="0 0 0 0" />
+      <site rgba="0 0 0 0" size="0.005" pos="0 0 0.0254" name="top_site" />
+      <site rgba="0 0 0 0" size="0.005" pos="0.095 0.095 0" name="horizontal_radius_site" />
+    </body>
+  </worldbody>
+</mujoco>

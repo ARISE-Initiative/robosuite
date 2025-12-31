@@ -1,0 +1,46 @@
+<mujoco model="yam_station">
+  <compiler angle="radian" meshdir="../robots/yam/assets/"/>
+
+  <asset>
+    <texture type="skybox" colorspace="auto" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" colorspace="auto" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <material name="black" rgba="0.25 0.25 0.25 1"/>
+    <material name="white" rgba="0.9 0.9 0.9 1"/>
+    <mesh name="base_visual_gate" file="base_visual_gate.stl"/>
+    <mesh name="camera_d405" file="d405.stl"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+    <light pos="0 0 1.5" dir="0 0 -1" type="directional"/>
+    <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="base_visual_gate"/>
+    <geom size="0.2975 0.65 0.375" pos="0 0 0.375" type="box" group="3" rgba="1 0 0 0.1"/>
+    <body name="gate_collision" pos="0 0 0.75">
+      <geom size="0.015 0.015 0.45" pos="0 0.575 0.45" type="box" group="3" rgba="1 0 0 0.1"/>
+      <geom size="0.015 0.015 0.45" pos="0 -0.575 0.45" type="box" group="3" rgba="1 0 0 0.1"/>
+      <geom size="0.015 0.015 0.59" pos="0 0 0.915" quat="0.707107 0.707107 0 0" type="box" group="3" rgba="1 0 0 0.1"/>
+      <body name="top_bar_center" pos="0 0 0.915">
+        <body name="top_camera_d405" pos="0.08600512 -0.009 0.03932053" quat="0.183012 0.683013 0.683013 0.183012">
+          <geom class="camera_visual" mass="0" rgba="0.792157 0.819608 0.933333 1" mesh="camera_d405"/>
+          <geom class="camera_collision" mesh="camera_d405"/>
+          <body name="top_camera_frame" pos="0.009 0 0" quat="0 0 0 1">
+              <camera name="top_camera_d405" pos="0 0 0" quat="0 1 0 0" resolution="1280 720" sensorsize="0.003896 0.00214" focal="0.00193 0.00193"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="play_table">
+      <geom size="0.2975 0.65 0.005" pos="0.6 0 0.745" type="box" group="2" rgba="1 1 1 1"/>
+    </body>
+  </worldbody>
+
+  <default>
+    <default class="camera_visual">
+      <geom type="mesh" contype="0" conaffinity="0" group="2"/>
+    </default>
+    <default class="camera_collision">
+      <geom type="mesh" condim="6" group="3" friction="1 0.005 0.0005" solref="0.01"/>
+    </default>
+  </default>
+</mujoco>
