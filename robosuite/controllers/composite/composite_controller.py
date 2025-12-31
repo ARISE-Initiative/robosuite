@@ -510,6 +510,55 @@ class WholeBody(CompositeController):
         info_dict_str = f"\nAction Info for {name}:\n\n{json.dumps(dict(info_dict), indent=4)}"
         ROBOSUITE_DEFAULT_LOGGER.info(info_dict_str)
 
+    def get_solved_action_vector(self, all_action: np.ndarray) -> np.ndarray:
+        """
+        Convert WholeBody action (with EEF targets) to a joint-level action vector.
+
+        This transforms the IK-based action into the equivalent joint position targets
+        that would work with a non-IK composite controller (e.g., CompositeController).
+
+        Args:
+            all_action: The raw WholeBody action containing EEF targets for
+                        IK-controlled parts, followed by actions for other parts.
+
+        Returns:
+            np.ndarray: Action vector with joint positions for IK-controlled parts,
+                        compatible with the underlying part controllers.
+        """
+        if self.composite_controller_specific_config.get("skip_wbc_action", False):
+            return all_action
+
+        # Run IK solver to get joint positions for IK-controlled parts
+        target_qpos = self.joint_action_policy.solve(all_action[: self.joint_action_policy.control_dim])
+
+        # Concatenate solved joint positions with remaining actions (grippers, etc.)
+        solved_action = np.concatenate([target_qpos, all_action[self.joint_action_policy.control_dim :]])
+        return solved_action
+
+    def get_solved_action_dict(self, all_action: np.ndarray) -> Dict[str, np.ndarray]:
+        """
+        Convert WholeBody action (with EEF targets) to a dict of joint-level actions
+        for each body part.
+
+        This can be used with a non-IK composite controller where actions are
+        directly joint positions.
+
+        Args:
+            all_action: The raw WholeBody action containing EEF targets.
+
+        Returns:
+            Dict[str, np.ndarray]: Dictionary mapping part names to their
+                                   joint-level action vectors.
+        """
+        solved_action = self.get_solved_action_vector(all_action)
+
+        # Use the underlying _action_split_indexes (not _whole_body_controller_action_split_indexes)
+        # to get the dict compatible with non-IK controllers
+        action_dict = {}
+        for part_name, (start_idx, end_idx) in self._action_split_indexes.items():
+            action_dict[part_name] = solved_action[start_idx:end_idx]
+        return action_dict
+
 
 @register_composite_controller
 class WholeBodyIK(WholeBody):
