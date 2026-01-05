@@ -182,3 +182,6 @@
     <general name="gripper" class="finger" joint="left_finger"/>
   </actuator>
 </mujoco>
+
+
+

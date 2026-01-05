@@ -53,3 +53,6 @@ class Yam(ManipulatorModel):
     def arm_type(self):
         return "single"
 
+
+
+

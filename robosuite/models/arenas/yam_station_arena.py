@@ -10,3 +10,6 @@ class YamStationArena(Arena):
     def __init__(self):
         super().__init__(xml_path_completion("arenas/yam_station.xml"))
 
+
+
+
