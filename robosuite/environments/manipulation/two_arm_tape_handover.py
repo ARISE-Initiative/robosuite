@@ -168,7 +168,7 @@ class TwoArmTapeHandover(TwoArmEnv):
         horizon=1000,
         ignore_done=False,
         hard_reset=True,
-        camera_names="agentview",
+        camera_names=["agentview", "all-eye_in_hand"],  # Use "all-camera_d405" if using Yam robots
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
