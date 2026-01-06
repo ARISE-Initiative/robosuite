@@ -148,7 +148,7 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         controller_configs=None,
         gripper_types="default",
         initialization_noise="default",
-        tables_boundary=(0.8, 1.2, 0.05),
+        tables_boundary=(0.8, 1.4, 0.05),
         table_friction=(1.0, 5e-3, 1e-4),
         cube_size=0.025,
         use_camera_obs=True,
@@ -178,12 +178,9 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         # settings for table top
         self.tables_boundary = tables_boundary
         self.table_full_size = np.array(tables_boundary)
-        self.table_full_size[1] *= 0.25  # each table size will only be a fraction of the full boundary
         self.table_friction = table_friction
-        self.table_offsets = np.zeros((2, 3))
-        self.table_offsets[0, 1] = self.tables_boundary[1] * -3 / 8  # scale y offset (left table)
-        self.table_offsets[1, 1] = self.tables_boundary[1] * 3 / 8  # scale y offset (right table)
-        self.table_offsets[:, 2] = 0.8  # scale z offset
+        self.table_offsets = np.zeros((1, 3))
+        self.table_offsets[0, 2] = 0.8  # scale z offset
         self.cube_size = cube_size
 
         # reward configuration
@@ -326,10 +323,17 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         mujoco_arena.set_origin([0, 0, 0])
 
         # Modify default agentview camera
+        # old cam view that is too zoomed in
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[0.8894354364730311, -3.481824231498976e-08, 1.7383813133506494],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
+        # )
+
         mujoco_arena.set_camera(
             camera_name="agentview",
-            pos=[0.8894354364730311, -3.481824231498976e-08, 1.7383813133506494],
-            quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
+            pos=[1.5, 0.0, 2.5],
+            quat=[0.653, 0.271, 0.271, 0.653],
         )
 
         # # TODO: these cams seem sus
@@ -411,13 +415,17 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         # Create placement initializer
         self.placement_initializer = SequentialCompositeSampler(name="ObjectSampler")
 
-        # Cube on left table (table 0)
+        # Calculate centers for left and right areas based on table boundary
+        y_left_center = -self.tables_boundary[1] * 3 / 8
+        y_right_center = self.tables_boundary[1] * 3 / 8
+
+        # Cube on left side (Negative Y)
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
                 name="CubeSampler",
                 mujoco_objects=self.cube,
                 x_range=[0.0, 0.15],
-                y_range=[-0.15, 0.0],
+                y_range=[y_left_center - 0.15, y_left_center],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
@@ -428,18 +436,18 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
             )
         )
 
-        # Bowl on right table (table 1)
+        # Bowl on right side (Positive Y)
         self.placement_initializer.append_sampler(
             sampler=UniformRandomSampler(
                 name="BowlSampler",
                 mujoco_objects=self.bowl,
                 x_range=[-0.15, 0.0],
-                y_range=[0.0, 0.15],
+                y_range=[y_right_center, y_right_center + 0.15],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                reference_pos=self.table_offsets[1],
+                reference_pos=self.table_offsets[0],
                 z_offset=0.01,
                 rng=self.rng,
             )
