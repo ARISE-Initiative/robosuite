@@ -325,51 +325,18 @@ class TwoArmTapeHandover(TwoArmEnv):
         mujoco_arena.set_origin([0, 0, 0])
 
         # Modify default agentview camera
+        # mujoco_arena.set_camera(
+        #     camera_name="agentview",
+        #     pos=[1.2434677502317038, 4.965421871106301e-08, 2.091455182752329],
+        #     quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
+        # )
+
         mujoco_arena.set_camera(
             camera_name="agentview",
-            pos=[1.2434677502317038, 4.965421871106301e-08, 2.091455182752329],
-            quat=[0.6530981063842773, 0.2710406184196472, 0.27104079723358154, 0.6530979871749878],
+            pos=[-1.2434677502317038, 4.965421871106301e-08, 2.091455182752329],
+            quat=[0.65309799, 0.2710408, -0.27104062, -0.65309811],
         )
 
-        # # TODO: these cams seem sus
-        # # Add shoulder cameras
-        # mujoco_arena.set_camera(
-        #     camera_name="shouldercamera0",
-        #     pos=[0.4430096057365183, -1.0697399743660143, 1.3639950119362048],
-        #     quat=[0.804057240486145, 0.5531665086746216, 0.11286306381225586, 0.18644218146800995],
-        # )
-        # mujoco_arena.set_camera(
-        #     camera_name="shouldercamera1",
-        #     pos=[-0.40900713993039983, 0.9613722572245062, 1.3084072951772754],
-        #     quat=[0.15484197437763214, 0.12077208608388901, -0.5476858019828796, -0.8133130073547363],
-        # )
-
-        # Add relevant materials
-        # Material for yellow tape
-        tex_attrib = {
-            "type": "cube",
-        }
-        mat_attrib = {
-            "texrepeat": "3 3",
-            "specular": "0.4",
-            "shininess": "0.1",
-        }
-        yellow_tape_mat = CustomMaterial(
-            texture="WoodRed",
-            tex_name="yellow_tape",
-            mat_name="yellow_tape_mat",
-            tex_attrib=tex_attrib,
-            mat_attrib=mat_attrib,
-        )
-
-        # Material for duct tape
-        duct_tape_mat = CustomMaterial(
-            texture="Metal",
-            tex_name="duct_tape",
-            mat_name="duct_tape_mat",
-            tex_attrib=tex_attrib,
-            mat_attrib={**mat_attrib, "rgba": "0.5 0.5 0.5 1"},
-        )
 
         import os
         yellow_tape_xml_path = os.path.join(os.path.dirname(__file__), "../../assets/yellow_tape/yellow_tape.xml")
@@ -428,8 +395,8 @@ class TwoArmTapeHandover(TwoArmEnv):
             sampler=UniformRandomSampler(
                 name="YellowTapeSampler",
                 mujoco_objects=self.yellow_tape,
-                x_range=[0.0, 0.15],
-                y_range=[y_left_center - 0.15, y_left_center],
+                x_range=[-0.15, 0.0],
+                y_range=[y_right_center, y_right_center + 0.15],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
@@ -445,8 +412,8 @@ class TwoArmTapeHandover(TwoArmEnv):
             sampler=UniformRandomSampler(
                 name="DuctTapeSampler",
                 mujoco_objects=self.duct_tape,
-                x_range=[-0.15, 0.0],
-                y_range=[y_right_center, y_right_center + 0.15],
+                x_range=[0.0, 0.15],
+                y_range=[y_left_center - 0.15, y_left_center],
                 rotation=0,
                 rotation_axis="z",
                 ensure_object_boundary_in_range=False,
