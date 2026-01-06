@@ -275,7 +275,7 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         else:
             # Provide reward if cube is in bowl (within bowl radius and at appropriate height)
             dist_xy = np.linalg.norm(cube_pos[:2] - bowl_pos[:2])
-            if dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.05:
+            if dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.07:
                 reward = 1.0
 
         if self.reward_scale is not None:
@@ -570,5 +570,5 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
 
         # Check if cube is within bowl radius and at appropriate height
         dist_xy = np.linalg.norm(cube_pos[:2] - bowl_pos[:2])
-        return dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.05
+        return dist_xy < 0.08 and abs(cube_pos[2] - bowl_pos[2]) < 0.07
 
