@@ -169,7 +169,7 @@ class TwoArmCubeBowlHandover(TwoArmEnv):
         camera_names="agentview",
         camera_heights=256,
         camera_widths=256,
-        camera_depths=False,
+        camera_depths=True,
         camera_segmentations=None,
         renderer="mjviewer",
         renderer_config=None,
