@@ -125,6 +125,8 @@ class MjRenderContext:
             self._set_mujoco_context_and_buffers()
 
     def render(self, width, height, camera_id=None, segmentation=False):
+        self.gl_ctx.make_current()
+
         viewport = mujoco.MjrRect(0, 0, width, height)
 
         # if self.sim.render_callback is not None:
