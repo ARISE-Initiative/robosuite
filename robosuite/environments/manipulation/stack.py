@@ -176,7 +176,11 @@ class Stack(ManipulationEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        cube_A_length=0.02,
+        cube_B_length=0.025,
     ):
+        self.cube_A_length = cube_A_length
+        self.cube_B_length = cube_B_length
         # settings for table top
         self.table_full_size = table_full_size
         self.table_friction = table_friction
@@ -356,15 +360,15 @@ class Stack(ManipulationEnv):
         )
         self.cubeA = BoxObject(
             name="cubeA",
-            size_min=[0.02, 0.02, 0.02],
-            size_max=[0.02, 0.02, 0.02],
+            size_min=[self.cube_A_length, self.cube_A_length, self.cube_A_length],
+            size_max=[self.cube_A_length, self.cube_A_length, self.cube_A_length],
             rgba=[1, 0, 0, 1],
             material=redwood,
         )
         self.cubeB = BoxObject(
             name="cubeB",
-            size_min=[0.025, 0.025, 0.025],
-            size_max=[0.025, 0.025, 0.025],
+            size_min=[self.cube_B_length, self.cube_B_length, self.cube_B_length],
+            size_max=[self.cube_B_length, self.cube_B_length, self.cube_B_length],
             rgba=[0, 1, 0, 1],
             material=greenwood,
         )
