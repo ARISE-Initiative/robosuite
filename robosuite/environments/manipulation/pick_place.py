@@ -211,6 +211,7 @@ class PickPlace(ManipulationEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -267,6 +268,7 @@ class PickPlace(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -446,6 +448,7 @@ class PickPlace(ManipulationEnv):
                 ensure_valid_placement=True,
                 reference_pos=self.bin1_pos,
                 z_offset=self.z_offset,
+                rng=self.rng,
             )
         )
 
@@ -484,6 +487,7 @@ class PickPlace(ManipulationEnv):
                     ensure_valid_placement=False,
                     reference_pos=self.bin1_pos,
                     z_offset=self.bin2_pos[2] - self.bin1_pos[2],
+                    rng=self.rng,
                 )
             )
             index += 1
@@ -711,7 +715,7 @@ class PickPlace(ManipulationEnv):
         # Move objects out of the scene depending on the mode
         obj_names = {obj.name for obj in self.objects}
         if self.single_object_mode == 1:
-            self.obj_to_use = random.choice(list(obj_names))
+            self.obj_to_use = self.rng.choice(list(obj_names))
             for obj_type, i in self.object_to_id.items():
                 if obj_type.lower() in self.obj_to_use.lower():
                     self.object_id = i

@@ -200,6 +200,7 @@ class Wipe(ManipulationEnv):
         task_config=None,
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # Assert that the gripper type is None
         assert (
@@ -234,8 +235,8 @@ class Wipe(ManipulationEnv):
         self.table_full_size = self.task_config["table_full_size"]
         self.table_height = self.task_config["table_height"]
         self.table_height_std = self.task_config["table_height_std"]
-        delta_height = min(0, np.random.normal(self.table_height, self.table_height_std))  # sample variation in height
-        self.table_offset = np.array(self.task_config["table_offset"]) + np.array((0, 0, delta_height))
+        self.delta_height = None  # sample variation in height done in load_model
+        self.table_offset = np.array(self.task_config["table_offset"])
         self.table_friction = self.task_config["table_friction"]
         self.table_friction_std = self.task_config["table_friction_std"]
         self.line_width = self.task_config["line_width"]
@@ -297,6 +298,7 @@ class Wipe(ManipulationEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
         # set after init to ensure self.robots is set
@@ -532,7 +534,9 @@ class Wipe(ManipulationEnv):
 
         # Get robot's contact geoms
         self.robot_contact_geoms = self.robots[0].robot_model.contact_geoms
-
+        if self.delta_height is None:
+            self.delta_height = self.rng.normal(self.table_height, self.table_height_std)
+        self.table_offset[2] += self.delta_height
         mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
@@ -542,6 +546,7 @@ class Wipe(ManipulationEnv):
             num_markers=self.num_markers,
             line_width=self.line_width,
             two_clusters=self.two_clusters,
+            rng=self.rng,
         )
 
         # Arena always gets set to zero origin

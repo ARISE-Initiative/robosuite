@@ -242,18 +242,19 @@ class OperationalSpaceController(Controller):
 
         # Parse action based on the impedance mode, and update kp / kd as necessary
         if self.impedance_mode == "variable":
-            damping_ratio, kp, delta = action[:6], action[6:12], action[12:]
+            damping_ratio, kp, goal_update = action[:6], action[6:12], action[12:]
             self.kp = np.clip(kp, self.kp_min, self.kp_max)
             self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
         elif self.impedance_mode == "variable_kp":
-            kp, delta = action[:6], action[6:]
+            kp, goal_update = action[:6], action[6:]
             self.kp = np.clip(kp, self.kp_min, self.kp_max)
             self.kd = 2 * np.sqrt(self.kp)  # critically damped
         else:  # This is case "fixed"
-            delta = action
+            goal_update = action
 
         # If we're using deltas, interpret actions as such
         if self.input_type == "delta":
+            delta = goal_update
             scaled_delta = self.scale_action(delta)
             self.goal_pos = self.compute_goal_pos(scaled_delta[0:3])
             if self.use_ori is True:
@@ -262,9 +263,10 @@ class OperationalSpaceController(Controller):
                 self.goal_ori = self.compute_goal_ori(np.zeros(3))
         # Else, interpret actions as absolute values
         elif self.input_type == "absolute":
-            self.goal_pos = action[0:3]
+            abs_action = goal_update
+            self.goal_pos = abs_action[0:3]
             if self.use_ori is True:
-                self.goal_ori = Rotation.from_rotvec(action[3:6]).as_matrix()
+                self.goal_ori = Rotation.from_rotvec(abs_action[3:6]).as_matrix()
             else:
                 self.goal_ori = self.compute_goal_ori(np.zeros(3))
         else:

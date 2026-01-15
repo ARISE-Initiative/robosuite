@@ -53,8 +53,8 @@
                 <geom pos="0 0 0" size="0.35 0.25 0.19" type="box" name="pedestal_feet_col" density="10"/>
             </body>
 
-            <joint name="joint_mobile_forward" pos="-0.21 0 0" axis="0 1 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
-			<joint name="joint_mobile_side" pos="-0.21 0 0" axis="1 0 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
+            <joint name="joint_mobile_forward" pos="-0.21 0 0" axis="1 0 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
+			<joint name="joint_mobile_side" pos="-0.21 0 0" axis="0 1 0" type="slide" limited="false" damping="0" armature="0.0" frictionloss="250"/>
 			<joint name="joint_mobile_yaw" pos="-0.21 0 0" axis="0 0 1" type="hinge" limited="false" damping="0" armature="0.0" frictionloss="250"/>
         </body>
     </worldbody>

@@ -13,7 +13,9 @@ from robosuite.utils.mjcf_utils import (
     add_prefix,
     array_to_string,
     find_elements,
+    get_elements,
     new_joint,
+    scale_mjcf_model,
     sort_elements,
     string_to_array,
 )
@@ -51,13 +53,13 @@ class MujocoObject(MujocoModel):
 
     """
 
-    def __init__(self, obj_type="all", duplicate_collision_geoms=True):
+    def __init__(self, obj_type="all", duplicate_collision_geoms=True, scale=None):
         super().__init__()
         self.asset = ET.Element("asset")
         assert obj_type in GEOM_GROUPS, "object type must be one in {}, got: {} instead.".format(GEOM_GROUPS, obj_type)
         self.obj_type = obj_type
         self.duplicate_collision_geoms = duplicate_collision_geoms
-
+        self._scale = scale
         # Attributes that should be filled in within the subclass
         self._name = None
         self._obj = None
@@ -70,6 +72,33 @@ class MujocoObject(MujocoModel):
         self._sites = None
         self._contact_geoms = None
         self._visual_geoms = None
+
+        if self._scale is not None:
+            self.set_scale(self._scale)
+
+    def set_scale(self, scale, obj=None):
+        """
+        Scales each geom, mesh, site, and body.
+        Called during initialization but can also be used externally
+
+        Args:
+            scale (float or list of floats): Scale factor (1 or 3 dims)
+            obj (ET.Element) Root object to apply. Defaults to root object of model
+        """
+        if obj is None:
+            obj = self._obj
+
+        self._scale = scale
+
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            worldbody=None,  # because we don't have a worldbody in MujocoObject
+            scale=scale,
+            get_elements_func=get_elements,
+            scale_slide_joints=False,  # MujocoObject doesn't handle slide joints
+        )
 
     def merge_assets(self, other):
         """
@@ -371,7 +400,7 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         # Rename this top level object body (will have self.naming_prefix added later)
         obj.attrib["name"] = "main"
         # Get all geom_pairs in this tree
-        geom_pairs = self._get_geoms(obj)
+        geom_pairs = get_elements(obj, "geom")
 
         # Define a temp function so we don't duplicate so much code
         obj_type = self.obj_type
@@ -441,46 +470,6 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
         vis_element.set("name", vis_element.get("name") + "_visual")
         return vis_element
 
-    def _get_geoms(self, root, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a geom element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is a geom type
-        """
-        return self._get_elements(root, "geom", _parent)
-
-    def _get_elements(self, root, type, _parent=None):
-        """
-        Helper function to recursively search through element tree starting at @root and returns
-        a list of (parent, child) tuples where the child is a specific type of element
-
-        Args:
-            root (ET.Element): Root of xml element tree to start recursively searching through
-            _parent (ET.Element): Parent of the root element tree. Should not be used externally; only set
-                during the recursive call
-
-        Returns:
-            list: array of (parent, child) tuples where the child element is of type
-        """
-        # Initialize return array
-        elem_pairs = []
-        # If the parent exists and this is a desired element, we add this current (parent, element) combo to the output
-        if _parent is not None and root.tag == type:
-            elem_pairs.append((_parent, root))
-        # Loop through all children elements recursively and add to pairs
-        for child in root:
-            elem_pairs += self._get_elements(child, type, _parent=root)
-
-        # Return all found pairs
-        return elem_pairs
-
     def set_pos(self, pos):
         """
         Set position of object position is defined as center of bounding box
@@ -518,91 +507,15 @@ class MujocoXMLObject(MujocoObject, MujocoXML):
 
         self._scale = scale
 
-        # scale geoms
-        geom_pairs = self._get_geoms(obj)
-        for _, (_, element) in enumerate(geom_pairs):
-            g_pos = element.get("pos")
-            g_size = element.get("size")
-            if g_pos is not None:
-                g_pos = array_to_string(string_to_array(g_pos) * self._scale)
-                element.set("pos", g_pos)
-            if g_size is not None:
-                g_size_np = string_to_array(g_size)
-                # handle cases where size is not 3 dimensional
-                if len(g_size_np) == 3:
-                    g_size_np = g_size_np * self._scale
-                elif len(g_size_np) == 2:
-                    scale = np.array(self._scale).reshape(-1)
-                    if len(scale) == 1:
-                        g_size_np[1] *= scale
-                    elif len(scale) == 3:
-                        # g_size_np[0] *= np.mean(scale[:2])
-                        g_size_np[0] *= np.mean(scale[:2])  # width
-                        g_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                else:
-                    raise ValueError
-                g_size = array_to_string(g_size_np)
-                element.set("size", g_size)
-
-        # scale meshes
-        meshes = self.asset.findall("mesh")
-        for elem in meshes:
-            m_scale = elem.get("scale")
-            if m_scale is not None:
-                m_scale = string_to_array(m_scale)
-            else:
-                m_scale = np.ones(3)
-
-            m_scale *= self._scale
-            elem.set("scale", array_to_string(m_scale))
-
-        # scale bodies
-        body_pairs = self._get_elements(obj, "body")
-        for (_, elem) in body_pairs:
-            b_pos = elem.get("pos")
-            if b_pos is not None:
-                b_pos = string_to_array(b_pos) * self._scale
-                elem.set("pos", array_to_string(b_pos))
-
-        # scale joints
-        joint_pairs = self._get_elements(obj, "joint")
-        for (_, elem) in joint_pairs:
-            j_pos = elem.get("pos")
-            if j_pos is not None:
-                j_pos = string_to_array(j_pos) * self._scale
-                elem.set("pos", array_to_string(j_pos))
-
-        # scale sites
-        site_pairs = self._get_elements(self.worldbody, "site")
-        for (_, elem) in site_pairs:
-            s_pos = elem.get("pos")
-            if s_pos is not None:
-                s_pos = string_to_array(s_pos) * self._scale
-                elem.set("pos", array_to_string(s_pos))
-
-            s_size = elem.get("size")
-            if s_size is not None:
-                s_size_np = string_to_array(s_size)
-                # handle cases where size is not 3 dimensional
-                if len(s_size_np) == 3:
-                    s_size_np = s_size_np * self._scale
-                elif len(s_size_np) == 2:
-                    scale = np.array(self._scale).reshape(-1)
-                    if len(scale) == 1:
-                        s_size_np *= scale
-                    elif len(scale) == 3:
-                        s_size_np[0] *= np.mean(scale[:2])  # width
-                        s_size_np[1] *= scale[2]  # height
-                    else:
-                        raise ValueError
-                elif len(s_size_np) == 1:
-                    s_size_np *= np.mean(self._scale)
-                else:
-                    raise ValueError
-                s_size = array_to_string(s_size_np)
-                elem.set("size", s_size)
+        # Use the centralized scaling utility function
+        scale_mjcf_model(
+            obj=obj,
+            asset_root=self.asset,
+            worldbody=self.worldbody,
+            scale=scale,
+            get_elements_func=get_elements,
+            scale_slide_joints=False,  # MujocoXMLObject doesn't handle slide joints
+        )
 
     @property
     def bottom_offset(self):

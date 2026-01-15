@@ -2,7 +2,7 @@ import copy
 import json
 import os
 from collections import OrderedDict
-from typing import Optional
+from typing import Dict, Optional
 
 import numpy as np
 
@@ -231,7 +231,7 @@ class Robot(object):
         """
         self.sim = sim
 
-    def reset(self, deterministic=False):
+    def reset(self, deterministic=False, rng=None):
         """
         Sets initial pose of arm and grippers. Overrides robot joint configuration if we're using a
         deterministic reset (e.g.: hard reset from xml file)
@@ -242,13 +242,15 @@ class Robot(object):
         Raises:
             ValueError: [Invalid noise type]
         """
+        if rng is None:
+            rng = np.random.default_rng()
         init_qpos = np.array(self.init_qpos)
         if not deterministic:
             # Determine noise
             if self.initialization_noise["type"] == "gaussian":
-                noise = np.random.randn(len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = rng.standard_normal(len(self.init_qpos)) * self.initialization_noise["magnitude"]
             elif self.initialization_noise["type"] == "uniform":
-                noise = np.random.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
+                noise = rng.uniform(-1.0, 1.0, len(self.init_qpos)) * self.initialization_noise["magnitude"]
             else:
                 raise ValueError("Error: Invalid noise type specified. Options are 'gaussian' or 'uniform'.")
             init_qpos += noise
@@ -326,6 +328,8 @@ class Robot(object):
         self._ref_torso_joint_pos_indexes = [
             self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model._torso_joints
         ]
+        # indices for all joints (includes arms, base, torso, but not gripper joints, as those are handled separately)
+        self._ref_all_joint_pos_indexes = [self.sim.model.get_joint_qpos_addr(x) for x in self.robot_model.all_joints]
 
     def setup_observables(self):
         """
@@ -356,10 +360,14 @@ class Robot(object):
         def joint_vel(obs_cache):
             return np.array([self.sim.data.qvel[x] for x in self._ref_joint_vel_indexes])
 
-        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel]
-        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel"]
+        @sensor(modality=modality)
+        def joint_acc(obs_cache):
+            return np.array([self.sim.data.qacc[x] for x in self._ref_joint_vel_indexes])
+
+        sensors = [joint_pos, joint_pos_cos, joint_pos_sin, joint_vel, joint_acc]
+        names = ["joint_pos", "joint_pos_cos", "joint_pos_sin", "joint_vel", "joint_acc"]
         # We don't want to include the direct joint pos sensor outputs
-        actives = [True, True, True, True]
+        actives = [True, True, True, True, True]
 
         for arm in self.arms:
             arm_sensors, arm_sensor_names = self._create_arm_sensors(arm, modality=modality)
@@ -631,6 +639,58 @@ class Robot(object):
             self.sim.forward()
         else:
             raise ValueError(f"No gripper found for arm {gripper_arm}")
+
+    def set_all_robot_joint_positions(self, joint_positions: Dict[str, float]):
+        """
+        Helper method to force robot joint positions to the passed values.
+        Assumes valid joint names are passed.
+
+        Args:
+            joint_positions (dict): joint name -> joint position (in angles / radians)
+        """
+        for joint_name, position in joint_positions.items():
+            self.sim.data.qpos[self.sim.model.joint_name2id(joint_name)] = position
+        self.sim.forward()
+
+    def get_robot_joint_positions(self):
+        """
+        Returns:
+            np.array: joint positions (in angles / radians)
+        """
+        return self.sim.data.qpos[self._ref_joint_pos_indexes]
+
+    def get_all_robot_joint_positions(self) -> Dict[str, float]:
+        """
+        Returns all joint positions including robot joints (arms, base, torso) and gripper joints.
+
+        Returns:
+            dict: joint name -> joint position (in angles / radians)
+        """
+        joint_positions = {}
+
+        # Get all robot joint positions (includes arms, base, torso, etc.)
+        all_joint_names = self.robot_model.all_joints
+        for i, joint_name in enumerate(all_joint_names):
+            joint_positions[joint_name] = self.sim.data.qpos[self._ref_all_joint_pos_indexes[i]]
+
+        # Add gripper joint positions for all arms
+        for arm in self.arms:
+            if self.has_gripper[arm]:
+                gripper_joint_names = self.gripper_joints[arm]
+                gripper_positions = self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[arm]]
+                for joint_name, position in zip(gripper_joint_names, gripper_positions):
+                    joint_positions[joint_name] = position
+
+        return joint_positions
+
+    def get_gripper_joint_positions(self, gripper_arm: Optional[str] = None):
+        """
+        Returns:
+            np.array: gripper joint positions (in angles / radians)
+        """
+        if gripper_arm is None:
+            gripper_arm = self.arms[0]
+        return self.sim.data.qpos[self._ref_gripper_joint_pos_indexes[gripper_arm]]
 
     @property
     def js_energy(self):
@@ -908,7 +968,7 @@ class Robot(object):
                 self.part_controller_config[gripper_name]["ndim"] = self.gripper[arm].dof
                 self.part_controller_config[gripper_name]["policy_freq"] = self.control_freq
                 self.part_controller_config[gripper_name]["joint_indexes"] = {
-                    "joints": self.gripper_joints[arm],
+                    "joints": self._ref_joints_indexes_dict[gripper_name],
                     "actuators": self._ref_joint_gripper_actuator_indexes[arm],
                     "qpos": self._ref_gripper_joint_pos_indexes[arm],
                     "qvel": self._ref_gripper_joint_vel_indexes[arm],

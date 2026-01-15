@@ -25,9 +25,9 @@ class RobotEnv(MujocoEnv):
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
-        mount_types (None or str or list of str): type of mount, used to instantiate mount models from mount factory.
+        mount_types (str or list of str): type of mount, used to instantiate mount models from mount factory.
             Default is "default", which is the default mount associated with the robot(s) the 'robots' specification.
-            None results in no mount, and any other (valid) model overrides the default mount. Should either be
+            "NullMount" results in no mount, and any other (valid) model overrides the default mount. Should either be
             single str if same mount type is to be used for all robots or else it should be a list of the same
             length as "robots" param
 
@@ -528,7 +528,7 @@ class RobotEnv(MujocoEnv):
 
         # Reset robot and update action space dimension along the way
         for robot in self.robots:
-            robot.reset(deterministic=self.deterministic_reset)
+            robot.reset(deterministic=self.deterministic_reset, rng=self.rng)
             self._action_dim += robot.action_dim
 
         # Update cameras if appropriate
