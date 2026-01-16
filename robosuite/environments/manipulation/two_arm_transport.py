@@ -173,6 +173,7 @@ class TwoArmTransport(TwoArmEnv):
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mjviewer",
         renderer_config=None,
+        seed=None,
     ):
         # settings for table top
         self.tables_boundary = tables_boundary
@@ -219,6 +220,7 @@ class TwoArmTransport(TwoArmEnv):
             camera_segmentations=camera_segmentations,
             renderer=renderer,
             renderer_config=renderer_config,
+            seed=seed,
         )
 
     def reward(self, action=None):
@@ -348,8 +350,9 @@ class TwoArmTransport(TwoArmEnv):
             handle_density=150.0,
             handle_friction=4.0,
             head_density_ratio=1.5,
+            rng=self.rng,
         )
-        trash = BoxObject(name="trash", size=[0.02, 0.02, 0.02], material=redwood)
+        trash = BoxObject(name="trash", size=[0.02, 0.02, 0.02], material=redwood, rng=self.rng)
         self.transport = TransportGroup(
             name="transport",
             payload=payload,
@@ -408,6 +411,7 @@ class TwoArmTransport(TwoArmEnv):
                     ensure_valid_placement=False,
                     reference_pos=table_pos,
                     z_offset=0.001,
+                    rng=self.rng,
                 )
             )
 

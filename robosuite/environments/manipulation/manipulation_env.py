@@ -25,9 +25,9 @@ class ManipulationEnv(RobotEnv):
             dict if same controller is to be used for all robots or else it should be a list of the same length as
             "robots" param
 
-        base_types (None or str or list of str): type of base, used to instantiate base models from base factory.
+        base_types (str or list of str): type of base, used to instantiate base models from base factory.
             Default is "default", which is the default base associated with the robot(s) the 'robots' specification.
-            None results in no base, and any other (valid) model overrides the default base. Should either be
+            "NullMount" results in no base, and any other (valid) model overrides the default base. Should either be
             single str if same base type is to be used for all robots or else it should be a list of the same
             length as "robots" param
 

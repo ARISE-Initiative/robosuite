@@ -206,17 +206,16 @@ class MobileBaseJointVelocityController(MobileBaseController):
         curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
         theta = curr_theta - init_theta
 
-        base_action = np.copy([action[i] for i in [1, 0, 2]])
         # input raw base action is delta relative to current pose of base
         # controller expects deltas relative to initial pose of base at start of episode
         # transform deltas from current base pose coordinates to initial base pose coordinates
-        x, y = base_action[0:2]
+        x, y = action[0:2]
 
         # do the reverse of theta rotation
-        base_action[0] = x * np.cos(theta) + y * np.sin(theta)
-        base_action[1] = -x * np.sin(theta) + y * np.cos(theta)
+        action[0] = x * np.cos(theta) + y * np.sin(theta)
+        action[1] = -x * np.sin(theta) + y * np.cos(theta)
 
-        self.goal_qvel = base_action
+        self.goal_qvel = action
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qvel)
 

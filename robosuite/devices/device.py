@@ -33,6 +33,7 @@ class Device(metaclass=abc.ABCMeta):
         self.base_modes = [False] * len(self.all_robot_arms)
 
         self._prev_target = {arm: None for arm in self.all_robot_arms[self.active_robot]}
+        self._prev_torso_target = None
 
     @property
     def all_robot_arms(self):
@@ -80,7 +81,7 @@ class Device(metaclass=abc.ABCMeta):
     def _postprocess_device_outputs(self, dpos, drotation):
         raise NotImplementedError
 
-    def input2action(self, mirror_actions=False) -> Optional[Dict]:
+    def input2action(self, mirror_actions=False, goal_update_mode="target") -> Optional[Dict]:
         """
         Converts an input from an active device into a valid action sequence that can be fed into an env.step() call
 
@@ -89,6 +90,8 @@ class Device(metaclass=abc.ABCMeta):
         Args:
             mirror_actions (bool): actions corresponding to viewing robot from behind.
                 first axis: left/right. second axis: back/forward. third axis: down/up.
+            goal_update_mode (str): the mode to update the goal in. Can be 'target' or 'achieved'.
+            If 'target', the goal is updated based on the current target goal. If 'achieved', the goal is updated based on the current achieved state.
 
         Returns:
             Optional[Dict]: Dictionary of actions to be fed into env.step()
@@ -143,6 +146,7 @@ class Device(metaclass=abc.ABCMeta):
                 robot,
                 arm,
                 norm_delta=np.zeros(6),
+                goal_update_mode=goal_update_mode,
             )
             ac_dict[f"{arm}_abs"] = arm_action["abs"]
             ac_dict[f"{arm}_delta"] = arm_action["delta"]
@@ -153,17 +157,22 @@ class Device(metaclass=abc.ABCMeta):
             if base_mode is True:
                 arm_norm_delta = np.zeros(6)
                 base_ac = np.array([dpos[0], dpos[1], drotation[2]])
-                torso_ac = np.array([dpos[2]])
+                device_torso_input = dpos[2]  # Use vertical movement for torso in base mode
             else:
                 arm_norm_delta = np.concatenate([dpos, drotation])
                 base_ac = np.zeros(3)
-                torso_ac = np.zeros(1)
+                device_torso_input = 0.0  # No torso input when not in base mode
 
             ac_dict["base"] = base_ac
-            # ac_dict["torso"] = torso_ac
             ac_dict["base_mode"] = np.array([1 if base_mode is True else -1])
         else:
             arm_norm_delta = np.concatenate([dpos, drotation])
+            device_torso_input = 0.0  # No torso input for non-mobile robots by default
+
+        if hasattr(robot, "torso") and robot.torso is not None:
+            # only support single joint torso for now
+            if self.env.robots[0].composite_controller.part_controllers["torso"].joint_dim == 1:
+                ac_dict["torso"] = self.get_torso_action(robot, device_torso_input)
 
         # populate action dict items for arm and grippers
         arm_action = self.get_arm_action(
@@ -192,7 +201,7 @@ class Device(metaclass=abc.ABCMeta):
         assert goal_update_mode in [
             "achieved",
             "target",
-        ]  # update next target either based on achieved pose or current target pose
+        ], f"goal_update_mode must be either 'achieved' or 'target', got {goal_update_mode}"  # update next target either based on achieved pose or current target pose
 
         # TODO: the logic between OSC and while body based ik is fragmented right now. Unify
         if isinstance(robot.part_controllers[arm], OperationalSpaceController):
@@ -258,6 +267,10 @@ class Device(metaclass=abc.ABCMeta):
                 pos = self._prev_target[arm][0:3].copy()
                 ori = T.quat2mat(T.axisangle2quat(self._prev_target[arm][3:6].copy()))
 
+            ref_frame = self.env.robots[0].composite_controller.composite_controller_specific_config.get(
+                "ik_input_ref_frame", "world"
+            )
+
             delta_action = norm_delta.copy()
             delta_action[0:3] *= 0.05
             delta_action[3:6] *= 0.15
@@ -271,9 +284,63 @@ class Device(metaclass=abc.ABCMeta):
             abs_action = np.concatenate([new_pos, new_axisangle])
             self._prev_target[arm] = abs_action.copy()
 
+            # convert to be w.r.t base frame
+            if ref_frame != "world":
+                # convert to matrix format
+                abs_action_mat = T.make_pose(
+                    translation=abs_action[0:3],
+                    rotation=T.quat2mat(T.axisangle2quat(abs_action[3:6])),
+                )
+                delta_action_mat = T.make_pose(
+                    translation=delta_action[0:3],
+                    rotation=T.quat2mat(T.axisangle2quat(delta_action[3:6])),
+                )
+                abs_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    src_frame_pose=abs_action_mat,
+                    src_frame="world",
+                    dst_frame=ref_frame,
+                )
+                delta_action_base_mat = self.env.robots[0].composite_controller.joint_action_policy.transform_pose(
+                    src_frame_pose=delta_action_mat,
+                    src_frame="world",
+                    dst_frame=ref_frame,
+                )
+                # get the new delta action and abs action position and orientation from the matrix
+                delta_action = np.concatenate(
+                    [delta_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(delta_action_base_mat[:3, :3]))]
+                )
+                abs_action = np.concatenate(
+                    [abs_action_base_mat[:3, 3], T.quat2axisangle(T.mat2quat(abs_action_base_mat[:3, :3]))]
+                )
+
             return {
                 "delta": delta_action,
                 "abs": abs_action,
             }
         else:
             raise NotImplementedError
+
+    def get_torso_action(self, robot, device_input):
+        """Generate torso action from device input"""
+        if robot.torso is None:
+            return np.zeros(1)
+
+        torso_controller = robot.part_controllers[robot.torso]
+
+        if torso_controller.name == "JOINT_POSITION":
+            if torso_controller.input_type == "delta":
+                scale = 0.2
+                return np.array([device_input * scale])
+            else:
+                scale = 0.01
+                target = self._prev_torso_target if self._prev_torso_target is not None else torso_controller.goal_qpos
+                if abs(device_input) < 1e-6:
+                    action = target
+                else:
+                    action = target + np.array([device_input * scale])
+                self._prev_torso_target = action.copy()
+                return action
+        elif torso_controller.name == "JOINT_VELOCITY":
+            return np.array([device_input * 0.5])
+        else:
+            return np.zeros(1)
