@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+
 import robosuite.macros as macros
 from robosuite.models.base import MujocoXML
 from robosuite.utils.mjcf_utils import convert_to_string, find_elements, xml_path_completion
@@ -15,15 +16,10 @@ class MujocoWorldBase(MujocoXML):
         self.enable_multiccd = enable_multiccd
         self.enable_sleeping = enable_sleeping
         if self.enable_multiccd:
-            multiccd_elem = ET.fromstring(
-                """<option> <flag multiccd="enable"/> </option>"""
-            )
+            multiccd_elem = ET.fromstring("""<option> <flag multiccd="enable"/> </option>""")
             mujoco_elem = find_elements(self.root, "mujoco")
             mujoco_elem.insert(0, multiccd_elem)
         if self.enable_sleeping:
-            sleeping_elem = ET.fromstring(
-                """<option> <flag sleep="enable"/> </option>"""
-            )
+            sleeping_elem = ET.fromstring("""<option> <flag sleep="enable"/> </option>""")
             mujoco_elem = find_elements(self.root, "mujoco")
-            mujoco_elem.insert(0, sleeping_elem)   
-        
+            mujoco_elem.insert(0, sleeping_elem)
