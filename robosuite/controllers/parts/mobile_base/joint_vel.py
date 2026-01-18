@@ -213,7 +213,7 @@ class MobileBaseJointVelocityController(MobileBaseController):
                 forward_jnt = jnt
                 forward_jnt_axis = self.sim.model.jnt_axis[self.sim.model.joint_name2id(jnt)]
                 break
-        
+
         # reorder action if forward axis is y axis
         if forward_jnt and (forward_jnt_axis == np.array([0, 1, 0])).all():
             action = np.copy([action[i] for i in [1, 0, 2]])
