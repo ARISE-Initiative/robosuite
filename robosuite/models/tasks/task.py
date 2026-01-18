@@ -63,9 +63,9 @@ class Task(MujocoWorldBase):
         mujoco_robots,
         mujoco_objects=None,
         enable_multiccd=False,
-        enable_sleeping=False,
+        enable_sleeping_islands=False,
     ):
-        super().__init__(enable_multiccd=enable_multiccd, enable_sleeping=enable_sleeping)
+        super().__init__(enable_multiccd=enable_multiccd, enable_sleeping_islands=enable_sleeping_islands)
 
         # Store references to all models
         self.mujoco_arena = mujoco_arena
