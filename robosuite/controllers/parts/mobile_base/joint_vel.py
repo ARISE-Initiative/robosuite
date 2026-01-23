@@ -218,14 +218,17 @@ class MobileBaseJointVelocityController(MobileBaseController):
         if forward_jnt and (forward_jnt_axis == np.array([0, 1, 0])).all():
             action = np.copy([action[i] for i in [1, 0, 2]])
 
-        # input raw base action is delta relative to current pose of base
-        # controller expects deltas relative to initial pose of base at start of episode
-        # transform deltas from current base pose coordinates to initial base pose coordinates
-        x, y = action[0:2]
-
-        # do the reverse of theta rotation
-        action[0] = x * np.cos(theta) + y * np.sin(theta)
-        action[1] = -x * np.sin(theta) + y * np.cos(theta)
+            x, y = action[0:2]
+            # do the reverse of theta rotation
+            action[0] = x * np.cos(theta) + y * np.sin(theta)
+            action[1] = -x * np.sin(theta) + y * np.cos(theta)
+        else:
+            # input raw base action is delta relative to current pose of base
+            # controller expects deltas relative to initial pose of base at start of episode
+            # transform deltas from current base pose coordinates to initial base pose coordinates
+            x, y = action[0:2]
+            action[0] = x * np.cos(theta) - y * np.sin(theta)
+            action[1] = x * np.sin(theta) + y * np.cos(theta)
 
         self.goal_qvel = action
         if self.interpolator is not None:
