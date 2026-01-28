@@ -206,6 +206,10 @@ class MobileBaseJointVelocityController(MobileBaseController):
         curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
         theta = curr_theta - init_theta
 
+        # Detect the axis for the forward joint and dynamically reorder action accordingly.
+        # This is needed because previous versions of the mobile base xml had different forward
+        # axis definitions. In order to maintain backwards compatibility with previous datasets
+        # we dynamically detect the forward joint axis and reorder the action accordingly.
         forward_jnt = None
         forward_jnt_axis = None
         for jnt in self.joint_names:

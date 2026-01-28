@@ -14,7 +14,7 @@ from robosuite.wrappers import Wrapper
 
 
 class DataCollectionWrapper(Wrapper):
-    def __init__(self, env, directory, collect_freq=1, flush_freq=100):
+    def __init__(self, env, directory, collect_freq=1, flush_freq=100, use_env_xml_for_reset=False):
         """
         Initializes the data collection wrapper.
 
@@ -23,11 +23,14 @@ class DataCollectionWrapper(Wrapper):
             directory (str): Where to store collected data.
             collect_freq (int): How often to save simulation state, in terms of environment steps.
             flush_freq (int): How frequently to dump data to disk, in terms of environment steps.
+            use_env_xml_for_reset (bool): Whether to use the robosuite env XML string or the xml
+                                          string from self.sim for resetting the environment.
         """
         super().__init__(env)
 
         # the base directory for all logging
         self.directory = directory
+        self.use_env_xml_for_reset = use_env_xml_for_reset
 
         # in-memory cache for simulation states and action info
         self.states = []
@@ -74,8 +77,11 @@ class DataCollectionWrapper(Wrapper):
         # ValueError: Error: eigenvalues of mesh inertia violate A + B >= C
         # then, switched to self.env.sim.model.get_xml() which does not create this issue
         # however, that leads to subtle changes in the physics, such as fixture doors being harder to close
-        # so, reverting back to self.env.model.get_xml()
-        self._current_task_instance_xml = self.env.model.get_xml()
+        # so, in order to address both issues, added an flag to choose between the two methods
+        if self.use_env_xml_for_reset:
+            self._current_task_instance_xml = self.env.model.get_xml()
+        else:
+            self._current_task_instance_xml = self.env.sim.model.get_xml()
         self._current_task_instance_state = np.array(self.env.sim.get_state().flatten())
 
         # trick for ensuring that we can play MuJoCo demonstrations back
