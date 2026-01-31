@@ -156,6 +156,20 @@ class MobileBaseJointVelocityController(MobileBaseController):
         self.init_pos = None
         self.init_ori = None
 
+    def _check_forward_joint_reversed(self):
+        # Detect the axis for the forward joint and dynamically reorder action accordingly.
+        # This is needed because previous versions of the mobile base xml had different forward
+        # axis definitions. In order to maintain backwards compatibility with previous datasets
+        # we dynamically detect the forward joint axis.
+        forward_jnt = None
+        forward_jnt_axis = None
+        for jnt in self.joint_names:
+            if "joint_mobile_forward" in jnt:
+                forward_jnt = jnt
+                forward_jnt_axis = self.sim.model.jnt_axis[self.sim.model.joint_name2id(jnt)]
+                break
+        return forward_jnt is not None and (forward_jnt_axis == np.array([0, 1, 0])).all()
+
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -206,20 +220,8 @@ class MobileBaseJointVelocityController(MobileBaseController):
         curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
         theta = curr_theta - init_theta
 
-        # Detect the axis for the forward joint and dynamically reorder action accordingly.
-        # This is needed because previous versions of the mobile base xml had different forward
-        # axis definitions. In order to maintain backwards compatibility with previous datasets
-        # we dynamically detect the forward joint axis and reorder the action accordingly.
-        forward_jnt = None
-        forward_jnt_axis = None
-        for jnt in self.joint_names:
-            if "joint_mobile_forward" in jnt:
-                forward_jnt = jnt
-                forward_jnt_axis = self.sim.model.jnt_axis[self.sim.model.joint_name2id(jnt)]
-                break
-
         # reorder action if forward axis is y axis
-        if forward_jnt and (forward_jnt_axis == np.array([0, 1, 0])).all():
+        if self._check_forward_joint_reversed():
             action = np.copy([action[i] for i in [1, 0, 2]])
 
             x, y = action[0:2]
