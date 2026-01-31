@@ -75,10 +75,9 @@ class VisualizationWrapper(Wrapper):
 
         # Conduct a (hard) reset to make sure visualization changes propagate
         reset_mode = self.env.hard_reset
-        if self.env.hard_reset is not True:
-            self.env.hard_reset = True
-            self.reset()
-            self.env.hard_reset = reset_mode
+        self.env.hard_reset = True
+        self.reset()
+        self.env.hard_reset = reset_mode
 
     def get_indicator_names(self):
         """
