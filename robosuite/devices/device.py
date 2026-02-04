@@ -37,6 +37,12 @@ class Device(metaclass=abc.ABCMeta):
 
     @property
     def all_robot_arms(self):
+        robots = getattr(self.env, "robots", None)
+        assert robots is not None and all(r is not None for r in robots), (
+            "Environment has not robots to control. "
+            "Please make sure to initialize the environment and call "
+            "reset() before using the device."
+        )
         if self._all_robot_arms is None:
             self._all_robot_arms = [robot.arms for robot in self.env.robots]
         return self._all_robot_arms

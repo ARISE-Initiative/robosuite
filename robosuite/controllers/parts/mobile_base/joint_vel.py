@@ -232,6 +232,7 @@ class MobileBaseJointVelocityController(MobileBaseController):
             # input raw base action is delta relative to current pose of base
             # controller expects deltas relative to initial pose of base at start of episode
             # transform deltas from current base pose coordinates to initial base pose coordinates
+            action = action.copy()
             x, y = action[0:2]
             action[0] = x * np.cos(theta) - y * np.sin(theta)
             action[1] = x * np.sin(theta) + y * np.cos(theta)
