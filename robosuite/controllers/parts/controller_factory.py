@@ -172,6 +172,8 @@ def mobile_base_controller_factory(name, params):
     interpolator = None
     if name == "JOINT_VELOCITY":
         return mobile_base_controllers.MobileBaseJointVelocityController(interpolator=interpolator, **params)
+    elif name == "JOINT_VELOCITY_LEGACY":
+        return mobile_base_controllers.LegacyMobileBaseJointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         raise NotImplementedError
     raise ValueError("Unknown controller name: {}".format(name))

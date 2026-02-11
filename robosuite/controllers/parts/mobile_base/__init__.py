@@ -1,1 +1,1 @@
-from .joint_vel import MobileBaseJointVelocityController
+from .joint_vel import MobileBaseJointVelocityController, LegacyMobileBaseJointVelocityController

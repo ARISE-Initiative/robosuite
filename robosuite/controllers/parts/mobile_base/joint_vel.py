@@ -156,20 +156,6 @@ class MobileBaseJointVelocityController(MobileBaseController):
         self.init_pos = None
         self.init_ori = None
 
-    def _check_forward_joint_reversed(self):
-        # Detect the axis for the forward joint and dynamically reorder action accordingly.
-        # This is needed because previous versions of the mobile base xml had different forward
-        # axis definitions. In order to maintain backwards compatibility with previous datasets
-        # we dynamically detect the forward joint axis.
-        forward_jnt = None
-        forward_jnt_axis = None
-        for jnt in self.joint_names:
-            if "joint_mobile_forward" in jnt:
-                forward_jnt = jnt
-                forward_jnt_axis = self.sim.model.jnt_axis[self.sim.model.joint_name2id(jnt)]
-                break
-        return forward_jnt is not None and (forward_jnt_axis == np.array([0, 1, 0])).all()
-
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -220,22 +206,14 @@ class MobileBaseJointVelocityController(MobileBaseController):
         curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
         theta = curr_theta - init_theta
 
-        # reorder action if forward axis is y axis
-        if self._check_forward_joint_reversed():
-            action = np.copy([action[i] for i in [1, 0, 2]])
+        # input raw base action is delta relative to current pose of base
+        # controller expects deltas relative to initial pose of base at start of episode
+        # transform deltas from current base pose coordinates to initial base pose coordinates
+        x, y = action[0:2]
 
-            x, y = action[0:2]
-            # do the reverse of theta rotation
-            action[0] = x * np.cos(theta) + y * np.sin(theta)
-            action[1] = -x * np.sin(theta) + y * np.cos(theta)
-        else:
-            # input raw base action is delta relative to current pose of base
-            # controller expects deltas relative to initial pose of base at start of episode
-            # transform deltas from current base pose coordinates to initial base pose coordinates
-            action = action.copy()
-            x, y = action[0:2]
-            action[0] = x * np.cos(theta) - y * np.sin(theta)
-            action[1] = x * np.sin(theta) + y * np.cos(theta)
+        # do the reverse of theta rotation
+        action[0] = x * np.cos(theta) + y * np.sin(theta)
+        action[1] = -x * np.sin(theta) + y * np.cos(theta)
 
         self.goal_qvel = action
         if self.interpolator is not None:
@@ -321,3 +299,84 @@ class MobileBaseJointVelocityController(MobileBaseController):
     @property
     def name(self):
         return "JOINT_VELOCITY"
+
+class LegacyMobileBaseJointVelocityController(MobileBaseJointVelocityController):
+    """
+    Legacy version of MobileBaseJointVelocityController, created to address
+    the recent change in the axis of the forward joint in the mobile base xml. 
+    This controller is identical to the original MobileBaseJointVelocityController,
+    except that it dynamically checks the axis of the forward joint and reorders 
+    the input action accordingly if the forward axis is the y axis instead of the x axis. 
+    This allows for backwards compatibility with previously collected datasets 
+    that were generated using older versions of the mobile base xml.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    def _check_forward_joint_reversed(self):
+        # Detect the axis for the forward joint and dynamically reorder action accordingly.
+        # This is needed because previous versions of the mobile base xml had different forward
+        # axis definitions. In order to maintain backwards compatibility with previous datasets
+        # we dynamically detect the forward joint axis.
+        forward_jnt = None
+        forward_jnt_axis = None
+        for jnt in self.joint_names:
+            if "joint_mobile_forward" in jnt:
+                forward_jnt = jnt
+                forward_jnt_axis = self.sim.model.jnt_axis[self.sim.model.joint_name2id(jnt)]
+                break
+        return forward_jnt is not None and (forward_jnt_axis == np.array([0, 1, 0])).all()
+
+    def set_goal(self, action, set_qpos=None):
+        # Update state
+        self.update()
+
+        # Parse action based on the impedance mode, and update kp / kd as necessary
+        jnt_dim = len(self.qpos_index)
+        if self.impedance_mode == "variable":
+            damping_ratio, kp, delta = action[:jnt_dim], action[jnt_dim : 2 * jnt_dim], action[2 * jnt_dim :]
+            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kd = 2 * np.sqrt(self.kp) * np.clip(damping_ratio, self.damping_ratio_min, self.damping_ratio_max)
+        elif self.impedance_mode == "variable_kp":
+            kp, delta = action[:jnt_dim], action[jnt_dim:]
+            self.kp = np.clip(kp, self.kp_min, self.kp_max)
+            self.kd = 2 * np.sqrt(self.kp)  # critically damped
+        else:  # This is case "fixed"
+            delta = action
+
+        # Check to make sure delta is size self.joint_dim
+        assert len(delta) == jnt_dim, "Delta qpos must be equal to the robot's joint dimension space!"
+
+        if delta is not None:
+            scaled_delta = self.scale_action(delta)
+        else:
+            scaled_delta = None
+
+        curr_pos, curr_ori = self.get_base_pose()
+
+        # transform the action relative to initial base orientation
+        init_theta = T.mat2euler(self.init_ori)[2]  # np.arctan2(self.init_pos[1], self.init_pos[0])
+        curr_theta = T.mat2euler(curr_ori)[2]  # np.arctan2(curr_pos[1], curr_pos[0])
+        theta = curr_theta - init_theta
+
+        # reorder action if forward axis is y axis
+        if self._check_forward_joint_reversed():
+            action = np.copy([action[i] for i in [1, 0, 2]])
+
+            x, y = action[0:2]
+            # do the reverse of theta rotation
+            action[0] = x * np.cos(theta) + y * np.sin(theta)
+            action[1] = -x * np.sin(theta) + y * np.cos(theta)
+        else:
+            # input raw base action is delta relative to current pose of base
+            # controller expects deltas relative to initial pose of base at start of episode
+            # transform deltas from current base pose coordinates to initial base pose coordinates
+            action = action.copy()
+            x, y = action[0:2]
+            action[0] = x * np.cos(theta) - y * np.sin(theta)
+            action[1] = x * np.sin(theta) + y * np.cos(theta)
+
+        self.goal_qvel = action
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_qvel)
