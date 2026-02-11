@@ -300,20 +300,21 @@ class MobileBaseJointVelocityController(MobileBaseController):
     def name(self):
         return "JOINT_VELOCITY"
 
+
 class LegacyMobileBaseJointVelocityController(MobileBaseJointVelocityController):
     """
     Legacy version of MobileBaseJointVelocityController, created to address
-    the recent change in the axis of the forward joint in the mobile base xml. 
+    the recent change in the axis of the forward joint in the mobile base xml.
     This controller is identical to the original MobileBaseJointVelocityController,
-    except that it dynamically checks the axis of the forward joint and reorders 
-    the input action accordingly if the forward axis is the y axis instead of the x axis. 
-    This allows for backwards compatibility with previously collected datasets 
+    except that it dynamically checks the axis of the forward joint and reorders
+    the input action accordingly if the forward axis is the y axis instead of the x axis.
+    This allows for backwards compatibility with previously collected datasets
     that were generated using older versions of the mobile base xml.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-    
+
     def _check_forward_joint_reversed(self):
         # Detect the axis for the forward joint and dynamically reorder action accordingly.
         # This is needed because previous versions of the mobile base xml had different forward
