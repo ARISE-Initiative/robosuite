@@ -51,6 +51,8 @@ class Task(MujocoWorldBase):
 
         mujoco_objects (None or MujocoObject or list of MujocoObject): a list of MJCF models of physical objects
 
+        enable_multiccd (bool) whether to set the multiccd flag in MuJoCo. False by default
+
     Raises:
         AssertionError: [Invalid input object type]
     """
@@ -60,8 +62,10 @@ class Task(MujocoWorldBase):
         mujoco_arena,
         mujoco_robots,
         mujoco_objects=None,
+        enable_multiccd=False,
+        enable_sleeping_islands=False,
     ):
-        super().__init__()
+        super().__init__(enable_multiccd=enable_multiccd, enable_sleeping_islands=enable_sleeping_islands)
 
         # Store references to all models
         self.mujoco_arena = mujoco_arena
