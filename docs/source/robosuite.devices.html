@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=96be8719" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -44,7 +44,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/togglebutton.js?v=1ae7504c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -415,12 +415,14 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device"><code class="docutils literal notranslate"><span class="pre">Device</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.active_arm"><code class="docutils literal notranslate"><span class="pre">Device.active_arm</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.active_arm_index"><code class="docutils literal notranslate"><span class="pre">Device.active_arm_index</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.all_robot_arms"><code class="docutils literal notranslate"><span class="pre">Device.all_robot_arms</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.base_mode"><code class="docutils literal notranslate"><span class="pre">Device.base_mode</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_arm_action"><code class="docutils literal notranslate"><span class="pre">Device.get_arm_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_torso_action"><code class="docutils literal notranslate"><span class="pre">Device.get_torso_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.grasp"><code class="docutils literal notranslate"><span class="pre">Device.grasp</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.input2action"><code class="docutils literal notranslate"><span class="pre">Device.input2action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.num_robots"><code class="docutils literal notranslate"><span class="pre">Device.num_robots</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
 </ul>
 </li>
@@ -506,6 +508,11 @@ Also contains shared logic for managing multiple and/or multiarmed robots.</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="robosuite.devices.device.Device.all_robot_arms">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">all_robot_arms</span></span><a class="headerlink" href="#robosuite.devices.device.Device.all_robot_arms" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.base_mode">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">base_mode</span></span><a class="headerlink" href="#robosuite.devices.device.Device.base_mode" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
@@ -560,6 +567,11 @@ first axis: left/right. second axis: back/forward. third axis: down/up.</p></li>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="robosuite.devices.device.Device.num_robots">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">num_robots</span></span><a class="headerlink" href="#robosuite.devices.device.Device.num_robots" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.devices.device.Device.start_control">
@@ -865,12 +877,14 @@ start receiving commands.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device"><code class="docutils literal notranslate"><span class="pre">Device</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.active_arm"><code class="docutils literal notranslate"><span class="pre">Device.active_arm</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.active_arm_index"><code class="docutils literal notranslate"><span class="pre">Device.active_arm_index</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.all_robot_arms"><code class="docutils literal notranslate"><span class="pre">Device.all_robot_arms</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.base_mode"><code class="docutils literal notranslate"><span class="pre">Device.base_mode</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_arm_action"><code class="docutils literal notranslate"><span class="pre">Device.get_arm_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_controller_state"><code class="docutils literal notranslate"><span class="pre">Device.get_controller_state()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.get_torso_action"><code class="docutils literal notranslate"><span class="pre">Device.get_torso_action()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.grasp"><code class="docutils literal notranslate"><span class="pre">Device.grasp</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.input2action"><code class="docutils literal notranslate"><span class="pre">Device.input2action()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.num_robots"><code class="docutils literal notranslate"><span class="pre">Device.num_robots</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.devices.device.Device.start_control"><code class="docutils literal notranslate"><span class="pre">Device.start_control()</span></code></a></li>
 </ul>
 </li>

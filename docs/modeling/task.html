@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=96be8719" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -44,7 +44,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/togglebutton.js?v=1ae7504c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -438,7 +438,7 @@ document.write(`
 <h2>Base Task<a class="headerlink" href="#base-task" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.task.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task" title="Link to this definition">#</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.models.tasks.task.</span></span><span class="sig-name descname"><span class="pre">Task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_multiccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_sleeping_islands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task" title="Link to this definition">#</a></dt>
 <dd><p>Creates MJCF model for a task performed.</p>
 <p>A task consists of one or more robots interacting with a variable number of
 objects. This class combines the robot(s), the arena, and the objects
@@ -449,6 +449,7 @@ into a single MJCF model.</p>
 <li><p><strong>mujoco_arena</strong> (<a class="reference internal" href="../source/robosuite.models.arenas.html#robosuite.models.arenas.arena.Arena" title="robosuite.models.arenas.arena.Arena"><em>Arena</em></a>) – MJCF model of robot workspace</p></li>
 <li><p><strong>mujoco_robots</strong> (<a class="reference internal" href="../source/robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel" title="robosuite.models.robots.robot_model.RobotModel"><em>RobotModel</em></a><em> or </em><em>list</em><em> of </em><a class="reference internal" href="../source/robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel" title="robosuite.models.robots.robot_model.RobotModel"><em>RobotModel</em></a>) – MJCF model of robot model(s) (list)</p></li>
 <li><p><strong>mujoco_objects</strong> (<em>None</em><em> or </em><a class="reference internal" href="../source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject" title="robosuite.models.objects.objects.MujocoObject"><em>MujocoObject</em></a><em> or </em><em>list</em><em> of </em><a class="reference internal" href="../source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoObject" title="robosuite.models.objects.objects.MujocoObject"><em>MujocoObject</em></a>) – a list of MJCF models of physical objects</p></li>
+<li><p><strong>enable_multiccd</strong> (<em>bool</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
@@ -457,7 +458,7 @@ into a single MJCF model.</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="robosuite.models.tasks.task.Task.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task.__init__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mujoco_arena</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_robots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mujoco_objects</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_multiccd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_sleeping_islands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.models.tasks.task.Task.__init__" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

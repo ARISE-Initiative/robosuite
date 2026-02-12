@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=96be8719" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -43,7 +43,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="_static/togglebutton.js?v=1ae7504c"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -744,6 +744,8 @@ document.write(`
       <li><a href="source/robosuite.models.objects.composite.html#robosuite.models.objects.composite.hammer.HammerObject.all_geoms">all_geoms (robosuite.models.objects.composite.hammer.HammerObject property)</a>
 </li>
       <li><a href="source/robosuite.models.robots.html#robosuite.models.robots.robot_model.RobotModel.all_joints">all_joints (robosuite.models.robots.robot_model.RobotModel property)</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.device.Device.all_robot_arms">all_robot_arms (robosuite.devices.device.Device property)</a>
 </li>
       <li><a href="modeling/object_model.html#robosuite.models.objects.objects.MujocoGeneratedObject.append_material">append_material() (robosuite.models.objects.objects.MujocoGeneratedObject method)</a>, <a href="source/robosuite.models.objects.html#robosuite.models.objects.objects.MujocoGeneratedObject.append_material">[1]</a>
 </li>
@@ -2809,6 +2811,8 @@ document.write(`
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.devices.html#robosuite.devices.dualsense.DualSense.last_state">last_state (robosuite.devices.dualsense.DualSense attribute)</a>
 </li>
+      <li><a href="source/robosuite.controllers.parts.mobile_base.html#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController">LegacyMobileBaseJointVelocityController (class in robosuite.controllers.parts.mobile_base.joint_vel)</a>
+</li>
       <li><a href="source/robosuite.models.bases.html#robosuite.models.bases.leg_base_model.LegBaseModel">LegBaseModel (class in robosuite.models.bases.leg_base_model)</a>
 </li>
       <li><a href="source/robosuite.models.robots.manipulators.html#robosuite.models.robots.manipulators.legged_manipulator_model.LeggedManipulatorModel">LeggedManipulatorModel (class in robosuite.models.robots.manipulators.legged_manipulator_model)</a>
@@ -3728,10 +3732,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflextexcoord">nflextexcoord (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.nflexvert">nflexvert (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ngeom">ngeom (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.ngravcomp">ngravcomp (robosuite.utils.binding_utils.MjModel property)</a>
@@ -3869,6 +3873,8 @@ document.write(`
       <li><a href="source/robosuite.utils.html#robosuite.utils.control_utils.nullspace_torques">nullspace_torques() (in module robosuite.utils.control_utils)</a>
 </li>
       <li><a href="simulation/robot.html#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints">num_leg_joints (robosuite.robots.legged_robot.LeggedRobot property)</a>, <a href="source/robosuite.robots.html#robosuite.robots.legged_robot.LeggedRobot.num_leg_joints">[1]</a>
+</li>
+      <li><a href="source/robosuite.devices.html#robosuite.devices.device.Device.num_robots">num_robots (robosuite.devices.device.Device property)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.binding_utils.MjModel.numeric">numeric (robosuite.utils.binding_utils.MjModel property)</a>
 </li>
@@ -5749,6 +5755,8 @@ document.write(`
 </li>
         <li><a href="simulation/controller.html#robosuite.controllers.parts.gripper.simple_grip.SimpleGripController.set_goal">(robosuite.controllers.parts.gripper.simple_grip.SimpleGripController method)</a>, <a href="source/robosuite.controllers.parts.gripper.html#robosuite.controllers.parts.gripper.simple_grip.SimpleGripController.set_goal">[1]</a>
 </li>
+        <li><a href="source/robosuite.controllers.parts.mobile_base.html#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController.set_goal">(robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController method)</a>
+</li>
         <li><a href="simulation/controller.html#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.set_goal">(robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController method)</a>, <a href="source/robosuite.controllers.parts.mobile_base.html#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.set_goal">[1]</a>
 </li>
         <li><a href="source/robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator.set_goal">(robosuite.utils.traj_utils.LinearInterpolator method)</a>
@@ -5820,10 +5828,10 @@ document.write(`
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.traj_utils.LinearInterpolator.set_states">set_states() (robosuite.utils.traj_utils.LinearInterpolator method)</a>
 </li>
-      <li><a href="source/robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_positions">set_target_positions() (robosuite.utils.ik_utils.IKSolver method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="source/robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_positions">set_target_positions() (robosuite.utils.ik_utils.IKSolver method)</a>
+</li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.ik_utils.IKSolver.set_target_rotations">set_target_rotations() (robosuite.utils.ik_utils.IKSolver method)</a>
 </li>
       <li><a href="source/robosuite.utils.html#robosuite.utils.mjmod.TextureModder.set_texture">set_texture() (robosuite.utils.mjmod.TextureModder method)</a>

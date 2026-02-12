@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=96be8719" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -44,7 +44,7 @@
     <script>let toggleHintShow = 'Click to show';</script>
     <script>let toggleHintHide = 'Click to hide';</script>
     <script>let toggleOpenOnPrint = 'true';</script>
-    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script src="../_static/togglebutton.js?v=1ae7504c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -412,6 +412,10 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.mobile_base.joint_vel">robosuite.controllers.parts.mobile_base.joint_vel module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController"><code class="docutils literal notranslate"><span class="pre">LegacyMobileBaseJointVelocityController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController.set_goal"><code class="docutils literal notranslate"><span class="pre">LegacyMobileBaseJointVelocityController.set_goal()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.control_limits"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController.control_limits</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.name"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController.name</span></code></a></li>
@@ -460,6 +464,52 @@ document.write(`
 </section>
 <section id="module-robosuite.controllers.parts.mobile_base.joint_vel">
 <span id="robosuite-controllers-parts-mobile-base-joint-vel-module"></span><h2>robosuite.controllers.parts.mobile_base.joint_vel module<a class="headerlink" href="#module-robosuite.controllers.parts.mobile_base.joint_vel" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.joint_vel.</span></span><span class="sig-name descname"><span class="pre">LegacyMobileBaseJointVelocityController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController" title="robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController"><code class="xref py py-class docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController</span></code></a></p>
+<p>Legacy version of MobileBaseJointVelocityController, created to address
+the recent change in the axis of the forward joint in the mobile base xml.
+This controller is identical to the original MobileBaseJointVelocityController,
+except that it dynamically checks the axis of the forward joint and reorders
+the input action accordingly if the forward axis is the y axis instead of the x axis.
+This allows for backwards compatibility with previously collected datasets
+that were generated using older versions of the mobile base xml.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController.set_goal">
+<span class="sig-name descname"><span class="pre">set_goal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_qpos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController.set_goal" title="Link to this definition">#</a></dt>
+<dd><p>Sets goal based on input &#64;action. If self.impedance_mode is not “fixed”, then the input will be parsed into the
+delta values to update the goal position / pose and the kp and/or damping_ratio values to be immediately updated
+internally before executing the proceeding control loop.</p>
+<p>Note that &#64;action expected to be in the following format, based on impedance mode!</p>
+<blockquote>
+<div><dl class="field-list simple">
+<dt class="field-odd">Mode <cite>‘fixed’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[joint pos command]</p>
+</dd>
+<dt class="field-even">Mode <cite>‘variable’</cite><span class="colon">:</span></dt>
+<dd class="field-even"><p>[damping_ratio values, kp values, joint pos command]</p>
+</dd>
+<dt class="field-odd">Mode <cite>‘variable_kp’</cite><span class="colon">:</span></dt>
+<dd class="field-odd"><p>[kp values, joint pos command]</p>
+</dd>
+</dl>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>Iterable</em>) – Desired relative joint position goal state</p></li>
+<li><p><strong>set_qpos</strong> (<em>Iterable</em>) – If set, overrides &#64;action and sets the desired absolute joint position goal state</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – [Invalid action dimension size]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">robosuite.controllers.parts.mobile_base.joint_vel.</span></span><span class="sig-name descname"><span class="pre">MobileBaseJointVelocityController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joint_indexes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actuator_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">impedance_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'fixed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kp_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">300)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">damping_ratio_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(0,</span> <span class="pre">100)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policy_freq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qpos_limits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interpolator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController" title="Link to this definition">#</a></dt>
@@ -889,6 +939,10 @@ behavior, such as with OSC where self.initial_joints is used for determine nulls
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-robosuite.controllers.parts.mobile_base.joint_vel">robosuite.controllers.parts.mobile_base.joint_vel module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController"><code class="docutils literal notranslate"><span class="pre">LegacyMobileBaseJointVelocityController</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.LegacyMobileBaseJointVelocityController.set_goal"><code class="docutils literal notranslate"><span class="pre">LegacyMobileBaseJointVelocityController.set_goal()</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.control_limits"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController.control_limits</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#robosuite.controllers.parts.mobile_base.joint_vel.MobileBaseJointVelocityController.name"><code class="docutils literal notranslate"><span class="pre">MobileBaseJointVelocityController.name</span></code></a></li>
