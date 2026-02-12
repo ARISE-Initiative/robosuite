@@ -71,6 +71,8 @@ class MjRenderContext:
                 from robosuite.renderers.context.osmesa_context import OSMesaGLContext as GLContext
             elif _SYSTEM == "Linux" and _MUJOCO_GL == "egl":
                 from robosuite.renderers.context.egl_context import EGLGLContext as GLContext
+            elif _SYSTEM == "Darwin" and _MUJOCO_GL == "cgl":
+                from robosuite.renderers.context.cgl_context import CGLGLContext as GLContext
             else:
                 from robosuite.renderers.context.glfw_context import GLFWGLContext as GLContext
 
