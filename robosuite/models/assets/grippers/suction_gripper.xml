@@ -1,0 +1,62 @@
+<mujoco model="suction_gripper">
+    <statistic center="0 0 0" extent="0.2" />
+
+    <visual>
+        <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+        <rgba haze="0.15 0.25 0.35 1" />
+        <global azimuth="120" elevation="-20" />
+    </visual>
+
+    <asset>
+        <material name="light_gray" rgba="0.8 0.8 0.8 1" />
+        <material name="soft_silicone" rgba="0.2 0.2 0.8 0.5" />
+        <material name="black" rgba="0.1 0.1 0.1 1" />
+    </asset>
+
+    <actuator>
+        <!-- Adhesion actuator for suction -->
+        <!-- control range 0 (off) to 1 (full suction) -->
+        <!-- gain sets the strength of the adhesion -->
+        <adhesion name="suction" body="suction_cup" ctrlrange="0 1" gain="1000"/>
+    </actuator>
+
+    <worldbody>
+        <body name="suction_gripper_base" pos="0 0 0">
+            <inertial pos="0 0 0.05" mass="0.3" diaginertia="0.001 0.001 0.001" />
+            
+            <!-- Mount / Base -->
+            <geom type="cylinder" size="0.04 0.02" pos="0 0 0.02" rgba="0.1 0.1 0.1 1" name="base_geom" />
+            
+            <!-- Connection to cup -->
+            <geom type="cylinder" size="0.01 0.04" pos="0 0 0.06" rgba="0.8 0.8 0.8 1" name="stem_geom" />
+            
+            <!-- Suction Cup Body (the part that adheres) -->
+            <body name="suction_cup" pos="0 0 0.10">
+                <inertial pos="0 0 0" mass="0.05" diaginertia="0.0001 0.0001 0.0001" />
+                
+                <!-- Visual Soft Cup -->
+                <geom type="cylinder" size="0.035 0.01" pos="0 0 0" material="soft_silicone" name="cup_visual" contype="0" conaffinity="0"/>
+                
+                <!-- Collision Cup (determines contact) -->
+                <!-- solref/solimp parameters tuned for softer contact -->
+                <geom type="cylinder" size="0.035 0.01" pos="0 0 0" rgba="0.2 0.2 0.8 0.2" name="cup_collision" group="0" solref="0.01 0.5" solimp="0.9 0.95 0.001"/>
+            </body>
+
+            <!-- Force/Torque Sensor Frame -->
+            <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
+
+            <!-- End Effector Sites -->
+            <body name="eef" pos="0 0 0.11" quat="0.707105 0 0 -0.707105">
+                <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+                <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
+                <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
+                <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1"/>
+                <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+            </body>
+        </body>
+    </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>
