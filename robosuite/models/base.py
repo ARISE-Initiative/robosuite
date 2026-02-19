@@ -40,6 +40,8 @@ class MujocoXML(object):
         self.tendon = self.create_default_element("tendon")
         self.equality = self.create_default_element("equality")
         self.contact = self.create_default_element("contact")
+        self.extension = self.create_default_element("extension")
+        self.compiler = self.create_default_element("compiler")
 
         # Parse any default classes and replace them inline
         default = self.create_default_element("default")
