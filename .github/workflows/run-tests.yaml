@@ -36,7 +36,7 @@ jobs:
         pip install -e .
         if [ -f requirements.txt ]; then 
           pip install -r requirements.txt
-          pip install mink
+          pip install mink==0.0.5
         fi
         if [ -f requirements-extra.txt ]; then 
           pip install -r requirements-extra.txt
