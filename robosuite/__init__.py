@@ -38,7 +38,7 @@ try:
 
 except:
     ROBOSUITE_DEFAULT_LOGGER.warning(
-        "Could not load the mink-based whole-body IK. Make sure you install related import properly, otherwise you will not be able to use the default IK controller setting for GR1 robot."
+        "Could not load the mink-based whole-body IK. Make sure you install related import properly (e.g. pip install mink==0.0.5), otherwise you will not be able to use the default IK controller setting for GR1 robot."
     )
 
 __version__ = "1.5.2"

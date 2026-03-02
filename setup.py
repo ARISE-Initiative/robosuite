@@ -19,7 +19,6 @@ setup(
         "numba>=0.49.1",
         "scipy>=1.2.3",
         "mujoco>=3.3.0",
-        "mink==0.0.5",
         "qpsolvers[quadprog]>=4.3.1",
         "Pillow",
         "opencv-python",
@@ -28,6 +27,11 @@ setup(
         "pytest",
         "tqdm",
     ],
+    extras_require={
+        "mink": [
+            "mink==0.0.5",
+        ],
+    },
     eager_resources=["*"],
     include_package_data=True,
     python_requires=">=3",
