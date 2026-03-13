@@ -173,6 +173,7 @@ class TwoArmLift(TwoArmEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # settings for table top
         self.table_full_size = table_full_size
@@ -216,6 +217,7 @@ class TwoArmLift(TwoArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):

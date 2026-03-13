@@ -190,6 +190,7 @@ class NutAssembly(ManipulationEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # task settings
         self.single_object_mode = single_object_mode
@@ -244,6 +245,7 @@ class NutAssembly(ManipulationEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):

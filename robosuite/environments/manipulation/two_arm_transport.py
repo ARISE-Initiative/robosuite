@@ -174,6 +174,7 @@ class TwoArmTransport(TwoArmEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # settings for table top
         self.tables_boundary = tables_boundary
@@ -221,6 +222,7 @@ class TwoArmTransport(TwoArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):

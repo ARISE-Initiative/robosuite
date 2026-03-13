@@ -193,6 +193,7 @@ class TwoArmPegInHole(TwoArmEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # Assert that the gripper type is None
         assert gripper_types is None, "Tried to specify gripper other than None in TwoArmPegInHole environment!"
@@ -235,6 +236,7 @@ class TwoArmPegInHole(TwoArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):

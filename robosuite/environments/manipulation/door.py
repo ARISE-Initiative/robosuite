@@ -171,6 +171,7 @@ class Door(ManipulationEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # settings for table top (hardcoded since it's not an essential part of the environment)
         self.table_full_size = (0.8, 0.3, 0.05)
@@ -214,6 +215,7 @@ class Door(ManipulationEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):

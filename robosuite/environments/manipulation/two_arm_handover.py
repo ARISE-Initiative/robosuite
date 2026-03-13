@@ -176,6 +176,7 @@ class TwoArmHandover(TwoArmEnv):
         renderer="mjviewer",
         renderer_config=None,
         seed=None,
+        ep_meta={},
     ):
         # Task settings
         self.prehensile = prehensile
@@ -225,6 +226,7 @@ class TwoArmHandover(TwoArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
             seed=seed,
+            ep_meta=ep_meta,
         )
 
     def reward(self, action=None):
