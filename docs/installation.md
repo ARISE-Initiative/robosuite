@@ -76,13 +76,19 @@ It is common to run into issues when installing **robosuite** on a Windows machi
 
    Within the MuJoCo package, there should be a file called `mujoco.dll`. If you installed robosuite using pip, copy and paste this file into `anaconda3\envs\{your env name}\Lib\site-packages\robosuite\utils `. If you installed robosuite from source, copy and paste this file directly into `robosuite\utils`. 
 
-4. You may also get an `EGL` issue. If this happens, please go into `robosuite\utils\binding_utils.py` (either in site-packages or in cloned repository depending on whether you installed from pip or source) and change `"egl"` to `"wgl"` at line 43. It should look like this:
+4. If you need a non-default MuJoCo render backend, set `MUJOCO_GL` before importing robosuite. robosuite now honors an explicit `MUJOCO_GL` value instead of overwriting it.
 
-   ```python
-    if _SYSTEM == "Darwin":
-        os.environ["MUJOCO_GL"] = "cgl"
-    else:
-        os.environ["MUJOCO_GL"] = "wgl"
+   Common examples:
+
+   ```sh
+   # Windows
+   set MUJOCO_GL=wgl
+
+   # Linux GPU / headless EGL
+   export MUJOCO_GL=egl
+
+   # Linux CPU under xvfb-run
+   xvfb-run -a env MUJOCO_GL=glfw python robosuite/demos/demo_random_action.py
    ```
 
 5. Test your **robosuite** installation by running
