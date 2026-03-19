@@ -21,6 +21,7 @@ import platform
 import subprocess
 
 import robosuite.macros as macros
+from robosuite.utils.gl_backend import configure_mujoco_gl_backend
 
 _SYSTEM = platform.system()
 if _SYSTEM == "Windows":
@@ -34,15 +35,7 @@ if CUDA_VISIBLE_DEVICES != "":
             MUJOCO_EGL_DEVICE_ID in CUDA_VISIBLE_DEVICES
         ), "MUJOCO_EGL_DEVICE_ID needs to be set to one of the device id specified in CUDA_VISIBLE_DEVICES"
 
-if macros.MUJOCO_GPU_RENDERING and os.environ.get("MUJOCO_GL", None) not in ["osmesa", "glx"]:
-    # If gpu rendering is specified in macros, then we enforce gpu
-    # option for rendering
-    if _SYSTEM == "Darwin":
-        os.environ["MUJOCO_GL"] = "cgl"
-    elif _SYSTEM == "Windows":
-        os.environ["MUJOCO_GL"] = "wgl"
-    else:
-        os.environ["MUJOCO_GL"] = "egl"
+configure_mujoco_gl_backend(macros, system=_SYSTEM)
 _MUJOCO_GL = os.environ.get("MUJOCO_GL", "").lower().strip()
 
 
