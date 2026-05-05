@@ -204,7 +204,7 @@ class RobotModel(MujocoXMLModel, metaclass=RobotModelMeta):
         )
 
         # Create an intermediate body to act as what robot0_base previously was
-        manipulator_mount = new_element("body", "manipulator_mount")
+        manipulator_mount = new_element("body", self.correct_naming("manipulator_mount"))
 
         # Move content from robot0_base to the intermediate manipulator_mount body (arms, geoms),
         # but skip inertial elements and freejoints to avoid conflicts and MuJoCo constraints
