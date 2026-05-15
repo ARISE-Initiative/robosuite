@@ -505,7 +505,8 @@ class MjModel(metaclass=_MjModelMeta):
         with TemporaryDirectory() as td:
             filename = os.path.join(td, "model.xml")
             ret = mujoco.mj_saveLastXML(filename.encode(), self._model)
-            return open(filename).read()
+            with open(filename) as f:
+                return f.read()
 
     def get_joint_qpos_addr(self, name):
         """
