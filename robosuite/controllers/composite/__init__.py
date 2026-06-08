@@ -1,5 +1,6 @@
 from .composite_controller import CompositeController, HybridMobileBase, WholeBodyIK
 from .composite_controller import REGISTERED_COMPOSITE_CONTROLLERS_DICT
+from .sonic_whole_body_controller import SonicWholeBodyController  # registers "SONIC_WBC"
 
 ALL_COMPOSITE_CONTROLLERS = REGISTERED_COMPOSITE_CONTROLLERS_DICT.keys()
 

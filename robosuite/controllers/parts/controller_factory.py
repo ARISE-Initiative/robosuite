@@ -165,6 +165,8 @@ def gripper_controller_factory(name, params):
         return gripper_controllers.SimpleGripController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         return generic.JointPositionController(interpolator=interpolator, **params)
+    elif name == "JOINT_TORQUE":
+        return generic.JointTorqueController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
@@ -193,6 +195,8 @@ def torso_controller_factory(name, params):
         return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         return generic.JointPositionController(interpolator=interpolator, **params)
+    elif name == "JOINT_TORQUE":
+        return generic.JointTorqueController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 
@@ -210,6 +214,8 @@ def head_controller_factory(name, params):
         return generic.JointVelocityController(interpolator=interpolator, **params)
     elif name == "JOINT_POSITION":
         return generic.JointPositionController(interpolator=interpolator, **params)
+    elif name == "JOINT_TORQUE":
+        return generic.JointTorqueController(interpolator=interpolator, **params)
     raise ValueError("Unknown controller name: {}".format(name))
 
 

@@ -43,3 +43,8 @@ ALL_GRIPPERS = GRIPPER_MAPPING.keys()
 def register_gripper(target_class):
     GRIPPER_MAPPING[target_class.__name__] = target_class
     return target_class
+
+
+# Imported after register_gripper is defined so the @register_gripper decorator
+# resolves (these grippers self-register into GRIPPER_MAPPING).
+from .sonic_dex3_gripper import SonicDex3LeftGripper, SonicDex3RightGripper  # noqa: E402,F401

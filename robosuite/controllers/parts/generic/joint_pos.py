@@ -177,6 +177,18 @@ class JointPositionController(Controller):
 
         self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
 
+        # --- optional PD+feedforward extensions, for streaming an external joint PD
+        # command (e.g. the SONIC whole-body controller). All default to the standard
+        # JointPositionController behavior:
+        #   desired_vel        : velocity setpoint dq* (default 0 -> kd damps to rest)
+        #   torque_feedforward : additive feedforward torque tau_ff (default 0)
+        #   torque_limits      : [low, high] clip on the OUTPUT torque (default None
+        #                        -> no clip; relies on the actuator ctrlrange instead)
+        njnt = len(self.qpos_index)
+        self.desired_vel = np.zeros(njnt)
+        self.torque_feedforward = np.zeros(njnt)
+        self.torque_limits = np.array(kwargs["torque_limits"]) if kwargs.get("torque_limits") is not None else None
+
     def set_goal(self, action, set_qpos=None):
         """
         Sets goal based on input @action. If self.impedance_mode is not "fixed", then the input will be parsed into the
@@ -230,6 +242,28 @@ class JointPositionController(Controller):
         if self.interpolator is not None:
             self.interpolator.set_goal(self.goal_qpos)
 
+    def set_pd_command(self, qpos, qvel=None, kp=None, kd=None, tau_feedforward=None):
+        """Set an absolute joint-space PD command directly, bypassing the delta/scaling
+        machinery of set_goal: goal position q*, optional velocity setpoint dq*,
+        optional per-joint gains kp/kd, and optional feedforward torque tau_ff. The
+        resulting torque (run_controller) is
+
+            tau = tau_ff + kp*(q* - q) + kd*(dq* - dq)   [+ mass/gravity comp if enabled]
+
+        Used when an external policy streams a full per-joint PD command each step
+        (e.g. SONIC over DDS) rather than robosuite scaling a position action."""
+        self.goal_qpos = np.asarray(qpos, dtype=float)
+        if qvel is not None:
+            self.desired_vel = np.asarray(qvel, dtype=float)
+        if kp is not None:
+            self.kp = np.asarray(kp, dtype=float)
+        if kd is not None:
+            self.kd = np.asarray(kd, dtype=float)
+        if tau_feedforward is not None:
+            self.torque_feedforward = np.asarray(tau_feedforward, dtype=float)
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_qpos)
+
     def run_controller(self):
         """
         Calculates the torques required to reach the desired setpoint
@@ -258,14 +292,18 @@ class JointPositionController(Controller):
             desired_qpos = np.array(self.goal_qpos)
 
         position_error = desired_qpos - self.joint_pos
-        vel_pos_error = -self.joint_vel
+        vel_pos_error = self.desired_vel - self.joint_vel  # dq* - dq (dq*=0 by default)
         desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
-        # Return desired torques plus gravity compensations
+        # Return desired torques plus gravity compensation (if enabled) plus feedforward
         if self.use_torque_compensation:
-            self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
+            self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation + self.torque_feedforward
         else:
-            self.torques = desired_torque
+            self.torques = desired_torque + self.torque_feedforward
+
+        # Optional output torque clip (e.g. per-motor effort limits); off by default
+        if self.torque_limits is not None:
+            self.torques = np.clip(self.torques, self.torque_limits[0], self.torque_limits[1])
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
