@@ -25,8 +25,19 @@ from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas import EmptyArena
 from robosuite.models.grippers.sonic_dex3_gripper import SonicDex3LeftGripper, SonicDex3RightGripper
 from robosuite.models.robots.manipulators.sonic_g1_robot import SonicG1, SonicG1Fixed
+import robosuite.controllers.composite.sonic_whole_body_controller as sonic_wbc
 from robosuite.controllers.composite.sonic_whole_body_controller import (
-    SonicWholeBodyController, set_sonic_source_factory, WBC_CONFIG)
+    SonicWholeBodyController, WBC_CONFIG)
+
+_REAL_DDS = sonic_wbc.DDSCommandSource
+
+
+def _patch_source(fn):
+    """Drive SonicWholeBodyController off `fn(cfg)` instead of the live DDS backend, by
+    overwriting the module's DDSCommandSource symbol (restored with fn=None). Lets the
+    tests exercise the control flow with a mock/replay source -- no test-only hook in the
+    controller itself."""
+    sonic_wbc.DDSCommandSource = fn if fn is not None else _REAL_DDS
 
 GEAR_MODEL = ("/home/ajay/code/GR00T-WholeBodyControl/gear_sonic/"
               "data/robot_model/model_data/g1/g1_29dof_with_hand.xml")
@@ -154,7 +165,7 @@ def test_sonic_wbc_robosuite_make_matches_engine():
 
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
                             "controllers", "config", "robots", "default_sonic_g1.json")
-    set_sonic_source_factory(lambda c: _MockWithHands(
+    _patch_source(lambda c: _MockWithHands(
         np.zeros((1, 29)), np.array(c["MOTOR_KP"][:29], float), np.array(c["MOTOR_KD"][:29], float),
         np.full(7, 2.0), np.full(7, 0.1)))
     try:
@@ -181,7 +192,7 @@ def test_sonic_wbc_robosuite_make_matches_engine():
         finally:
             env.close()
     finally:
-        set_sonic_source_factory(None)
+        _patch_source(None)
 
 
 GOLD_DIR = "/home/ajay/code/sonic_robosuite/tests/gold"
@@ -209,7 +220,7 @@ def test_sonic_g1_floating_base_in_env():
     the robot's own freejoint."""
     from robosuite.scripts.collect_sonic_g1_demos import SonicArenaEnv, SONIC_CFG, match_base_sim_physics
     from robosuite.utils.sonic.controller import G1SonicController
-    set_sonic_source_factory(_mock_factory())
+    _patch_source(_mock_factory())
     try:
         env = SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=SONIC_CFG),
                             has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
@@ -231,7 +242,7 @@ def test_sonic_g1_floating_base_in_env():
         assert np.all(np.isfinite(env.sim.data.ctrl))
         env.close()
     finally:
-        set_sonic_source_factory(None)
+        _patch_source(None)
 
 
 @pytest.mark.skipif(not (os.path.exists(WBC_CONFIG) and os.path.isdir(GOLD_DIR)),
@@ -244,7 +255,7 @@ def test_sonic_data_collection_replay(tmp_path):
     from robosuite.wrappers import DataCollectionWrapper
 
     factory, gold = C.make_source_factory("replay", "squat_001__A359")
-    set_sonic_source_factory(factory)
+    _patch_source(factory)
     try:
         base = C.SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=C.SONIC_CFG),
                                has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
@@ -269,4 +280,71 @@ def test_sonic_data_collection_replay(tmp_path):
             assert not np.all(a == 0)  # SONIC targets recorded
             assert f["data"][demos[0]].attrs["model_file"]  # replayable model
     finally:
-        set_sonic_source_factory(None)
+        _patch_source(None)
+
+
+@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
+def test_sonic_startup_band_is_object_safe():
+    """The live-DDS startup hold is an elastic band -- a force on the PELVIS body only,
+    NEVER a qpos write. Regression: the old freeze/fall-recovery pinned the WHOLE qpos
+    vector, which would teleport any free task object (e.g. TwoArmLift's pot) back to a
+    snapshot each step. Here we perturb the pot, step, and assert (a) the pot evolves
+    freely (not snapped back), (b) the band applies a force to the pelvis, and (c)
+    releasing the band zeros that force."""
+    from robosuite.utils.sonic.sources import ReferenceMockSource
+
+    class _BandMock(ReferenceMockSource):
+        """Zero-target body PD that also carries a .bridge, so the controller's live-DDS
+        band branch runs (the real DDSCommandSource's bridge is what gates it)."""
+        def __init__(self, cfg):
+            super().__init__(np.zeros((1, 29)), np.array(cfg["MOTOR_KP"][:29], float),
+                             np.array(cfg["MOTOR_KD"][:29], float))
+            # low_cmd_received=False = the startup-hold window: exactly when the OLD code
+            # pinned the whole qpos every step (so this is a true regression guard).
+            self.bridge = type("B", (), {"low_cmd_received": False})()
+
+    cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
+                            "controllers", "config", "robots", "default_sonic_g1.json")
+    _patch_source(lambda c: _BandMock(c))
+    try:
+        # floating SonicG1 in an env WITH a free task object (the pot)
+        env = robosuite.make("TwoArmLift", robots=["SonicG1"],
+                             controller_configs=load_composite_controller_config(controller=cfg_path),
+                             has_renderer=False, has_offscreen_renderer=False,
+                             use_camera_obs=False, control_freq=20)
+        try:
+            env.reset()
+            cc = env.robots[0].composite_controller
+            m = env.sim.model._model
+            md = env.sim.data._data
+            env.step(np.zeros(env.action_dim))  # builds the engine + band; sets _pelvis_bid
+            assert cc._pelvis_bid is not None, "floating base not detected"
+
+            # locate a NON-robot freejoint (the pot) by its body name
+            pelvis_bid = cc._pelvis_bid
+            pot_qadr = next(
+                int(m.jnt_qposadr[j]) for j in range(m.njnt)
+                if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
+                and "pelvis" not in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or ""))
+
+            # (a) perturb the pot, step, and confirm it was NOT snapped back to a snapshot
+            before = np.array(md.qpos[pot_qadr:pot_qadr + 3])
+            md.qpos[pot_qadr] += 0.15
+            env.sim.forward()
+            moved_to = float(md.qpos[pot_qadr])
+            env.step(np.zeros(env.action_dim))
+            after = float(md.qpos[pot_qadr])
+            assert abs(after - before[0]) > 0.1, "pot was teleported back -- qpos clobbered!"
+            assert abs(after - moved_to) < 0.05, "pot did not evolve from its perturbed pose"
+
+            # (b) the band applies a force to the pelvis while enabled
+            assert np.any(md.xfrc_applied[pelvis_bid] != 0.0), "band applied no force"
+
+            # (c) releasing the band zeros that force
+            cc.release_band()
+            env.step(np.zeros(env.action_dim))
+            assert np.all(md.xfrc_applied[pelvis_bid] == 0.0), "band force not cleared on release"
+        finally:
+            env.close()
+    finally:
+        _patch_source(None)

@@ -18,6 +18,8 @@ The robosuite action is ignored (control comes from DDS), so set_goal is a no-op
 Select via a composite config with "type": "SONIC_WBC"; the same SonicG1 can instead
 be driven by standard controllers (OSC etc.) via a BASIC config.
 """
+import os
+
 import mujoco
 import numpy as np
 import yaml
@@ -26,37 +28,33 @@ from robosuite.controllers.composite.composite_controller import (
 from robosuite.utils.sonic.controller import G1SonicController
 from robosuite.utils.sonic.sources import DDSCommandSource
 
-# SONIC PD gains / effort limits (gear_sonic model config). External dependency of
-# the live SONIC stack; override via SonicWholeBodyController.config_path if needed.
-WBC_CONFIG = ("/home/ajay/code/GR00T-WholeBodyControl/gear_sonic/"
-              "utils/mujoco_sim/wbc_configs/g1_29dof_sonic_model12.yaml")
 
-# Command-source injection hook: callable(config) -> CommandSource. Default = live
-# DDS (needs the C++ stack); tests set a mock (no DDS) via set_sonic_source_factory.
-_SOURCE_FACTORY = None
-
-
-def set_sonic_source_factory(fn):
-    """Override how the controller obtains its command source (default: live DDS)."""
-    global _SOURCE_FACTORY
-    _SOURCE_FACTORY = fn
+def _wbc_config_path():
+    """Path to the SONIC WBC config (PD gains + effort limits) inside the installed
+    gear_sonic package."""
+    import gear_sonic
+    return os.path.join(os.path.dirname(gear_sonic.__file__),
+                        "utils", "mujoco_sim", "wbc_configs", "g1_29dof_sonic_model12.yaml")
 
 
 @register_composite_controller
 class SonicWholeBodyController(CompositeController):
     name = "SONIC_WBC"
-    config_path = WBC_CONFIG
 
     def __init__(self, sim, robot_model, grippers):
         super().__init__(sim, robot_model, grippers)
+        self.config_path = _wbc_config_path()   # SONIC WBC config, located in gear_sonic
         with open(self.config_path) as f:
             self._cfg = yaml.load(f, Loader=yaml.FullLoader)
-        factory = _SOURCE_FACTORY or (lambda c: DDSCommandSource(c))
-        self._src = factory(self._cfg)
+        self._src = DDSCommandSource(self._cfg)
         self._sonic = None       # built lazily on first run (sim fully compiled by then)
         self._part_plan = None   # part -> [(src_key, cmd_index) per joint, joint order]
-        self._freeze_qpos = None  # stand pose: pinned during startup + the fall-recovery target
-        self.fall_z = 0.2         # base_sim-style check_fall: snap back to stand if base drops here
+        # Startup elastic band: a spring-damper force on the PELVIS body only (never a
+        # qpos write), holding the floating base up during the ~18s C++ handoff. Released
+        # manually (band_enabled -> False, e.g. a viewer key) once the policy balances.
+        self._band = None
+        self._pelvis_bid = None
+        self.band_enabled = True
         self.verify = False      # test hook: stash the engine reference torque each step
         self.ref_ctrl = None
         self.last_command = None  # (cmd, hands) from the last exchange (for demo recording)
@@ -70,39 +68,82 @@ class SonicWholeBodyController(CompositeController):
     def reset(self):
         self._sonic = None
         self._part_plan = None
-        self._freeze_qpos = None
+        self._band = None
+        self._pelvis_bid = None
+        self.band_enabled = True
         self.ref_ctrl = None
+
+    def release_band(self):
+        """Drop the startup elastic band (manual handoff release). Idempotent; after this
+        the policy balances the floating base on its own."""
+        self.band_enabled = False
+
+    def toggle_band(self):
+        """Flip the startup band on/off (for a viewer key, mirroring base_sim's '9')."""
+        self.band_enabled = not self.band_enabled
 
     def _prepare(self):
         """Build, once, the per-part command-routing plan and configure each part
         controller for SONIC: clip its output torque to per-motor effort and disable
         gravity compensation (the gripper sub-config can't carry these through
         robosuite's _load_arm_controllers, so we force them here)."""
-        s = self._sonic
-        m = s._mj_model
-        # joint name -> (src_key, index-within-that-command, per-motor effort)
-        cmd_index = {n: ("body", i, float(s.effort_limit[i]))
-                     for i, n in enumerate(s.motor_joint_names)}
-        if s.has_hands:
-            for i, n in enumerate(s._lh_names):
-                cmd_index[n] = ("lhand", i, float(s._lh_eff[i]))
-            for i, n in enumerate(s._rh_names):
-                cmd_index[n] = ("rhand", i, float(s._rh_eff[i]))
+        engine = self._sonic
+        model = engine._mj_model
+        # joint name -> (source_key, index-within-that-command, per-motor effort)
+        cmd_index = {name: ("body", i, float(engine.effort_limit[i]))
+                     for i, name in enumerate(engine.motor_joint_names)}
+        if engine.has_hands:
+            for i, name in enumerate(engine._lh_names):
+                cmd_index[name] = ("lhand", i, float(engine._lh_eff[i]))
+            for i, name in enumerate(engine._rh_names):
+                cmd_index[name] = ("rhand", i, float(engine._rh_eff[i]))
 
         self._part_plan = {}
-        for part, c in self.part_controllers.items():
-            names = [mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, int(j))
-                     for j in c.joint_index]
-            plan, eff = [], []
-            for n in names:
-                key, idx, e = cmd_index[n]
-                plan.append((key, idx)); eff.append(e)
+        for part, part_ctrl in self.part_controllers.items():
+            joint_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, int(j))
+                           for j in part_ctrl.joint_index]
+            plan, efforts = [], []
+            for name in joint_names:
+                source_key, cmd_idx, effort = cmd_index[name]
+                plan.append((source_key, cmd_idx)); efforts.append(effort)
             self._part_plan[part] = plan
-            eff = np.array(eff)
-            c.torque_limits = np.array([-eff, eff])     # == SONIC's effort clip
-            if hasattr(c, "use_torque_compensation"):
-                c.use_torque_compensation = False       # SONIC adds no gravity comp
-            c.interpolator = None                        # apply the command as-is
+            efforts = np.array(efforts)
+            part_ctrl.torque_limits = np.array([-efforts, efforts])   # == SONIC's effort clip
+            if hasattr(part_ctrl, "use_torque_compensation"):
+                part_ctrl.use_torque_compensation = False   # SONIC adds no gravity comp
+            part_ctrl.interpolator = None                    # apply the command as-is
+
+        # PELVIS body that carries the floating base (the engine's chosen freejoint) --
+        # where the startup band applies its force. None on a fixed base (no freejoint).
+        self._pelvis_bid = None
+        if engine.free_qadr is not None:
+            self._pelvis_bid = next(
+                (int(model.jnt_bodyid[j]) for j in range(model.njnt)
+                 if model.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
+                 and int(model.jnt_qposadr[j]) == engine.free_qadr), None)
+
+    def _apply_band(self, mj_data):
+        """Hold the floating base up during the C++ startup/handoff with an elastic band:
+        a spring-damper force + uprighting torque on the PELVIS body, written to
+        mj_data.xfrc_applied[pelvis] ONLY -- never a qpos write, so task objects evolve
+        under normal physics (unlike a full-state pin, which teleported everything).
+        Reuses gear_sonic's ElasticBand (the same law base_sim uses), anchored at the
+        robot's spawn pose. Cleared when band_enabled is False (manual release)."""
+        bid = self._pelvis_bid
+        if not self.band_enabled:
+            mj_data.xfrc_applied[bid] = 0.0
+            return
+        if self._band is None:
+            from gear_sonic.utils.mujoco_sim.unitree_sdk2py_bridge import ElasticBand
+            self._band = ElasticBand()
+            self._band.point = np.array(mj_data.xpos[bid])  # anchor at the spawn stand pose
+            self._band.length = 0.0
+        model = self._sonic._mj_model
+        vel = np.zeros(6)  # mj_objectVelocity -> [angular(3), linear(3)] in world frame
+        mujoco.mj_objectVelocity(model, mj_data, mujoco.mjtObj.mjOBJ_BODY, bid, vel, 0)
+        # ElasticBand.Advance wants pose = [pos(3), quat(4), lin_vel(3), ang_vel(3)]
+        pose = np.concatenate([mj_data.xpos[bid], mj_data.xquat[bid], vel[3:6], vel[0:3]])
+        mj_data.xfrc_applied[bid] = self._band.Advance(pose)
 
     def run_controller(self, enabled_parts):
         if self._sonic is None:
@@ -110,56 +151,45 @@ class SonicWholeBodyController(CompositeController):
         if self._part_plan is None:
             self._prepare()
 
-        # Live-DDS startup hold + fall recovery (mock/replay have no .bridge -> skipped):
-        md = self.sim.data._data if hasattr(self.sim.data, "_data") else self.sim.data
+        # Live-DDS startup hold: hold the floating base up with an elastic band on the
+        # pelvis until the policy is balancing and the band is manually released. Object-
+        # safe (force only, no qpos write). Mock/replay have no .bridge -> skipped. There
+        # is NO fall recovery: a mid-episode collapse stays down (by design).
+        mj_data = self.sim.data._data if hasattr(self.sim.data, "_data") else self.sim.data
         bridge = getattr(self._src, "bridge", None)
-        if bridge is not None:
-            if not bridge.low_cmd_received:
-                # STARTUP FREEZE: pin the env-placed stand pose + publish it as lowstate
-                # until the C++ sends its first command (a static PD can't hold a free-
-                # floating humanoid up over the ~18s load). Captures the stand on entry.
-                if self._freeze_qpos is None:
-                    self._freeze_qpos = np.array(md.qpos)
-                md.qpos[:] = self._freeze_qpos
-                md.qvel[:] = 0.0
-                mujoco.mj_forward(self._sonic._mj_model, md)
-                self._sonic.exchange()
-                self.last_command = (None, None)
-                return {}
-            elif (self._freeze_qpos is not None and self._sonic.free_qadr is not None
-                  and float(md.qpos[self._sonic.free_qadr + 2]) < self.fall_z):
-                # FALL RECOVERY (base_sim check_fall): a genuine collapse (base at floor
-                # level) -> snap back to the stand. Fires only below fall_z, so it never
-                # triggers on normal walk/squat / never teleports the base mid-motion; it
-                # keeps the robot up through the pre-']' ready-hold window (the C++'s non-
-                # balancing hold would otherwise topple the free base). TEMPORARY: a proper
-                # startup handoff (e.g. an elastic band released on policy-active) is TODO.
-                md.qpos[:] = self._freeze_qpos
-                md.qvel[:] = 0.0
-                mujoco.mj_forward(self._sonic._mj_model, md)
+        if bridge is not None and self._pelvis_bid is not None:
+            self._apply_band(mj_data)
 
         _obs, cmd, hands = self._sonic.exchange()
         self.last_command = (cmd, hands)
-        out = {}
+        outputs = {}
         if cmd is None:
-            return out  # nothing from the source yet; hold current ctrl
-        lcmd, rcmd = hands if hands is not None else (None, None)
-        srcs = {"body": cmd, "lhand": lcmd, "rhand": rcmd}
+            return outputs  # nothing from the source yet; hold current ctrl
+        left_hand_cmd, right_hand_cmd = hands if hands is not None else (None, None)
+        cmd_by_source = {"body": cmd, "lhand": left_hand_cmd, "rhand": right_hand_cmd}
 
-        for part, c in self.part_controllers.items():
+        for part, part_ctrl in self.part_controllers.items():
             if not enabled_parts.get(part, False):
                 continue
             plan = self._part_plan[part]
-            if any(srcs[k] is None for k, _ in plan):
+            if any(cmd_by_source[source_key] is None for source_key, _ in plan):
                 continue  # command for this part unavailable (e.g. hands before DDS hand cmd)
-            qd = np.array([srcs[k].q[i] for k, i in plan])
-            dqd = np.array([srcs[k].dq[i] for k, i in plan])
-            kp = np.array([srcs[k].kp[i] for k, i in plan])
-            kd = np.array([srcs[k].kd[i] for k, i in plan])
-            tau = np.array([srcs[k].tau[i] for k, i in plan])
-            c.set_pd_command(qd, dqd, kp, kd, tau)       # JointPositionController PD law
-            out[part] = c.run_controller()
+            q_des = np.array([cmd_by_source[source_key].q[i] for source_key, i in plan])
+            dq_des = np.array([cmd_by_source[source_key].dq[i] for source_key, i in plan])
+            kp = np.array([cmd_by_source[source_key].kp[i] for source_key, i in plan])
+            kd = np.array([cmd_by_source[source_key].kd[i] for source_key, i in plan])
+            tau = np.array([cmd_by_source[source_key].tau[i] for source_key, i in plan])
+            part_ctrl.set_pd_command(q_des, dq_des, kp, kd, tau)   # JointPositionController PD law
+            outputs[part] = part_ctrl.run_controller()
 
         if self.verify:  # test-only: the engine's own torque on the SAME state
             self.ref_ctrl = self._sonic.compute_torques(cmd, hands)
-        return out
+        return outputs
+
+
+# Convenience export for tests/scripts; "" if gear_sonic isn't installed (so `import
+# robosuite` stays safe and the SONIC_WBC tests' skipif resolves correctly).
+try:
+    WBC_CONFIG = _wbc_config_path()
+except Exception:
+    WBC_CONFIG = ""

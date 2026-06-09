@@ -12,9 +12,10 @@ locomotion/whole-body motions are not obstructed by a manipulation table.
 Driving (the per-motor PD command stream) comes from a CommandSource:
   --mode dds     : LIVE interactive backend driven by the C++ SONIC controller over
                    Unitree DDS, running in ANOTHER terminal. This process publishes
-                   lowstate + applies the received lowcmd, holds the stand pose until
-                   the C++ engages, and recovers (snap to stand) if the robot falls.
-                   Closed-loop -> stays balanced -> tracks whatever you drive ('T'/'N'/'P').
+                   lowstate + applies the received lowcmd; an elastic band on the pelvis
+                   holds the floating base up during the C++ handoff (press '9' in the
+                   viewer to release it once balancing; no fall recovery -- a collapse
+                   stays down). Closed-loop -> tracks whatever you drive ('T'/'N'/'P').
                    (Recording to hdf5 in this mode is a TODO; this runs the live loop.)
   --mode replay  : deterministic golden command stream (no C++); records a demo.hdf5.
                    Open-loop, so it drifts after a few seconds -- good for a self-test
@@ -37,20 +38,26 @@ import argparse
 import datetime
 import json
 import os
-import sys
 
 import mujoco
 import numpy as np
 
 import robosuite  # noqa: F401  (registers SonicG1 / Dex3 / SONIC_WBC)
 from robosuite.controllers import load_composite_controller_config
-from robosuite.controllers.composite.sonic_whole_body_controller import (
-    WBC_CONFIG, set_sonic_source_factory)
+import robosuite.controllers.composite.sonic_whole_body_controller as sonic_wbc
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import EmptyArena
 from robosuite.models.tasks import ManipulationTask
 from robosuite.utils.sonic.controller import G1SonicController
 from robosuite.wrappers import DataCollectionWrapper
+
+_REAL_DDS = sonic_wbc.DDSCommandSource
+
+
+def _patch_source(fn):
+    """Drive SonicWholeBodyController off `fn(cfg)` (mock/replay) instead of the live DDS
+    backend by overwriting the module's DDSCommandSource symbol; fn=None restores it."""
+    sonic_wbc.DDSCommandSource = fn if fn is not None else _REAL_DDS
 
 # gold command-stream recordings (per motion) live in the sonic_robosuite harness repo.
 GOLD_DIR = "/home/ajay/code/sonic_robosuite/tests/gold"
@@ -192,7 +199,7 @@ def render_qpos_video(qpos_seq, out_mp4, fps=30, track=True):
     import subprocess
     from robosuite.utils.sonic.sources import ReferenceMockSource
     qpos_seq = np.asarray(qpos_seq)
-    set_sonic_source_factory(lambda c: ReferenceMockSource(
+    _patch_source(lambda c: ReferenceMockSource(
         np.zeros((1, 29)), np.array(c["MOTOR_KP"][:29], float), np.array(c["MOTOR_KD"][:29], float)))
     try:
         env = SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=SONIC_CFG),
@@ -226,7 +233,7 @@ def render_qpos_video(qpos_seq, out_mp4, fps=30, track=True):
             r.update_scene(d, camera=cam); ff.stdin.write(r.render().tobytes())
         ff.stdin.close(); ff.wait(); env.close()
     finally:
-        set_sonic_source_factory(None)
+        _patch_source(None)
     print(f"[video] wrote {out_mp4}", flush=True)
     return out_mp4
 
@@ -243,10 +250,9 @@ def make_source_factory(mode, motion):
             np.array(c["MOTOR_KD"][:29], float))), gold
     if mode == "dds":
         from robosuite.utils.sonic.sources import DDSCommandSource
-        # NO hold command: the controller pins the stand pose during startup and gates
-        # release on real PD gains (kp >> 0). A hold-PD command is redundant (the pin
-        # holds the robot) and would confound that gate (its kp is large), so read()
-        # returns None until the C++ actually speaks.
+        # NO hold command: the controller's elastic band holds the floating base up
+        # during startup, so read() can simply return None (limp joints) until the C++
+        # speaks -- a hold-PD command would be redundant with the band.
         return (lambda c: DDSCommandSource(c)), gold
     raise ValueError(mode)
 
@@ -255,12 +261,14 @@ def run_dds_interactive(env, gold, render=True, max_steps=None, record_qpos=Fals
     """Live interactive backend: the robot is driven by the C++ SONIC controller running
     in ANOTHER terminal (this process publishes lowstate + applies the received lowcmd).
 
-    The startup hold is handled INSIDE SonicWholeBodyController (it pins the env-placed
-    stand pose until the C++ sends its first command), so this loop is just: place the
-    robot at a stand, step in real time, render. There is NO fall recovery -- if the
-    robot falls during teleop it stays down (by design). The robot follows whatever you
-    drive from the C++ terminal (']' start; '[ENTER]'->planner, 'W'/'T'/'N'/'P').
-    Ctrl-C to stop.
+    The startup hold is handled INSIDE SonicWholeBodyController (an elastic band on the
+    pelvis holds the floating base up during the C++ handoff -- object-safe, no qpos
+    pin), so this loop is just: place the robot at a stand, step in real time, render.
+    Press '9' in the viewer to drop the band once the policy is balancing (and before
+    commanding locomotion -- the band anchors the pelvis horizontally). There is NO fall
+    recovery -- if the robot falls during teleop it stays down (by design). The robot
+    follows whatever you drive from the C++ terminal (']' start; '[ENTER]'->planner,
+    'W'/'T'/'N'/'P'). Ctrl-C to stop.
 
     RENDERING uses a passive mujoco viewer synced at ~50 Hz -- NOT robosuite's per-step
     env.render() (the OpenCVViewer's synchronous offscreen render + cv2.imshow +
@@ -277,14 +285,14 @@ def run_dds_interactive(env, gold, render=True, max_steps=None, record_qpos=Fals
     does not close a loop on wall-clock-paced base velocity.
 
     qpos is recorded only AFTER the C++ engages (so a video doesn't begin with the
-    ~18s C++-load freeze). max_steps bounds the loop. Returns (base_z, qpos traces)."""
+    ~18s band-held startup hold). max_steps bounds the loop. Returns (base_z, qpos)."""
     import time
     cc = env.robots[0].composite_controller
     if cc._sonic is None:
         cc._sonic = G1SonicController(cc.sim, cc._src, cc._cfg)
     s = cc._sonic
     md = env.sim.data._data if hasattr(env.sim.data, "_data") else env.sim.data
-    set_init_pose(env, gold)  # place the robot at a stand; the controller freezes it here
+    set_init_pose(env, gold)  # place the robot at a stand; the band holds it there
     bridge = getattr(cc._src, "bridge", None)
     sim_dt = float(env.sim.model._model.opt.timestep)
     action = np.zeros(env.action_dim)
@@ -296,8 +304,16 @@ def run_dds_interactive(env, gold, render=True, max_steps=None, record_qpos=Fals
     if render:
         import mujoco.viewer
         m = env.sim.model._model
+        # '9' toggles the startup elastic band (mirrors base_sim): the band holds the
+        # floating base up during the C++ handoff; drop it once the policy is balancing
+        # and before commanding locomotion (it anchors the pelvis horizontally).
+        def _key_callback(key):
+            if key == ord("9"):
+                cc.toggle_band()
+                print(f"[collect] elastic band -> {'ON' if cc.band_enabled else 'OFF'}", flush=True)
         try:
-            viewer = mujoco.viewer.launch_passive(m, md, show_left_ui=False, show_right_ui=False)
+            viewer = mujoco.viewer.launch_passive(m, md, show_left_ui=False, show_right_ui=False,
+                                                  key_callback=_key_callback)
             pelvis = next((b for b in range(m.nbody) if "pelvis" in
                            (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, b) or "")), -1)
             cam = viewer.cam
@@ -372,7 +388,7 @@ def main():
         os.environ.setdefault("SONIC_G1_XML", WITH_HAND_XML)
 
     factory, gold = make_source_factory(args.mode, args.motion)
-    set_sonic_source_factory(factory)
+    _patch_source(factory)
     cfg = load_composite_controller_config(controller=SONIC_CFG)
 
     base = SonicArenaEnv(
