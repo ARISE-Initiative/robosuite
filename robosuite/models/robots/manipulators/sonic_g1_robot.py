@@ -23,6 +23,12 @@ class SonicG1(LeggedManipulatorModel):
 
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("robots/sonic_g1/robot.xml"), idn=idn)
+        # robosuite derives _base_offset (-> bottom_offset) from the root body's authored
+        # pos; our pelvis is authored at its standing height (z=0.793), so set_base_xpos
+        # would otherwise place the pelvis that far underground. Zero it so base_xpos_offset
+        # z IS the pelvis standing height the env places it at (the GR1 convention -- GR1's
+        # root is authored at ~0, so it doesn't need this).
+        self._base_offset = np.zeros(3)
 
     @property
     def default_base(self):
@@ -49,10 +55,14 @@ class SonicG1(LeggedManipulatorModel):
 
     @property
     def base_xpos_offset(self):
+        # z = the pelvis standing height: the env places the free-floating base directly
+        # here (bottom_offset is zeroed in __init__). x,y stand the robot in front of the
+        # env's table / clear of its bins.
+        STAND_Z = 0.793
         return {
-            "bins": (-0.5, -0.1, 0.0),
-            "empty": (-0.29, 0, 0.0),
-            "table": lambda table_length: (-0.26 - table_length / 2, 0, 0.0),
+            "bins": (-0.5, -0.1, STAND_Z),
+            "empty": (-0.29, 0, STAND_Z),
+            "table": lambda table_length: (-0.26 - table_length / 2, 0, STAND_Z),
         }
 
     @property

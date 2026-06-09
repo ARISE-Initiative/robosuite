@@ -121,15 +121,19 @@ def main():
                 return s.replace(a, b)
         return s
 
-    # Convert the named free joint -> <freejoint/> (robosuite convention): lets
-    # LeggedManipulatorModel._remove_free_joint() drop it for the fixed variant, and
-    # keeps robosuite's joint classification from treating it as an arm joint.
+    # Convert the named free joint -> <freejoint name="root"/> (robosuite convention): the
+    # <freejoint> TAG (not <joint type="free">) keeps robosuite's joint classification from
+    # treating it as an arm joint, and lets LeggedManipulatorModel._remove_free_joint() drop
+    # it for the fixed variant (both match by tag). We KEEP a name on it ("root") so the joint
+    # is named: robocasa fixtures (e.g. oven/toaster_oven update_state) iterate
+    # env.sim.model.joint_names doing `"rack" in joint_name`, which crashes on an unnamed
+    # (None) joint -- so an unnamed freejoint broke every kitchen layout that has an oven.
     for b in wb.iter("body"):
         for j in list(b):
             if j.tag == "joint" and j.get("type") == "free":
                 i = list(b).index(j)
                 b.remove(j)
-                b.insert(i, ET.Element("freejoint"))
+                b.insert(i, ET.Element("freejoint", {"name": "root"}))
     for j in wb.iter("joint"):
         if j.get("name"):
             j.set("name", _rn(j.get("name")))

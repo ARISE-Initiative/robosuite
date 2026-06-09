@@ -6,8 +6,12 @@ composite controller (per-part JointPositionController PD) inside a real robosui
 ``Environment``, wrapped in robosuite's ``DataCollectionWrapper`` so every sim step is
 recorded and packed into a robosuite-format ``demo.hdf5``.
 
-The robot is dropped into a table-free ``EmptyArena`` (``SonicArenaEnv`` below) so the
-locomotion/whole-body motions are not obstructed by a manipulation table.
+By default the robot is dropped into a table-free ``EmptyArena`` (``SonicArenaEnv``
+below) so locomotion/whole-body motions are unobstructed. ``--environment`` instead
+loads ANY registered robosuite env (Lift, Stack, TwoArmLift, ...): this is now safe for
+object/table envs because the startup elastic band no longer pins the whole qpos (task
+objects evolve under normal physics). The env handles the robot's x,y + facing (it's
+already placed in front of the table); set_init_pose only lifts it to standing height.
 
 Driving (the per-motor PD command stream) comes from a CommandSource:
   --mode dds     : LIVE interactive backend driven by the C++ SONIC controller over
@@ -33,6 +37,10 @@ Examples:
   # self-test the recording pipeline headless (no C++):
   python -m robosuite.scripts.collect_sonic_g1_demos --mode replay --motion squat_001__A359 \
       --out /tmp/sonic_demos --steps 1200 --no-render
+
+  # in a real manipulation env (robot is auto-placed in front of the table):
+  python -m robosuite.scripts.collect_sonic_g1_demos --mode replay --environment Lift \
+      --steps 300 --no-render
 """
 import argparse
 import datetime
@@ -117,17 +125,31 @@ def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005):
             model.geom_solref[g] = [0.02, 1.0]
 
 
+def make_env(env_name, robot, cfg, has_renderer):
+    """Build the env that SONIC drives: the table-free ``SonicArenaEnv`` (default) or ANY
+    registered robosuite env via ``robosuite.make`` (e.g. Lift / Stack / TwoArmLift). Real
+    object/table envs are now safe -- the startup elastic band no longer pins the whole
+    qpos, so task objects evolve under normal physics. control_freq=500 matches base_sim.
+    The env places the robot's x,y + facing (e.g. in front of the table); set_init_pose
+    only fixes the standing height (see there)."""
+    kw = dict(robots=[robot], controller_configs=cfg, has_renderer=has_renderer,
+              has_offscreen_renderer=False, use_camera_obs=False, control_freq=500,
+              hard_reset=False, ignore_done=True, horizon=10_000_000)
+    if env_name in ("SonicArena", "Empty", "empty"):
+        return SonicArenaEnv(**kw)
+    return robosuite.make(env_name, **kw)
+
+
 def set_init_pose(env, gold):
-    """Place the free-floating robot in the motion's frame-0 pose: base pose +
-    per-motor body/hand joint angles (name-mapped via the SONIC controller's index
-    maps, so it's robust to the model's qpos layout)."""
+    """Set the robot's per-motor body/hand JOINT angles to the motion's frame-0 stand
+    (name-mapped via the SONIC controller's index maps). The base pose (x,y,z + facing)
+    is left to the env's placement -- SonicG1.base_xpos_offset stands it at the right
+    height in front of the table -- so this touches joints only."""
     cc = env.robots[0].composite_controller
     if cc._sonic is None:  # build the engine now so its index maps are available
         cc._sonic = G1SonicController(cc.sim, cc._src, cc._cfg)
     s = cc._sonic
     md = env.sim.data._data if hasattr(env.sim.data, "_data") else env.sim.data
-    if s.free_qadr is not None:
-        md.qpos[s.free_qadr:s.free_qadr + 7] = gold["qpos"][0][:7]
     md.qpos[s.qpos_adr] = gold["cmd_q"][0]
     if s.has_hands:
         md.qpos[s._lh[0]] = gold["lh_cmd_q"][0]
@@ -292,7 +314,7 @@ def run_dds_interactive(env, gold, render=True, max_steps=None, record_qpos=Fals
         cc._sonic = G1SonicController(cc.sim, cc._src, cc._cfg)
     s = cc._sonic
     md = env.sim.data._data if hasattr(env.sim.data, "_data") else env.sim.data
-    set_init_pose(env, gold)  # place the robot at a stand; the band holds it there
+    set_init_pose(env, gold)  # stand at the env-placed x,y; the band holds it there
     bridge = getattr(cc._src, "bridge", None)
     sim_dt = float(env.sim.model._model.opt.timestep)
     action = np.zeros(env.action_dim)
@@ -368,12 +390,18 @@ def run_dds_interactive(env, gold, render=True, max_steps=None, record_qpos=Fals
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--mode", choices=["replay", "mock", "dds"], default="replay")
+    ap.add_argument("--environment", default="SonicArena",
+                    help="env to drive in: 'SonicArena' (default, table-free EmptyArena) "
+                         "or any registered robosuite env (e.g. Lift, Stack, TwoArmLift). "
+                         "Object/table envs are now safe (the band no longer pins qpos); "
+                         "the env places the robot in front of its table automatically.")
+    ap.add_argument("--robot", default="SonicG1", help="SonicG1 (floating) or SonicG1Fixed")
     ap.add_argument("--motion", default="squat_001__A359",
                     help="replay/mock: the motion to perform (drives the robot). "
                          "dds: ONLY the spawn/stand + pre-engage hold pose -- the robot "
                          "follows the live C++/planner, not this motion (any frame-0 works).")
     ap.add_argument("--out", default="/tmp/sonic_g1_demos")
-    ap.add_argument("--steps", type=int, default=1200, help="sim steps to record (replay/mock)")
+    ap.add_argument("--steps", type=int, default=120000, help="sim steps to record (replay/mock)")
     ap.add_argument("--episodes", type=int, default=1)
     ap.add_argument("--floor-friction", type=float, default=1.0,
                     help="floor tangential friction (base_sim=1.0; raise to grip feet harder)")
@@ -391,17 +419,12 @@ def main():
     _patch_source(factory)
     cfg = load_composite_controller_config(controller=SONIC_CFG)
 
-    base = SonicArenaEnv(
-        robots=["SonicG1"], controller_configs=cfg,
-        # dds drives a passive viewer at ~50 Hz inside run_dds_interactive (keeps the sim
-        # real-time for the wall-clock-paced C++ planner); don't also create robosuite's
-        # per-step OpenCVViewer. replay/mock keep env.render() (deterministic, not coupled
-        # to wall-clock, so render rate is harmless there).
-        has_renderer=(not args.no_render) and args.mode != "dds",
-        has_offscreen_renderer=False,
-        use_camera_obs=False, control_freq=500, hard_reset=False,
-        ignore_done=True, horizon=10_000_000,
-    )
+    # dds drives a passive viewer at ~50 Hz inside run_dds_interactive (keeps the sim
+    # real-time for the wall-clock-paced C++ planner); don't also create robosuite's
+    # per-step OpenCVViewer. replay/mock keep env.render() (deterministic, not coupled
+    # to wall-clock, so render rate is harmless there).
+    base = make_env(args.environment, args.robot, cfg,
+                    has_renderer=(not args.no_render) and args.mode != "dds")
 
     # --- DDS: live interactive backend (drive the C++ in another terminal) ---
     if args.mode == "dds":
@@ -420,7 +443,8 @@ def main():
     os.makedirs(tmp_dir, exist_ok=True)
     env = DataCollectionWrapper(base, tmp_dir)
     env_name = type(base).__name__
-    env_info = {"type": "SONIC_WBC", "robot": "SonicG1", "mode": args.mode, "motion": args.motion}
+    env_info = {"type": "SONIC_WBC", "robot": args.robot, "mode": args.mode,
+                "motion": args.motion, "environment": args.environment}
     try:
         for _ in range(args.episodes):
             env.reset()
@@ -435,7 +459,7 @@ def main():
         env.close()
     finally:
         gather_to_hdf5(tmp_dir, args.out, env_name,
-                       {**env_info, "env_kwargs": {"robots": ["SonicG1"]}})
+                       {**env_info, "env_kwargs": {"robots": [args.robot]}})
 
 
 if __name__ == "__main__":

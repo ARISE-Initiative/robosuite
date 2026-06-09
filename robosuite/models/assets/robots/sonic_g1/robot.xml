@@ -63,7 +63,7 @@
   <worldbody>
     <body name="pelvis" pos="0 0 0.793">
       <inertial pos="0 0 -0.07605" quat="1 0 -0.000399148 0" mass="3.813" diaginertia="0.010549 0.0093089 0.0079184" />
-      <freejoint /><geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.2 0.2 0.2 1" mesh="pelvis" />
+      <freejoint name="root" /><geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.2 0.2 0.2 1" mesh="pelvis" />
       <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.7 0.7 0.7 1" mesh="pelvis_contour_link" />
       <geom type="mesh" rgba="0.7 0.7 0.7 1" mesh="pelvis_contour_link" />
       <body name="left_hip_pitch_link" pos="0 0.064452 -0.1027">
