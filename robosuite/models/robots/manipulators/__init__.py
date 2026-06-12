@@ -9,5 +9,6 @@ from .ur5e_robot import UR5e
 from .spot_arm import SpotArm
 from .tiago_robot import Tiago
 from .gr1_robot import GR1, GR1FixedLowerBody, GR1ArmsOnly, GR1FloatingBody
+from .g1_sonic_robot import G1Sonic
 from .xarm7_robot import XArm7
 from .sonic_g1_robot import SonicG1, SonicG1Fixed
