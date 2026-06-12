@@ -2,6 +2,7 @@
 Suction Gripper implementation.
 """
 import numpy as np
+
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
@@ -9,7 +10,7 @@ from robosuite.utils.mjcf_utils import xml_path_completion
 class SuctionGripper(GripperModel):
     """
     Suction Gripper with 1 actuator (adhesion).
-    
+
     Args:
         idn (int or str): Number or some other unique identification string for this gripper instance
     """
