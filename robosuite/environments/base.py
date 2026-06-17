@@ -226,15 +226,11 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self.cur_time = 0
         self.model_timestep = macros.SIMULATION_TIMESTEP
-        # Real-time pacing: when self.real_time is True, step() sleeps so each physics
-        # substep takes model_timestep of wall-clock -> sim advances at ~1x real time.
-        # Enable per-env with `env.real_time = True` (default off; getattr-guarded so it
-        # survives resets once set). RTF stats are printed ~1x/sec only when console
-        # logging is verbose, i.e. macros.CONSOLE_LOGGING_LEVEL == "DEBUG".
-        self.real_time = getattr(self, "real_time", False)
+        # RTF (real-time-factor) monitor: when console logging is verbose
+        # (macros.CONSOLE_LOGGING_LEVEL == "DEBUG"), step() prints a [real-time] line ~1x/sec with
+        # sim-time advanced vs wall-time elapsed. Read-only accounting -- the env does NOT throttle
+        # itself; callers that need real time pace their own step loop (e.g. the SONIC collectors).
         self._rt_verbose = macros.CONSOLE_LOGGING_LEVEL == "DEBUG"
-        self._rt_anchor = None
-        self._rt_slept = 0.0
         self._rt_n = 0
         self._rt_t0 = None
         if self.model_timestep <= 0:
@@ -526,43 +522,31 @@ class MujocoEnv(metaclass=EnvMeta):
             self._update_observables()
             policy_step = False
 
-            # --- real-time pacing per physics substep (gated by self.real_time) ---
-            # Sleep so each substep takes model_timestep of wall-clock. Accounting also
-            # runs in verbose mode (without sleeping) so RTF can be observed un-throttled.
-            if self.real_time or self._rt_verbose:
-                _now = time.perf_counter()
-                _slept = 0.0
-                if self.real_time:
-                    _anchor = (_now if self._rt_anchor is None else self._rt_anchor) + self.model_timestep
-                    _slept = _anchor - _now
-                    if _slept > 0.0:
-                        time.sleep(_slept)
-                    else:
-                        _anchor, _slept = time.perf_counter(), 0.0  # behind real time; drop debt
-                    self._rt_anchor = _anchor
-                self._rt_slept += _slept
+            # --- RTF accounting (verbose only; read-only -- this env does NOT throttle; the
+            # caller paces its own step loop if it needs real time) ---
+            if self._rt_verbose:
                 self._rt_n += 1
                 if self._rt_t0 is None:
-                    self._rt_t0 = _now
+                    self._rt_t0 = time.perf_counter()
 
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
 
-        # --- RTF report (~1x/sec), printed only when console logging is verbose ---
+        # --- RTF report (~1x/sec), printed only when console logging is verbose. Reports the
+        # achieved sim-vs-wall ratio (wall includes any pacing the caller's loop did between
+        # steps); flags sub-real-time so a too-heavy scene / loaded box is visible. ---
         if self._rt_verbose and self._rt_t0 is not None:
             _T = time.perf_counter() - self._rt_t0
             if _T >= 1.0:
                 _sim = self._rt_n * self.model_timestep
-                _slept = self._rt_slept
+                _rtf = _sim / _T
                 print(
-                    f"[real-time] {self._rt_n} substeps | wall {_T * 1e3:.0f}ms sim {_sim * 1e3:.0f}ms "
-                    f"| slept {_slept * 1e3:.0f}ms ({100.0 * _slept / _T:.0f}% idle) | RTF~{_sim / _T:.2f}x"
-                    + ("  <-- BEHIND real-time" if (self.real_time and _slept <= 0.0) else ""),
+                    f"[real-time] {self._rt_n} substeps | wall {_T * 1e3:.0f}ms | sim {_sim * 1e3:.0f}ms "
+                    f"| RTF~{_rtf:.2f}x" + ("  <-- BEHIND real-time" if _rtf < 0.97 else ""),
                     flush=True,
                 )
                 self._rt_t0 = time.perf_counter()
                 self._rt_n = 0
-                self._rt_slept = 0.0
 
         # Expensive once-per-step bookkeeping -- reward()/_check_success() and (robocasa) the
         # per-fixture update_state() loop -- dominates the step on heavy task scenes (~2.5 ms of a
