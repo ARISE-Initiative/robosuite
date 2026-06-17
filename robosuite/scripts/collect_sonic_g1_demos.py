@@ -36,6 +36,7 @@ from robosuite.controllers import load_composite_controller_config
 from robosuite.environments.manipulation.manipulation_env import ManipulationEnv
 from robosuite.models.arenas import EmptyArena
 from robosuite.models.tasks import ManipulationTask
+from robosuite.utils.sonic.action_sources import DDSActionSource
 
 SONIC_CFG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(robosuite.__file__))),
                          "robosuite", "controllers", "config", "robots", "default_sonic_g1.json")
@@ -173,7 +174,7 @@ def gather_to_hdf5(directory, out_dir, env_name, env_info):
     return hdf5_path
 
 
-def run_dds_interactive(env, render=True, external_pace=False, render_hz=20.0):
+def run_dds_interactive(env, render=True, pace=True, render_hz=20.0):
     """Live interactive driver: the robot is driven by the C++ SONIC controller running in
     ANOTHER terminal (this process publishes rt/lowstate + applies the received rt/lowcmd).
     SonicWholeBodyController owns the startup hold (an elastic band on the pelvis holds the
@@ -199,7 +200,12 @@ def run_dds_interactive(env, render=True, external_pace=False, render_hz=20.0):
     # sync the passive viewer at ~render_hz (default 20), decoupled from the 200 Hz control loop --
     # syncing every step would starve the wall-clock-paced loop.
     render_every = max(1, int(round(env.control_freq / render_hz)))
-    action = np.zeros(env.action_dim)
+    # The action IS the SONIC q* command, produced by the DDS source (the controller consumes it).
+    # The source runs OUTSIDE env.step (it publishes lowstate + reads lowcmd before stepping), so
+    # the loop -- not env.real_time -- paces the whole iteration to real time.
+    source = DDSActionSource(controller._cfg)
+    source.reset(env)
+    hold = np.zeros(env.action_dim)
     pelvis = next((b for b in range(model.nbody) if "pelvis" in
                    (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) or "")), -1)
 
@@ -236,7 +242,13 @@ def run_dds_interactive(env, render=True, external_pace=False, render_hz=20.0):
     next_step_time = time.perf_counter()
     try:
         while True:
-            env.step(action)
+            a = source.act(env)
+            if a is None:
+                env.step(hold)             # C++ not engaged yet: controller holds, band keeps pelvis up
+            else:
+                if source.gains:
+                    controller.set_command_gains(source.gains)   # constant gains captured from the stream
+                env.step(a)
             step_count += 1
             if not started and not controller.band_enabled:   # band released via '9'
                 started = True
@@ -256,8 +268,8 @@ def run_dds_interactive(env, render=True, external_pace=False, render_hz=20.0):
                     break
                 if step_count % render_every == 0:
                     viewer.sync()
-            if not external_pace:   # else env.real_time throttles per-substep inside env.step()
-                next_step_time += sim_dt
+            if pace:   # pace the WHOLE loop (source.act + env.step) to one control step of wall-clock
+                next_step_time += env.control_timestep
                 sleep_time = next_step_time - time.perf_counter()
                 if sleep_time > 0:
                     time.sleep(sleep_time)
@@ -284,10 +296,9 @@ def main():
                          "pivot/spin on turns -- a common cause of visible 'slipping')")
     ap.add_argument("--no-render", action="store_true")
     ap.add_argument("--no-real-time", dest="real_time", action="store_false", default=True,
-                    help="disable base.py's per-substep real-time throttle (env.real_time, ON by "
-                         "default) and fall back to this loop's per-step sleep -- still ~real-time, "
-                         "just the legacy mechanism. (The live C++ is wall-clock paced, so keep "
-                         "real-time on for live runs.)")
+                    help="run the source+step loop flat-out instead of pacing it to the control rate. "
+                         "The live C++ is wall-clock paced, so keep real-time on for live runs; use "
+                         "this only for headless replay/throughput.")
     ap.add_argument("--rtf-log", action="store_true",
                     help="flip console logging to DEBUG so base.py prints the [real-time] RTF line "
                          "~1x/sec (a real-time-factor sanity check).")
@@ -330,11 +341,11 @@ def main():
         print(f"[collect] per-step bookkeeping (reward/_check_success) every {base.post_action_freq} "
               f"steps (~{base.control_freq / base.post_action_freq:.0f} Hz).", flush=True)
     if args.real_time:
-        base.real_time = True   # base.py per-substep real-time throttle (matches the wall-clock-paced C++)
-        print("[collect] real-time pacing ON by default (env.real_time per-substep throttle); "
-              "pass --no-real-time for the legacy per-step sleep.", flush=True)
+        print("[collect] real-time pacing ON (the driver paces the whole source+step loop to the "
+              "control rate, matching the wall-clock-paced C++); pass --no-real-time to run flat-out.",
+              flush=True)
     try:
-        run_dds_interactive(base, render=not args.no_render, external_pace=args.real_time,
+        run_dds_interactive(base, render=not args.no_render, pace=args.real_time,
                             render_hz=args.render_hz)
     except KeyboardInterrupt:
         print("\n[collect] stopped.", flush=True)

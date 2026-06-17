@@ -1,22 +1,21 @@
-"""SonicWholeBodyController: composite controller that drives the SonicG1 from the
-external SONIC C++ stack (over DDS) instead of from robosuite actions.
+"""SonicWholeBodyController: composite controller that applies the SONIC PD law from the **action**.
 
-Every control substep it does the DDS exchange (G1SonicController.exchange: build obs,
-publish lowstate, read back the per-motor command q*/dq*/kp/kd/tau_ff), then ROUTES
-that command to robosuite's per-part JointPositionControllers (arms / torso / legs /
-grippers). Each part controller evaluates SONIC's PD law against the live joint state
+The env action is the per-motor joint-position target q* (MOTOR order: [body q*(29), left-hand q*(7),
+right-hand q*(7)] = 43 for SonicG1). The controller routes it to robosuite's per-part
+JointPosition(Velocity)Controllers, which evaluate the gravity-comp-free PD law against the live state
 
-    tau_i = tau_ff_i + kp_i*(q*_i - q_i) + kd_i*(dq*_i - dq_i)   (clipped to effort)
+    tau_i = kp_i*(q*_i - q_i) + kd_i*(0 - dq_i)        (dq*≡0, tau_ff≡0; clipped to per-motor effort)
 
-i.e. the control law is a first-class robosuite controller (the gravity-comp-free
-JointPositionController, extended with dq*/tau_ff/effort-clip), NOT precomputed by the
-SONIC bridge and rubber-stamped. This is the same dispatch shape as WholeBody/
-WholeBodyMinkIK routing an IK solution through their part controllers, except the
-"solver" here is the external SONIC stack streaming a per-joint PD command.
+The action is produced by a pluggable **source** (live DDS / replay / policy) -- see
+``robosuite.utils.sonic.action_sources`` -- NOT pulled from DDS inside the controller. The per-motor
+kp/kd are CONSTANT over an episode (the SONIC policy modulates only q*; dq*/tau_ff are zero), so they
+are not carried in the action: the live source captures them once from the first command and calls
+``set_command_gains``. Until both an action and gains are available the controller holds (no torque),
+while a startup elastic band on the pelvis keeps the floating base up during the C++ handoff
+(force only, never a qpos write); release it via ``release_band()`` / the viewer '9' key.
 
-The robosuite action is ignored (control comes from DDS), so set_goal is a no-op.
-Select via a composite config with "type": "SONIC_WBC"; the same SonicG1 can instead
-be driven by standard controllers (OSC etc.) via a BASIC config.
+``set_goal`` stores the action; ``run_controller`` routes it. Select via a composite config with
+"type": "SONIC_WBC"; the same SonicG1 can instead be driven by standard controllers (OSC etc.).
 """
 import os
 
@@ -26,12 +25,10 @@ import yaml
 from robosuite.controllers.composite.composite_controller import (
     CompositeController, register_composite_controller)
 from robosuite.utils.sonic.controller import G1SonicController
-from robosuite.utils.sonic.sources import DDSCommandSource
 
 
 def _wbc_config_path():
-    """Path to the SONIC WBC config (PD gains + effort limits) inside the installed
-    gear_sonic package."""
+    """Path to the SONIC WBC config (effort + joint limits) inside the installed gear_sonic."""
     import gear_sonic
     return os.path.join(os.path.dirname(gear_sonic.__file__),
                         "utils", "mujoco_sim", "wbc_configs", "g1_29dof_sonic_model12.yaml")
@@ -43,36 +40,67 @@ class SonicWholeBodyController(CompositeController):
 
     def __init__(self, sim, robot_model, grippers):
         super().__init__(sim, robot_model, grippers)
-        self.config_path = _wbc_config_path()   # SONIC WBC config, located in gear_sonic
+        self.config_path = _wbc_config_path()
         with open(self.config_path) as f:
             self._cfg = yaml.load(f, Loader=yaml.FullLoader)
-        self._src = DDSCommandSource(self._cfg)
-        self._sonic = None       # built lazily on first run (sim fully compiled by then)
-        self._part_plan = None   # part -> [(src_key, cmd_index) per joint, joint order]
-        # Startup elastic band: a spring-damper force on the PELVIS body only (never a
-        # qpos write), holding the floating base up during the ~18s C++ handoff. Released
-        # manually (band_enabled -> False, e.g. a viewer key) once the policy balances.
+        self._maps = None        # G1SonicController used ONLY for motor maps (no DDS, no exchange)
+        self._part_plan = None    # part -> [(source_key, index-within-source) per joint]
+        self._action_split = None  # (n_body, n_hand) to slice the flat q* action into sources
+        self._action_q = None      # latest q* action (set by set_goal)
+        self._cmd_gains = {}       # {"body": (kp, kd), "lhand": (kp, kd), "rhand": (kp, kd)} (constant)
+        # Startup elastic band: spring-damper force on the PELVIS body only (never a qpos write),
+        # holding the floating base up during the C++ handoff. Released via release_band()/'9'.
         self._band = None
         self._pelvis_bid = None
         self.band_enabled = True
-        self.last_command = None  # (cmd, hands) from the last exchange (for demo recording)
+
+    # --- action space: per-motor q* targets in MOTOR order [body(29), L-hand(7), R-hand(7)].
+    # --- engine-free (valid before the lazy maps-engine is built): body bounds from the config
+    # --- joint limits (29, body motor order); hands have no config limits, so use generous bounds
+    # --- (their values are not used for faithfulness -- only the action dim is load-bearing -- and
+    # --- the commanded q* is within range). ---
+    def _num_hand_motors(self):
+        """Per-hand actuated Dex3 motor count from the model (0 if the robot has no hands)."""
+        m = self.sim.model._model if hasattr(self.sim.model, "_model") else self.sim.model
+        acted = {int(m.actuator_trnid[a, 0]) for a in range(m.nu)}
+        return sum(1 for j in range(m.njnt) if j in acted
+                   and "left_hand" in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_JOINT, j) or ""))
+
+    @property
+    def action_limits(self):
+        c = self._cfg
+        body_lo = np.array(c["motor_pos_lower_limit_list"], dtype=float)  # 29, body motor order
+        body_hi = np.array(c["motor_pos_upper_limit_list"], dtype=float)
+        n_hand = self._num_hand_motors()
+        hand_lo = np.full(2 * n_hand, -np.pi)
+        hand_hi = np.full(2 * n_hand, np.pi)
+        return np.concatenate([body_lo, hand_lo]), np.concatenate([body_hi, hand_hi])
 
     def set_goal(self, all_action):
-        pass  # control comes from DDS, not from robosuite actions
+        self._action_q = np.asarray(all_action, dtype=float)
+
+    def set_command_gains(self, gains):
+        """Set the constant per-source PD gains, e.g. from the live source the first time it has a
+        command. ``gains``: dict {"body": (kp, kd), "lhand": (kp, kd), "rhand": (kp, kd)} (any subset;
+        entries accumulate). Until a part's source gains are present, that part holds."""
+        if gains:
+            self._cmd_gains.update(gains)
 
     def update_state(self):
         pass
 
     def reset(self):
-        self._sonic = None
+        self._maps = None
         self._part_plan = None
+        self._action_split = None
+        self._action_q = None
+        self._cmd_gains = {}
         self._band = None
         self._pelvis_bid = None
         self.band_enabled = True
 
     def release_band(self):
-        """Drop the startup elastic band (manual handoff release). Idempotent; after this
-        the policy balances the floating base on its own."""
+        """Drop the startup elastic band (manual handoff release). Idempotent."""
         self.band_enabled = False
 
     def toggle_band(self):
@@ -80,13 +108,11 @@ class SonicWholeBodyController(CompositeController):
         self.band_enabled = not self.band_enabled
 
     def _prepare(self):
-        """Build, once, the per-part command-routing plan and configure each part
-        controller for SONIC: clip its output torque to per-motor effort and disable
-        gravity compensation (the gripper sub-config can't carry these through
-        robosuite's _load_arm_controllers, so we force them here)."""
-        engine = self._sonic
+        """Build, once, the per-part action-routing plan + the flat-action split, and configure each
+        part controller for SONIC (clip output torque to per-motor effort; no gravity comp)."""
+        engine = self._maps
         model = engine._mj_model
-        # joint name -> (source_key, index-within-that-command, per-motor effort)
+        # joint name -> (source_key, index-within-that-source, per-motor effort)
         cmd_index = {name: ("body", i, float(engine.effort_limit[i]))
                      for i, name in enumerate(engine.motor_joint_names)}
         if engine.has_hands:
@@ -110,8 +136,11 @@ class SonicWholeBodyController(CompositeController):
                 part_ctrl.use_torque_compensation = False   # SONIC adds no gravity comp
             part_ctrl.interpolator = None                    # apply the command as-is
 
-        # PELVIS body that carries the floating base (the engine's chosen freejoint) --
-        # where the startup band applies its force. None on a fixed base (no freejoint).
+        # how the flat action splits into per-source blocks (matches the source's concat order)
+        self._action_split = (engine.num_motors, 7 if engine.has_hands else 0)
+
+        # PELVIS body carrying the floating base (the engine's chosen freejoint) -- where the
+        # startup band applies its force. None on a fixed base (no freejoint).
         self._pelvis_bid = None
         if engine.free_qadr is not None:
             self._pelvis_bid = next(
@@ -120,12 +149,9 @@ class SonicWholeBodyController(CompositeController):
                  and int(model.jnt_qposadr[j]) == engine.free_qadr), None)
 
     def _apply_band(self, mj_data):
-        """Hold the floating base up during the C++ startup/handoff with an elastic band:
-        a spring-damper force + uprighting torque on the PELVIS body, written to
-        mj_data.xfrc_applied[pelvis] ONLY -- never a qpos write, so task objects evolve
-        under normal physics (unlike a full-state pin, which teleported everything).
-        Reuses gear_sonic's ElasticBand (the same law base_sim uses), anchored at the
-        robot's spawn pose. Cleared when band_enabled is False (manual release)."""
+        """Hold the floating base up during the C++ startup/handoff with an elastic band: a
+        spring-damper force + uprighting torque on the PELVIS body, written to xfrc_applied[pelvis]
+        ONLY. Cleared when band_enabled is False (manual release)."""
         bid = self._pelvis_bid
         if not self.band_enabled:
             mj_data.xfrc_applied[bid] = 0.0
@@ -135,55 +161,59 @@ class SonicWholeBodyController(CompositeController):
             self._band = ElasticBand()
             self._band.point = np.array(mj_data.xpos[bid])  # anchor at the spawn stand pose
             self._band.length = 0.0
-        model = self._sonic._mj_model
+        model = self._maps._mj_model
         vel = np.zeros(6)  # mj_objectVelocity -> [angular(3), linear(3)] in world frame
         mujoco.mj_objectVelocity(model, mj_data, mujoco.mjtObj.mjOBJ_BODY, bid, vel, 0)
         # ElasticBand.Advance wants pose = [pos(3), quat(4), lin_vel(3), ang_vel(3)]
         pose = np.concatenate([mj_data.xpos[bid], mj_data.xquat[bid], vel[3:6], vel[0:3]])
         mj_data.xfrc_applied[bid] = self._band.Advance(pose)
 
+    def _action_by_source(self):
+        """Slice the flat q* action into {body, lhand, rhand} blocks (matching the source's concat)."""
+        n_body, n_hand = self._action_split
+        a = self._action_q
+        out = {"body": a[0:n_body]}
+        if n_hand:
+            out["lhand"] = a[n_body:n_body + n_hand]
+            out["rhand"] = a[n_body + n_hand:n_body + 2 * n_hand]
+        return out
+
     def run_controller(self, enabled_parts):
-        if self._sonic is None:
-            self._sonic = G1SonicController(self.sim, self._src, self._cfg)
+        if self._maps is None:
+            self._maps = G1SonicController(self.sim, None, self._cfg)  # maps only; no DDS / no exchange
         if self._part_plan is None:
             self._prepare()
 
-        # Live-DDS startup hold: hold the floating base up with an elastic band on the
-        # pelvis until the policy is balancing and the band is manually released. Object-
-        # safe (force only, no qpos write). Mock/replay have no .bridge -> skipped. There
-        # is NO fall recovery: a mid-episode collapse stays down (by design).
+        # Startup hold: elastic band on the pelvis until released. Object-safe (force only).
         mj_data = self.sim.data._data if hasattr(self.sim.data, "_data") else self.sim.data
-        bridge = getattr(self._src, "bridge", None)
-        if bridge is not None and self._pelvis_bid is not None:
+        if self._pelvis_bid is not None:
             self._apply_band(mj_data)
 
-        _obs, cmd, hands = self._sonic.exchange()
-        self.last_command = (cmd, hands)
         outputs = {}
-        if cmd is None:
-            return outputs  # nothing from the source yet; hold current ctrl
-        left_hand_cmd, right_hand_cmd = hands if hands is not None else (None, None)
-        cmd_by_source = {"body": cmd, "lhand": left_hand_cmd, "rhand": right_hand_cmd}
+        if self._action_q is None or not self._cmd_gains:
+            return outputs  # no command/gains yet -> hold current ctrl (band keeps the pelvis up)
 
+        abys = self._action_by_source()
         for part, part_ctrl in self.part_controllers.items():
             if not enabled_parts.get(part, False):
                 continue
             plan = self._part_plan[part]
-            if any(cmd_by_source[source_key] is None for source_key, _ in plan):
-                continue  # command for this part unavailable (e.g. hands before DDS hand cmd)
-            q_des = np.array([cmd_by_source[source_key].q[i] for source_key, i in plan])
-            dq_des = np.array([cmd_by_source[source_key].dq[i] for source_key, i in plan])
-            kp = np.array([cmd_by_source[source_key].kp[i] for source_key, i in plan])
-            kd = np.array([cmd_by_source[source_key].kd[i] for source_key, i in plan])
-            tau = np.array([cmd_by_source[source_key].tau[i] for source_key, i in plan])
+            srcs = {sk for sk, _ in plan}
+            if any(sk not in self._cmd_gains or sk not in abys for sk in srcs):
+                continue  # this part's source gains/action not available yet (e.g. hands at startup)
+            q_des = np.array([abys[source_key][i] for source_key, i in plan])
+            kp = np.array([self._cmd_gains[source_key][0][i] for source_key, i in plan])
+            kd = np.array([self._cmd_gains[source_key][1][i] for source_key, i in plan])
+            dq_des = np.zeros_like(q_des)   # SONIC commands dq*≡0 (pure position PD + kd damping)
+            tau = np.zeros_like(q_des)      # tau_ff≡0
             part_ctrl.set_pd_command(q_des, dq_des, kp, kd, tau)   # JointPositionController PD law
             outputs[part] = part_ctrl.run_controller()
 
         return outputs
 
 
-# Convenience export for tests/scripts; "" if gear_sonic isn't installed (so `import
-# robosuite` stays safe and the SONIC_WBC tests' skipif resolves correctly).
+# Convenience export for tests/scripts; "" if gear_sonic isn't installed (so `import robosuite`
+# stays safe and the SONIC_WBC tests' skipif resolves correctly).
 try:
     WBC_CONFIG = _wbc_config_path()
 except Exception:
