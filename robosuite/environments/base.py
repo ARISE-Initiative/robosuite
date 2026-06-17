@@ -137,6 +137,16 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
+        # How often (every Nth step()) to run the expensive once-per-step bookkeeping in step()
+        # -- reward()/_check_success() and any subclass _post_action work (e.g. robocasa's
+        # per-fixture update_state()). Default 1 == every step (unchanged behavior). Raise it for
+        # high-rate control where reward is unused and success only needs an occasional check
+        # (e.g. SONIC data collection); skipped steps reuse the previous (reward, done, info).
+        self.post_action_freq = 1
+        # How often (every Nth step()) to refresh the built-in viewer (self.viewer.update()).
+        # Default 1 == every step (unchanged). Raise it to render at a lower rate than the control
+        # loop -- e.g. 20 Hz render under a 200 Hz control loop (render_freq = control_freq/20).
+        self.render_freq = 1
         self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
@@ -554,10 +564,22 @@ class MujocoEnv(metaclass=EnvMeta):
                 self._rt_n = 0
                 self._rt_slept = 0.0
 
-        reward, done, info = self._post_action(action)
+        # Expensive once-per-step bookkeeping -- reward()/_check_success() and (robocasa) the
+        # per-fixture update_state() loop -- dominates the step on heavy task scenes (~2.5 ms of a
+        # ~4.5 ms DivideBuffetTrays step at 200 Hz). self.post_action_freq (default 1 == every step)
+        # runs it only every Nth step for high-rate control where reward is unused and success only
+        # needs an occasional check; skipped steps reuse the last (reward, done, info) -- done stays
+        # put (high-rate collection runs with ignore_done).
+        if self.post_action_freq <= 1 or self.timestep % self.post_action_freq == 0 \
+                or not hasattr(self, "_last_post_action"):
+            reward, done, info = self._post_action(action)
+            self._last_post_action = (reward, done, info)
+        else:
+            reward, done, info = self._last_post_action
 
         if self.viewer is not None and self.renderer != "mujoco":
-            self.viewer.update()
+            if self.render_freq <= 1 or self.timestep % self.render_freq == 0:
+                self.viewer.update()  # throttle the built-in viewer render off the control loop
         elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
             self.initialize_renderer()

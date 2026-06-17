@@ -66,18 +66,25 @@ class SonicArenaEnv(ManipulationEnv):
         )
 
 
-def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005):
+def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005, timestep=0.002):
     """Set the global MuJoCo options + floor contact to base_sim's (gold was recorded
-    there): 500 Hz Euler, pyramidal cone, impratio 1, no fluid, base_sim floor friction.
+    there): Euler, pyramidal cone, impratio 1, no fluid, base_sim floor friction.
     (Per-joint armature/damping/frictionloss already come from model_data via the asset
     build, so they need no override.)
+
+    timestep is the physics dt (== robosuite ``model_timestep``); keep it equal to
+    ``macros.SIMULATION_TIMESTEP`` so robosuite's substep count (control_timestep/
+    model_timestep) matches the true MuJoCo advance. base_sim recorded gold at 500 Hz
+    (0.002); 200 Hz (0.005) is the lighter rate used for downstream policy collection
+    (1 substep == 1 PD command when control_freq == 1/timestep). PD is semi-implicit in
+    MuJoCo's Euler integrator, so it stays numerically stable at 0.005.
 
     floor_friction / floor_torsion default to base_sim's exact values (tangential 1.0,
     torsional 0.005). MuJoCo combines contact friction as max(foot, floor), so RAISING
     these grips the feet harder than base_sim -- useful if SONIC's slow walk slips /
     pivots in robosuite (low torsional friction lets the planted foot spin during turns).
     Keep the defaults to stay bit-faithful to base_sim."""
-    model.opt.timestep = 0.002
+    model.opt.timestep = timestep
     model.opt.integrator = int(mujoco.mjtIntegrator.mjINT_EULER)
     model.opt.cone = int(mujoco.mjtCone.mjCONE_PYRAMIDAL)
     model.opt.impratio = 1.0
@@ -88,16 +95,23 @@ def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005):
             model.geom_friction[g] = [floor_friction, floor_torsion, 0.0001]
             model.geom_solref[g] = [0.02, 1.0]
 
-def make_env(env_name, robot, cfg, has_renderer):
+def make_env(env_name, robot, cfg, has_renderer, control_freq=None):
     """Build the env that SONIC drives: the table-free ``SonicArenaEnv`` (default) or ANY
     registered robosuite env via ``robosuite.make`` (e.g. Lift / Stack / TwoArmLift). Real
     object/table envs are now safe -- the startup elastic band no longer pins the whole
     qpos, so task objects evolve under normal physics. The env places the robot's x,y +
     facing (in front of the table); the robot spawns standing via SonicG1.init_qpos +
-    base_xpos_offset, so no separate set-pose step is needed."""
+    base_xpos_offset, so no separate set-pose step is needed.
+
+    control_freq (None == env default): the step() rate. Set it to 1/``macros.SIMULATION_TIMESTEP``
+    so each step() is exactly one physics substep == one SONIC PD command (e.g. 200 with dt
+    0.005); leaving it at the default makes step() span many PD commands (the rate mismatch
+    that downstream per-step policy eval trips over)."""
     kw = dict(robots=[robot], controller_configs=cfg, has_renderer=has_renderer,
               has_offscreen_renderer=False, use_camera_obs=False,
               hard_reset=False, ignore_done=True, horizon=10_000_000)
+    if control_freq is not None:
+        kw["control_freq"] = control_freq
     if env_name in ("SonicArena", "Empty", "empty"):
         return SonicArenaEnv(**kw)
     return robosuite.make(env_name, **kw)
@@ -159,7 +173,7 @@ def gather_to_hdf5(directory, out_dir, env_name, env_info):
     return hdf5_path
 
 
-def run_dds_interactive(env, render=True, external_pace=False):
+def run_dds_interactive(env, render=True, external_pace=False, render_hz=20.0):
     """Live interactive driver: the robot is driven by the C++ SONIC controller running in
     ANOTHER terminal (this process publishes rt/lowstate + applies the received rt/lowcmd).
     SonicWholeBodyController owns the startup hold (an elastic band on the pelvis holds the
@@ -182,6 +196,9 @@ def run_dds_interactive(env, render=True, external_pace=False):
     mj_data = env.sim.data._data if hasattr(env.sim.data, "_data") else env.sim.data
     model = env.sim.model._model
     sim_dt = float(model.opt.timestep)
+    # sync the passive viewer at ~render_hz (default 20), decoupled from the 200 Hz control loop --
+    # syncing every step would starve the wall-clock-paced loop.
+    render_every = max(1, int(round(env.control_freq / render_hz)))
     action = np.zeros(env.action_dim)
     pelvis = next((b for b in range(model.nbody) if "pelvis" in
                    (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) or "")), -1)
@@ -237,7 +254,8 @@ def run_dds_interactive(env, render=True, external_pace=False):
                 if not viewer.is_running():
                     print("[collect] viewer closed; stopping...", flush=True)
                     break
-                viewer.sync()
+                if step_count % render_every == 0:
+                    viewer.sync()
             if not external_pace:   # else env.real_time throttles per-substep inside env.step()
                 next_step_time += sim_dt
                 sleep_time = next_step_time - time.perf_counter()
@@ -273,25 +291,51 @@ def main():
     ap.add_argument("--rtf-log", action="store_true",
                     help="flip console logging to DEBUG so base.py prints the [real-time] RTF line "
                          "~1x/sec (a real-time-factor sanity check).")
+    ap.add_argument("--sim-dt", type=float, default=0.005,
+                    help="physics timestep (s). Default 0.005 (200 Hz): with --control-freq 200, "
+                         "step()==1 substep==1 SONIC PD command, so the true control rate == the "
+                         "recorded/PD-command rate. Use 0.002 for base_sim's 500 Hz (gold-faithful).")
+    ap.add_argument("--control-freq", type=int, default=200,
+                    help="step() rate (Hz); set == 1/--sim-dt for one physics substep (one PD "
+                         "command) per step().")
+    ap.add_argument("--post-action-hz", type=float, default=20.0,
+                    help="rate (Hz) to run the expensive once-per-step bookkeeping (reward/"
+                         "_check_success + any subclass update_state). Default 20 Hz (sets "
+                         "base.post_action_freq = control_freq/20); reward is unused for SONIC demos.")
+    ap.add_argument("--render-hz", type=float, default=20.0,
+                    help="passive-viewer sync rate (Hz). Default 20; decoupled from the 200 Hz "
+                         "control loop so the render stays off it. Ignored when headless (--no-render).")
     args = ap.parse_args()
 
+    import robosuite.macros as macros
     if args.rtf_log:
-        import robosuite.macros as macros
         macros.CONSOLE_LOGGING_LEVEL = "DEBUG"   # before make_env so initialize_time reads it
+    # physics rate: robosuite reads model_timestep from this macro in initialize_time (every
+    # reset), so set it BEFORE make_env; match_base_sim_physics stamps model.opt.timestep to match.
+    macros.SIMULATION_TIMESTEP = args.sim_dt
 
     cfg = load_composite_controller_config(controller=SONIC_CFG)
 
     # No robosuite per-step renderer: run_dds_interactive drives a passive viewer so the
     # sim+DDS exchange stays real-time at the wall-clock-paced C++ planner's rate.
-    base = make_env(args.environment, args.robot, cfg, has_renderer=False)
+    base = make_env(args.environment, args.robot, cfg, has_renderer=False,
+                    control_freq=args.control_freq)
     base.reset()
-    match_base_sim_physics(base.sim.model._model, args.floor_friction, args.floor_torsion)
+    match_base_sim_physics(base.sim.model._model, args.floor_friction, args.floor_torsion,
+                           timestep=args.sim_dt)
+    # throttle the expensive once-per-step bookkeeping (reward/_check_success/update_state) to
+    # ~--post-action-hz; base.post_action_freq is "every Nth step()" so derive it from control_freq.
+    base.post_action_freq = max(1, int(round(base.control_freq / args.post_action_hz)))
+    if base.post_action_freq > 1:
+        print(f"[collect] per-step bookkeeping (reward/_check_success) every {base.post_action_freq} "
+              f"steps (~{base.control_freq / base.post_action_freq:.0f} Hz).", flush=True)
     if args.real_time:
         base.real_time = True   # base.py per-substep real-time throttle (matches the wall-clock-paced C++)
         print("[collect] real-time pacing ON by default (env.real_time per-substep throttle); "
               "pass --no-real-time for the legacy per-step sleep.", flush=True)
     try:
-        run_dds_interactive(base, render=not args.no_render, external_pace=args.real_time)
+        run_dds_interactive(base, render=not args.no_render, external_pace=args.real_time,
+                            render_hz=args.render_hz)
     except KeyboardInterrupt:
         print("\n[collect] stopped.", flush=True)
     finally:
