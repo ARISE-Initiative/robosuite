@@ -55,8 +55,6 @@ class SonicWholeBodyController(CompositeController):
         self._band = None
         self._pelvis_bid = None
         self.band_enabled = True
-        self.verify = False      # test hook: stash the engine reference torque each step
-        self.ref_ctrl = None
         self.last_command = None  # (cmd, hands) from the last exchange (for demo recording)
 
     def set_goal(self, all_action):
@@ -71,7 +69,6 @@ class SonicWholeBodyController(CompositeController):
         self._band = None
         self._pelvis_bid = None
         self.band_enabled = True
-        self.ref_ctrl = None
 
     def release_band(self):
         """Drop the startup elastic band (manual handoff release). Idempotent; after this
@@ -182,8 +179,6 @@ class SonicWholeBodyController(CompositeController):
             part_ctrl.set_pd_command(q_des, dq_des, kp, kd, tau)   # JointPositionController PD law
             outputs[part] = part_ctrl.run_controller()
 
-        if self.verify:  # test-only: the engine's own torque on the SAME state
-            self.ref_ctrl = self._sonic.compute_torques(cmd, hands)
         return outputs
 
 

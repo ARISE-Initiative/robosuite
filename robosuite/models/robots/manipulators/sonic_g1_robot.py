@@ -51,7 +51,15 @@ class SonicG1(LeggedManipulatorModel):
 
     @property
     def init_qpos(self):
-        return np.zeros(29)
+        # SONIC neutral stand (gold squat frame-0 cmd_q), in THIS robot's joint order
+        # (robosuite applies init_qpos[i] to robot_joints[i]). The base height comes from
+        # base_xpos_offset; the Dex3 hands spawn open (gripper default) and are posed by the
+        # streamed command. So the robot spawns standing -- no external set-pose step needed.
+        return np.array([
+            -0.1638, -0.0929, 0.0101, 0.2799, 0.0437, -0.0186, -0.1329, -0.0178,
+            -0.2169, 0.3958, 0.0487, 0.0261, -0.0033, -0.0519, -0.3514, -0.9683,
+            0.7521, -0.9398, 0.9698, 0.0127, 0.1253, 0.0883, -1.0862, -0.66,
+            1.0143, 1.1552, 0.1886, 0.0735, -0.0864])
 
     @property
     def base_xpos_offset(self):

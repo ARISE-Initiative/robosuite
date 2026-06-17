@@ -12,6 +12,10 @@ Outputs:
     models/assets/robots/sonic_g1/robot.xml   (+ meshes/)
     models/assets/grippers/sonic_dex3_{left,right}.xml   (+ meshes/sonic_dex3/)
 """
+
+# Kept in-repo as the provenance/reproducer for the committed SonicG1 + Dex3 assets (run
+# once, locally, when the GR00T model_data changes); it is not imported at runtime.
+
 import copy
 import os
 import shutil

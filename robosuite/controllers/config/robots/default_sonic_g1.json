@@ -1,13 +1,37 @@
 {
-  "type": "SONIC_WBC",
-  "body_parts": {
-    "arms": {
-      "right": {"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null,
-                "gripper":{"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null}},
-      "left":  {"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null,
-                "gripper":{"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null}}
-    },
-    "torso": {"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null},
-    "legs": {"type":"JOINT_POSITION","use_torque_compensation":false,"interpolation":null}
-  }
+    "type": "SONIC_WBC",
+    "body_parts": {
+        "arms": {
+            "right": {
+                "type": "JOINT_POSITION_VELOCITY",
+                "use_torque_compensation": false,
+                "interpolation": null,
+                "gripper": {
+                    "type": "JOINT_POSITION_VELOCITY",
+                    "use_torque_compensation": false,
+                    "interpolation": null
+                }
+            },
+            "left": {
+                "type": "JOINT_POSITION_VELOCITY",
+                "use_torque_compensation": false,
+                "interpolation": null,
+                "gripper": {
+                    "type": "JOINT_POSITION_VELOCITY",
+                    "use_torque_compensation": false,
+                    "interpolation": null
+                }
+            }
+        },
+        "torso": {
+            "type": "JOINT_POSITION_VELOCITY",
+            "use_torque_compensation": false,
+            "interpolation": null
+        },
+        "legs": {
+            "type": "JOINT_POSITION_VELOCITY",
+            "use_torque_compensation": false,
+            "interpolation": null
+        }
+    }
 }

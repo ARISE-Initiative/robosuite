@@ -2,11 +2,7 @@
 
 - controller.G1SonicController : obs build + per-motor PD + effort clip (ported from
   gear_sonic base_sim; the engine the SonicWholeBodyController composite controller wraps)
-- sources : command sources (DDSCommandSource live C++/DDS, ReplayCommandSource,
-  ReferenceMockSource) + MotorCommand / CommandSource
-- debug.DDSDebug : per-timestep recorder for golden-trajectory tests
+- sources.DDSCommandSource : live C++/DDS command source (+ MotorCommand)
 """
-from .controller import G1SonicController, MotorCommand, CommandSource
-from .sources import (DDSCommandSource, ReplayCommandSource, ReferenceMockSource,
-                      init_dds_once)
-from .debug import DDSDebug
+from .controller import G1SonicController, MotorCommand
+from .sources import DDSCommandSource, init_dds_once

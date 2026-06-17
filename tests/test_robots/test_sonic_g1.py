@@ -28,6 +28,7 @@ from robosuite.models.robots.manipulators.sonic_g1_robot import SonicG1, SonicG1
 import robosuite.controllers.composite.sonic_whole_body_controller as sonic_wbc
 from robosuite.controllers.composite.sonic_whole_body_controller import (
     SonicWholeBodyController, WBC_CONFIG)
+from robosuite.utils.sonic.controller import MotorCommand
 
 _REAL_DDS = sonic_wbc.DDSCommandSource
 
@@ -59,6 +60,97 @@ class _Sim:
     def __init__(self, m, d):
         self.model = type("M", (), {"_model": m})()
         self.data = type("D", (), {"_data": d})()
+
+
+def engine_pd_torques(engine, cmd, hands=None):
+    """The SONIC per-motor PD law evaluated against the engine's CURRENT sim state,
+    returned as ``{actuator_index: torque}`` clipped to per-motor effort:
+    ``tau_i = clip(tau_ff_i + kp_i*(q*_i - q_i) + kd_i*(dq*_i - dq_i))``.
+    This is the reference the SONIC_WBC part-controller dispatch must reproduce; it lives
+    in test code because production drives the same law through JointPosition(Velocity)
+    controllers, not this dict (read-only -- writes nothing)."""
+    md = engine.sim.data._data if hasattr(engine.sim.data, "_data") else engine.sim.data
+    out = {}
+    q = md.qpos[engine.qpos_adr]
+    dq = md.qvel[engine.qvel_adr]
+    body = np.clip(cmd.tau + cmd.kp * (cmd.q - q) + cmd.kd * (cmd.dq - dq),
+                   -engine.effort_limit, engine.effort_limit)
+    for k, ci in enumerate(engine.ctrl_idx):
+        out[int(ci)] = float(body[k])
+    if hands is not None and engine.has_hands:
+        lcmd, rcmd = hands
+        for hc, (qa, va, ci), eff in ((lcmd, engine._lh, engine._lh_eff),
+                                      (rcmd, engine._rh, engine._rh_eff)):
+            ht = np.clip(hc.tau + hc.kp * (hc.q - md.qpos[qa]) + hc.kd * (hc.dq - md.qvel[va]),
+                         -eff, eff)
+            for k, c in enumerate(ci):
+                out[int(c)] = float(ht[k])
+    return out
+
+
+def drive_engine_direct(engine, data):
+    """Test-only direct PD substep (replaces the removed G1SonicController.apply): build
+    obs + read the command, then write engine_pd_torques straight to ctrl. Used to drive
+    the engine on a bare MjModel without robosuite's controller stack."""
+    _obs, cmd, hands = engine.exchange()
+    if cmd is None:
+        data.ctrl[engine.ctrl_idx] = 0.0
+        return
+    for actidx, tau in engine_pd_torques(engine, cmd, hands).items():
+        data.ctrl[actidx] = tau
+
+
+# --- Test-only command sources (moved out of robosuite.utils.sonic.sources; production
+# only ships DDSCommandSource). Both duck-type the source interface the engine needs:
+# update(obs) + read() [+ read_hands()]. They feed the controller via _patch_source. ---
+class ReferenceMockSource:
+    """Replays per-motor joint targets (motor order) as PD targets; advances one frame
+    per read(), holds the last once exhausted."""
+    def __init__(self, motor_targets, kp, kd):
+        self.targets = np.asarray(motor_targets, dtype=np.float64)  # (T, n)
+        self.kp = np.asarray(kp, dtype=np.float64)
+        self.kd = np.asarray(kd, dtype=np.float64)
+        self.n = self.targets.shape[1]
+        self.t = 0
+
+    def update(self, obs):
+        pass
+
+    def read(self):
+        idx = min(self.t, self.targets.shape[0] - 1)
+        self.t += 1
+        return MotorCommand(q=self.targets[idx], dq=np.zeros(self.n),
+                            kp=self.kp, kd=self.kd, tau=np.zeros(self.n))
+
+
+class ReplayCommandSource:
+    """Deterministically replays a recorded per-step command stream (body + Dex3 hands)
+    from a golden npz -- one frame per read(), holds the last once exhausted."""
+    def __init__(self, gold):
+        self.q, self.dq = gold["cmd_q"], gold["cmd_dq"]
+        self.kp, self.kd, self.tau = gold["cmd_kp"], gold["cmd_kd"], gold["cmd_tau"]
+        self.T = self.q.shape[0]
+        self.has_hands = "lh_cmd_q" in gold
+        if self.has_hands:
+            self._lh = {f: gold[f"lh_cmd_{f}"] for f in ("q", "dq", "kp", "kd", "tau")}
+            self._rh = {f: gold[f"rh_cmd_{f}"] for f in ("q", "dq", "kp", "kd", "tau")}
+        self.t = self._cur = 0
+
+    def update(self, obs):
+        pass
+
+    def read(self):
+        i = self._cur = min(self.t, self.T - 1)
+        self.t += 1
+        return MotorCommand(self.q[i], self.dq[i], self.kp[i], self.kd[i], self.tau[i])
+
+    def read_hands(self):
+        if not self.has_hands:
+            return None
+        i = self._cur
+        lc = MotorCommand(*[self._lh[f][i] for f in ("q", "dq", "kp", "kd", "tau")])
+        rc = MotorCommand(*[self._rh[f][i] for f in ("q", "dq", "kp", "kd", "tau")])
+        return lc, rc
 
 
 def test_registration():
@@ -114,7 +206,6 @@ def test_engine_pd_and_effort_on_assembled_model():
     stays finite/bounded."""
     import yaml
     from robosuite.utils.sonic.controller import G1SonicController
-    from robosuite.utils.sonic.sources import ReferenceMockSource
     with open(WBC_CONFIG) as f:
         cfg = yaml.load(f, Loader=yaml.FullLoader)
     model = _assemble()
@@ -135,7 +226,7 @@ def test_engine_pd_and_effort_on_assembled_model():
     assert ra and all(sonic.effort_limit[i] >= 25.0 for i in ra)
 
     for _ in range(200):
-        sonic.apply()
+        drive_engine_direct(sonic, data)
         mujoco.mj_step(model, data)
     assert np.all(np.isfinite(data.ctrl)) and np.all(np.isfinite(data.qpos))
     assert np.abs(data.ctrl).max() < 200.0
@@ -148,8 +239,6 @@ def test_sonic_wbc_robosuite_make_matches_engine():
     ctrl matches the SONIC engine's own PD torque (compute_torques) on every actuator
     -- legs/torso/arms AND both grippers -- confirming the controller computes the law
     (no left/right swap, no gravcomp/scaling drift, hands included)."""
-    from robosuite.utils.sonic.controller import MotorCommand
-    from robosuite.utils.sonic.sources import ReferenceMockSource
 
     class _MockWithHands(ReferenceMockSource):
         """Mock that also streams a (zero-target) Dex3 hand PD command so the grippers
@@ -171,23 +260,32 @@ def test_sonic_wbc_robosuite_make_matches_engine():
     try:
         cfg = load_composite_controller_config(controller=cfg_path)
         assert cfg["type"] == "SONIC_WBC"
+        # control_freq=500 -> one sim substep (hence one PD dispatch) per env.step, so the
+        # applied ctrl is computed at the same state we evaluate the engine reference at.
         env = robosuite.make("TwoArmLift", robots=["SonicG1Fixed"], controller_configs=cfg,
                              has_renderer=False, has_offscreen_renderer=False,
-                             use_camera_obs=False, control_freq=20)
+                             use_camera_obs=False, control_freq=500)
         try:
             env.reset()
             cc = env.robots[0].composite_controller
-            cc.verify = True  # stash the engine reference torque each step
+            env.step(np.zeros(env.action_dim))  # build the engine + part plan; set last_command
+            ref = None
             for _ in range(10):  # stop before the zero-target mock collapses the fixed-base legs
-                env.step(np.zeros(env.action_dim))
-                idx = np.array(sorted(cc.ref_ctrl))  # all 43 SONIC actuators
+                # The mock command is constant, so last_command is exactly the command the
+                # NEXT step dispatches; compute_torques (read-only) gives the engine's own PD
+                # at the CURRENT state == the state run_controller dispatches at before any
+                # substep advances it. So `ref` and the applied ctrl share command AND state.
+                cmd, hands = cc.last_command
+                ref = engine_pd_torques(cc._sonic, cmd, hands)  # {actuator_index: torque}
+                env.step(np.zeros(env.action_dim))           # routed per-part PD dispatch
+                idx = np.array(sorted(ref))                  # all 43 SONIC actuators
                 applied = env.sim.data.ctrl[idx]
-                engine = np.array([cc.ref_ctrl[i] for i in idx])
+                engine = np.array([ref[i] for i in idx])
                 assert np.allclose(applied, engine, atol=1e-9), \
                     f"part-controller PD != engine PD (max {np.abs(applied - engine).max():.2e})"
             s = cc._sonic  # both grippers actually exercised (14 hand actuators routed)
             assert s.has_hands and len(s._lh[2]) == 7 and len(s._rh[2]) == 7
-            assert {int(c) for c in list(s._lh[2]) + list(s._rh[2])} <= set(cc.ref_ctrl)
+            assert {int(c) for c in list(s._lh[2]) + list(s._rh[2])} <= set(ref)
             assert np.all(np.isfinite(env.sim.data.ctrl))
         finally:
             env.close()
@@ -195,13 +293,12 @@ def test_sonic_wbc_robosuite_make_matches_engine():
         _patch_source(None)
 
 
-GOLD_DIR = "/home/ajay/code/sonic_robosuite/tests/gold"
+# gold command streams live in the sonic_robosuite harness repo; override with $SONIC_GOLD_DIR.
+GOLD_DIR = os.environ.get("SONIC_GOLD_DIR", "/home/ajay/code/sonic_robosuite/tests/gold")
 
 
 def _mock_factory():
     """Source factory: zero-target body PD + (zero) Dex3 hand PD, so grippers run too."""
-    from robosuite.utils.sonic.controller import MotorCommand
-    from robosuite.utils.sonic.sources import ReferenceMockSource
 
     class _MockWithHands(ReferenceMockSource):
         def read_hands(self):
@@ -254,17 +351,16 @@ def test_sonic_data_collection_replay(tmp_path):
     from robosuite.scripts import collect_sonic_g1_demos as C
     from robosuite.wrappers import DataCollectionWrapper
 
-    factory, gold = C.make_source_factory("replay", "squat_001__A359")
-    _patch_source(factory)
+    gold = dict(np.load(os.path.join(GOLD_DIR, "squat_001__A359.npz"), allow_pickle=True))
+    _patch_source(lambda c: ReplayCommandSource(gold))
     try:
         base = C.SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=C.SONIC_CFG),
                                has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
                                control_freq=500, hard_reset=False, ignore_done=True, horizon=10_000)
         tmp = str(tmp_path / "tmp")
         env = DataCollectionWrapper(base, tmp)
-        env.reset()
+        env.reset()  # robot spawns standing via SonicG1.init_qpos
         C.match_base_sim_physics(base.sim.model._model)
-        C.set_init_pose(base, gold)
         for _ in range(60):
             env.step(C.sonic_action(base))
         env.close()
@@ -291,7 +387,6 @@ def test_sonic_startup_band_is_object_safe():
     snapshot each step. Here we perturb the pot, step, and assert (a) the pot evolves
     freely (not snapped back), (b) the band applies a force to the pelvis, and (c)
     releasing the band zeros that force."""
-    from robosuite.utils.sonic.sources import ReferenceMockSource
 
     class _BandMock(ReferenceMockSource):
         """Zero-target body PD that also carries a .bridge, so the controller's live-DDS

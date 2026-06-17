@@ -15,8 +15,6 @@ compensation) — i.e. the real Unitree motor behavior, NOT robosuite's
 JointPositionController.
 """
 
-import abc
-
 import mujoco
 import numpy as np
 
@@ -75,28 +73,16 @@ class MotorCommand:
         self.q, self.dq, self.kp, self.kd, self.tau = q, dq, kp, kd, tau
 
 
-class CommandSource(abc.ABC):
-    """Source of per-motor commands. update() consumes the latest obs (e.g.
-    publishes lowstate); read() returns a MotorCommand or None if no command
-    is available yet."""
-
-    @abc.abstractmethod
-    def update(self, obs: dict):
-        ...
-
-    @abc.abstractmethod
-    def read(self):
-        ...
-
-
 class G1SonicController:
-    """Reads sim state, exchanges it with a command source, and writes torques."""
+    """Reads sim state, exchanges it with a command source, and writes torques.
 
-    def __init__(self, sim, command_source: CommandSource, config: dict):
+    A command source needs ``update(obs)`` (consume latest obs, e.g. publish lowstate)
+    and ``read()`` (return a MotorCommand or None); optionally ``read_hands()``. The only
+    production source is DDSCommandSource; tests inject their own."""
+
+    def __init__(self, sim, command_source, config: dict):
         self.sim = sim
         self.src = command_source
-        self.debug = False   # set True (+ assign self._dbg = DDSDebug()) to record
-        self._dbg = None
         self.last_obs = None
         m = sim.model._model if hasattr(sim.model, "_model") else sim.model
 
@@ -212,10 +198,9 @@ class G1SonicController:
         ``(obs, body_cmd, hand_cmds)`` where body_cmd is a MotorCommand (or None if the
         source has nothing yet) and hand_cmds is ``(lcmd, rcmd)`` or None.
 
-        The PD law itself lives in compute_torques(); this split lets the torque be
-        produced either here-and-now (apply(), the direct/bypass path) or downstream by
-        robosuite's per-part JointPositionControllers (SonicWholeBodyController), which
-        receive (q*, dq*, kp, kd, tau_ff) and evaluate the SAME law against live state."""
+        The PD law is evaluated downstream: SonicWholeBodyController routes
+        (q*, dq*, kp, kd, tau_ff) to robosuite's per-part JointPosition(Velocity)
+        controllers, which apply it against the live joint state."""
         obs = self.build_obs()
         self.last_obs = obs
         self.src.update(obs)
@@ -225,52 +210,3 @@ class G1SonicController:
             hands = self.src.read_hands()
         return obs, cmd, hands
 
-    def compute_torques(self, cmd, hands=None):
-        """SONIC per-motor PD law evaluated against the CURRENT sim state, returned as
-        ``{actuator_index: torque}`` clipped to per-motor effort. Does NOT write ctrl.
-        Single source of truth for both apply() and the SonicWholeBodyController part
-        dispatch:  tau_i = clip(tau_ff_i + kp_i*(q*_i - q_i) + kd_i*(dq*_i - dq_i))."""
-        md = self.sim.data._data if hasattr(self.sim.data, "_data") else self.sim.data
-        out = {}
-        q = md.qpos[self.qpos_adr]
-        dq = md.qvel[self.qvel_adr]
-        body = np.clip(cmd.tau + cmd.kp * (cmd.q - q) + cmd.kd * (cmd.dq - dq),
-                       -self.effort_limit, self.effort_limit)
-        for k, ci in enumerate(self.ctrl_idx):
-            out[int(ci)] = float(body[k])
-        if hands is not None and self.has_hands:
-            lcmd, rcmd = hands
-            for hc, (qa, va, ci), eff in ((lcmd, self._lh, self._lh_eff),
-                                          (rcmd, self._rh, self._rh_eff)):
-                ht = np.clip(hc.tau + hc.kp * (hc.q - md.qpos[qa]) + hc.kd * (hc.dq - md.qvel[va]),
-                             -eff, eff)
-                for k, c in enumerate(ci):
-                    out[int(c)] = float(ht[k])
-        return out
-
-    def apply(self):
-        """One control substep, DIRECT write (bypass path): exchange + PD + write ctrl.
-        Equivalent to routing compute_torques() through robosuite's part controllers.
-        Returns the obs dict that was published (for logging/tests)."""
-        obs, cmd, hands = self.exchange()
-        md = self.sim.data._data if hasattr(self.sim.data, "_data") else self.sim.data
-        if cmd is None:
-            md.ctrl[self.ctrl_idx] = 0.0
-            return obs
-
-        torques = self.compute_torques(cmd, hands)
-        for ci, t in torques.items():
-            md.ctrl[ci] = t
-
-        self.last_cmd = cmd
-        self.last_tau = np.array([torques[int(ci)] for ci in self.ctrl_idx])
-        self.last_qerr = np.array(cmd.q - md.qpos[self.qpos_adr])
-        hand_tau = None
-        if hands is not None and self.has_hands:
-            hand_tau = [np.array([torques[int(c)] for c in self._lh[2]]),
-                        np.array([torques[int(c)] for c in self._rh[2]])]
-
-        if self.debug and self._dbg is not None:
-            self._dbg.record(np.array(md.qpos), np.array(md.qvel), obs, cmd,
-                             self.last_tau, hand_cmds=hands, hand_tau=hand_tau)
-        return obs
