@@ -52,6 +52,9 @@ class DDSActionSource(SonicActionSource):
     def reset(self, env):
         self._engine = None
         self.gains = None
+        bridge = getattr(self._src, "bridge", None)
+        if bridge is not None and hasattr(bridge, "reset"):
+            bridge.reset()
 
     def _capture_gains(self, cmd, lh, rh):
         """Record the (constant) per-source gains the first time each is available."""
