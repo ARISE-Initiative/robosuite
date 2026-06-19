@@ -25,23 +25,22 @@ from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas import EmptyArena
 from robosuite.models.grippers.sonic_dex3_gripper import SonicDex3LeftGripper, SonicDex3RightGripper
 from robosuite.models.robots.manipulators.sonic_g1_robot import SonicG1, SonicG1Fixed
-import robosuite.controllers.composite.sonic_whole_body_controller as sonic_wbc
 from robosuite.controllers.composite.sonic_whole_body_controller import (
     SonicWholeBodyController, WBC_CONFIG)
 from robosuite.utils.sonic.controller import MotorCommand
 
-_REAL_DDS = sonic_wbc.DDSCommandSource
+
+def _first_existing(*paths):
+    for path in paths:
+        if os.path.exists(path):
+            return path
+    return paths[0]
 
 
-def _patch_source(fn):
-    """Drive SonicWholeBodyController off `fn(cfg)` instead of the live DDS backend, by
-    overwriting the module's DDSCommandSource symbol (restored with fn=None). Lets the
-    tests exercise the control flow with a mock/replay source -- no test-only hook in the
-    controller itself."""
-    sonic_wbc.DDSCommandSource = fn if fn is not None else _REAL_DDS
-
-GEAR_MODEL = ("/home/ajay/code/GR00T-WholeBodyControl/gear_sonic/"
-              "data/robot_model/model_data/g1/g1_29dof_with_hand.xml")
+GEAR_MODEL = _first_existing(
+    "/home/amaddukuri/Projects/GR00T-WholeBodyControl/gear_sonic/data/robot_model/model_data/g1/g1_29dof_with_hand.xml",
+    "/home/ajay/code/GR00T-WholeBodyControl/gear_sonic/data/robot_model/model_data/g1/g1_29dof_with_hand.xml",
+)
 
 
 def _assemble():
@@ -100,9 +99,49 @@ def drive_engine_direct(engine, data):
         data.ctrl[actidx] = tau
 
 
+def _action_from_gold(gold, idx=0):
+    return np.concatenate([gold["cmd_q"][idx], gold["lh_cmd_q"][idx], gold["rh_cmd_q"][idx]])
+
+
+def _gains_from_gold(gold, idx=0):
+    return {
+        "body": (np.asarray(gold["cmd_kp"][idx], dtype=float), np.asarray(gold["cmd_kd"][idx], dtype=float)),
+        "lhand": (np.asarray(gold["lh_cmd_kp"][idx], dtype=float), np.asarray(gold["lh_cmd_kd"][idx], dtype=float)),
+        "rhand": (np.asarray(gold["rh_cmd_kp"][idx], dtype=float), np.asarray(gold["rh_cmd_kd"][idx], dtype=float)),
+    }
+
+
+def _commands_from_action(action, gains):
+    action = np.asarray(action, dtype=float)
+    z_body = np.zeros(29)
+    z_hand = np.zeros(7)
+    cmd = MotorCommand(
+        q=action[:29],
+        dq=z_body.copy(),
+        kp=gains["body"][0],
+        kd=gains["body"][1],
+        tau=z_body.copy(),
+    )
+    lh = MotorCommand(
+        q=action[29:36],
+        dq=z_hand.copy(),
+        kp=gains["lhand"][0],
+        kd=gains["lhand"][1],
+        tau=z_hand.copy(),
+    )
+    rh = MotorCommand(
+        q=action[36:43],
+        dq=z_hand.copy(),
+        kp=gains["rhand"][0],
+        kd=gains["rhand"][1],
+        tau=z_hand.copy(),
+    )
+    return cmd, (lh, rh)
+
+
 # --- Test-only command sources (moved out of robosuite.utils.sonic.sources; production
 # only ships DDSCommandSource). Both duck-type the source interface the engine needs:
-# update(obs) + read() [+ read_hands()]. They feed the controller via _patch_source. ---
+# update(obs) + read() [+ read_hands()]. ---
 class ReferenceMockSource:
     """Replays per-motor joint targets (motor order) as PD targets; advances one frame
     per read(), holds the last once exhausted."""
@@ -240,74 +279,52 @@ def test_sonic_wbc_robosuite_make_matches_engine():
     -- legs/torso/arms AND both grippers -- confirming the controller computes the law
     (no left/right swap, no gravcomp/scaling drift, hands included)."""
 
-    class _MockWithHands(ReferenceMockSource):
-        """Mock that also streams a (zero-target) Dex3 hand PD command so the grippers
-        are driven and verified, not skipped."""
-        def __init__(self, targets, kp, kd, hkp, hkd):
-            super().__init__(targets, kp, kd)
-            self._hkp, self._hkd = hkp, hkd
-
-        def read_hands(self):
-            z = np.zeros(7)
-            mk = lambda: MotorCommand(q=z.copy(), dq=z.copy(), kp=self._hkp, kd=self._hkd, tau=z.copy())
-            return mk(), mk()
-
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
                             "controllers", "config", "robots", "default_sonic_g1.json")
-    _patch_source(lambda c: _MockWithHands(
-        np.zeros((1, 29)), np.array(c["MOTOR_KP"][:29], float), np.array(c["MOTOR_KD"][:29], float),
-        np.full(7, 2.0), np.full(7, 0.1)))
+    cfg = load_composite_controller_config(controller=cfg_path)
+    assert cfg["type"] == "SONIC_WBC"
+    # control_freq=500 -> one sim substep (hence one PD dispatch) per env.step, so the
+    # applied ctrl is computed at the same state we evaluate the engine reference at.
+    env = robosuite.make("TwoArmLift", robots=["SonicG1Fixed"], controller_configs=cfg,
+                         has_renderer=False, has_offscreen_renderer=False,
+                         use_camera_obs=False, control_freq=500)
     try:
-        cfg = load_composite_controller_config(controller=cfg_path)
-        assert cfg["type"] == "SONIC_WBC"
-        # control_freq=500 -> one sim substep (hence one PD dispatch) per env.step, so the
-        # applied ctrl is computed at the same state we evaluate the engine reference at.
-        env = robosuite.make("TwoArmLift", robots=["SonicG1Fixed"], controller_configs=cfg,
-                             has_renderer=False, has_offscreen_renderer=False,
-                             use_camera_obs=False, control_freq=500)
-        try:
-            env.reset()
-            cc = env.robots[0].composite_controller
-            env.step(np.zeros(env.action_dim))  # build the engine + part plan; set last_command
-            ref = None
-            for _ in range(10):  # stop before the zero-target mock collapses the fixed-base legs
-                # The mock command is constant, so last_command is exactly the command the
-                # NEXT step dispatches; compute_torques (read-only) gives the engine's own PD
-                # at the CURRENT state == the state run_controller dispatches at before any
-                # substep advances it. So `ref` and the applied ctrl share command AND state.
-                cmd, hands = cc.last_command
-                ref = engine_pd_torques(cc._sonic, cmd, hands)  # {actuator_index: torque}
-                env.step(np.zeros(env.action_dim))           # routed per-part PD dispatch
-                idx = np.array(sorted(ref))                  # all 43 SONIC actuators
-                applied = env.sim.data.ctrl[idx]
-                engine = np.array([ref[i] for i in idx])
-                assert np.allclose(applied, engine, atol=1e-9), \
-                    f"part-controller PD != engine PD (max {np.abs(applied - engine).max():.2e})"
-            s = cc._sonic  # both grippers actually exercised (14 hand actuators routed)
-            assert s.has_hands and len(s._lh[2]) == 7 and len(s._rh[2]) == 7
-            assert {int(c) for c in list(s._lh[2]) + list(s._rh[2])} <= set(ref)
-            assert np.all(np.isfinite(env.sim.data.ctrl))
-        finally:
-            env.close()
+        env.reset()
+        cc = env.robots[0].composite_controller
+        gains = {
+            "body": (np.array(cc._cfg["MOTOR_KP"][:29], float), np.array(cc._cfg["MOTOR_KD"][:29], float)),
+            "lhand": (np.full(7, 2.0), np.full(7, 0.1)),
+            "rhand": (np.full(7, 2.0), np.full(7, 0.1)),
+        }
+        action = np.zeros(env.action_dim)
+        cc.set_command_gains(gains)
+        env.step(action)  # build the maps + part plan
+        ref = None
+        for _ in range(10):  # stop before the zero-target command collapses the fixed-base legs
+            # The action command is constant, so the command we evaluate here is exactly the
+            # command env.step dispatches. Compute the reference at the CURRENT state, before
+            # env.step advances it.
+            cmd, hands = _commands_from_action(action, gains)
+            ref = engine_pd_torques(cc._maps, cmd, hands)  # {actuator_index: torque}
+            env.step(action)                              # routed per-part PD dispatch
+            idx = np.array(sorted(ref))                   # all 43 SONIC actuators
+            applied = env.sim.data.ctrl[idx]
+            engine = np.array([ref[i] for i in idx])
+            assert np.allclose(applied, engine, atol=1e-9), \
+                f"part-controller PD != engine PD (max {np.abs(applied - engine).max():.2e})"
+        s = cc._maps  # both grippers actually exercised (14 hand actuators routed)
+        assert s.has_hands and len(s._lh[2]) == 7 and len(s._rh[2]) == 7
+        assert {int(c) for c in list(s._lh[2]) + list(s._rh[2])} <= set(ref)
+        assert np.all(np.isfinite(env.sim.data.ctrl))
     finally:
-        _patch_source(None)
+        env.close()
 
 
 # gold command streams live in the sonic_robosuite harness repo; override with $SONIC_GOLD_DIR.
-GOLD_DIR = os.environ.get("SONIC_GOLD_DIR", "/home/ajay/code/sonic_robosuite/tests/gold")
-
-
-def _mock_factory():
-    """Source factory: zero-target body PD + (zero) Dex3 hand PD, so grippers run too."""
-
-    class _MockWithHands(ReferenceMockSource):
-        def read_hands(self):
-            z = np.zeros(7)
-            mk = lambda: MotorCommand(q=z.copy(), dq=z.copy(), kp=np.full(7, 2.0), kd=np.full(7, 0.1), tau=z.copy())
-            return mk(), mk()
-
-    return lambda c: _MockWithHands(np.zeros((1, 29)), np.array(c["MOTOR_KP"][:29], float),
-                                    np.array(c["MOTOR_KD"][:29], float))
+GOLD_DIR = os.environ.get("SONIC_GOLD_DIR") or _first_existing(
+    "/home/amaddukuri/Projects/sonic_robosuite/tests/gold",
+    "/home/ajay/code/sonic_robosuite/tests/gold",
+)
 
 
 @pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
@@ -316,12 +333,10 @@ def test_sonic_g1_floating_base_in_env():
     robosuite env (NullBase, not welded by the base machinery), and the SONIC obs reads
     the robot's own freejoint."""
     from robosuite.scripts.collect_sonic_g1_demos import SonicArenaEnv, SONIC_CFG, match_base_sim_physics
-    from robosuite.utils.sonic.controller import G1SonicController
-    _patch_source(_mock_factory())
+    env = SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=SONIC_CFG),
+                        has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
+                        control_freq=500, hard_reset=False, ignore_done=True, horizon=10_000)
     try:
-        env = SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=SONIC_CFG),
-                            has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
-                            control_freq=500, hard_reset=False, ignore_done=True, horizon=10_000)
         env.reset()
         match_base_sim_physics(env.sim.model._model)
         m = env.sim.model._model
@@ -332,14 +347,13 @@ def test_sonic_g1_floating_base_in_env():
         assert m.jnt_type[m.body_jntadr[pid]] == int(mujoco.mjtJoint.mjJNT_FREE)
         # SONIC controller resolves the ROBOT's freejoint for its base obs
         cc = env.robots[0].composite_controller
-        cc._sonic = G1SonicController(cc.sim, cc._src, cc._cfg)
-        assert cc._sonic.free_qadr == int(m.jnt_qposadr[m.body_jntadr[pid]])
+        env.step(np.zeros(env.action_dim))  # build maps
+        assert cc._maps.free_qadr == int(m.jnt_qposadr[m.body_jntadr[pid]])
         for _ in range(20):
             env.step(np.zeros(env.action_dim))
         assert np.all(np.isfinite(env.sim.data.ctrl))
-        env.close()
     finally:
-        _patch_source(None)
+        env.close()
 
 
 @pytest.mark.skipif(not (os.path.exists(WBC_CONFIG) and os.path.isdir(GOLD_DIR)),
@@ -352,7 +366,7 @@ def test_sonic_data_collection_replay(tmp_path):
     from robosuite.wrappers import DataCollectionWrapper
 
     gold = dict(np.load(os.path.join(GOLD_DIR, "squat_001__A359.npz"), allow_pickle=True))
-    _patch_source(lambda c: ReplayCommandSource(gold))
+    env = None
     try:
         base = C.SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=C.SONIC_CFG),
                                has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
@@ -361,8 +375,9 @@ def test_sonic_data_collection_replay(tmp_path):
         env = DataCollectionWrapper(base, tmp)
         env.reset()  # robot spawns standing via SonicG1.init_qpos
         C.match_base_sim_physics(base.sim.model._model)
-        for _ in range(60):
-            env.step(C.sonic_action(base))
+        base.robots[0].composite_controller.set_command_gains(_gains_from_gold(gold))
+        for t in range(60):
+            env.step(_action_from_gold(gold, t))
         env.close()
         out = str(tmp_path / "out")
         C.gather_to_hdf5(tmp, out, "SonicArenaEnv", {"type": "SONIC_WBC", "robot": "SonicG1"})
@@ -376,7 +391,11 @@ def test_sonic_data_collection_replay(tmp_path):
             assert not np.all(a == 0)  # SONIC targets recorded
             assert f["data"][demos[0]].attrs["model_file"]  # replayable model
     finally:
-        _patch_source(None)
+        if env is not None:
+            try:
+                env.close()
+            except Exception:
+                pass
 
 
 @pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
@@ -388,58 +407,44 @@ def test_sonic_startup_band_is_object_safe():
     freely (not snapped back), (b) the band applies a force to the pelvis, and (c)
     releasing the band zeros that force."""
 
-    class _BandMock(ReferenceMockSource):
-        """Zero-target body PD that also carries a .bridge, so the controller's live-DDS
-        band branch runs (the real DDSCommandSource's bridge is what gates it)."""
-        def __init__(self, cfg):
-            super().__init__(np.zeros((1, 29)), np.array(cfg["MOTOR_KP"][:29], float),
-                             np.array(cfg["MOTOR_KD"][:29], float))
-            # low_cmd_received=False = the startup-hold window: exactly when the OLD code
-            # pinned the whole qpos every step (so this is a true regression guard).
-            self.bridge = type("B", (), {"low_cmd_received": False})()
-
     cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
                             "controllers", "config", "robots", "default_sonic_g1.json")
-    _patch_source(lambda c: _BandMock(c))
+    # floating SonicG1 in an env WITH a free task object (the pot)
+    env = robosuite.make("TwoArmLift", robots=["SonicG1"],
+                         controller_configs=load_composite_controller_config(controller=cfg_path),
+                         has_renderer=False, has_offscreen_renderer=False,
+                         use_camera_obs=False, control_freq=20)
     try:
-        # floating SonicG1 in an env WITH a free task object (the pot)
-        env = robosuite.make("TwoArmLift", robots=["SonicG1"],
-                             controller_configs=load_composite_controller_config(controller=cfg_path),
-                             has_renderer=False, has_offscreen_renderer=False,
-                             use_camera_obs=False, control_freq=20)
-        try:
-            env.reset()
-            cc = env.robots[0].composite_controller
-            m = env.sim.model._model
-            md = env.sim.data._data
-            env.step(np.zeros(env.action_dim))  # builds the engine + band; sets _pelvis_bid
-            assert cc._pelvis_bid is not None, "floating base not detected"
+        env.reset()
+        cc = env.robots[0].composite_controller
+        m = env.sim.model._model
+        md = env.sim.data._data
+        env.step(np.zeros(env.action_dim))  # builds the engine + band; sets _pelvis_bid
+        assert cc._pelvis_bid is not None, "floating base not detected"
 
-            # locate a NON-robot freejoint (the pot) by its body name
-            pelvis_bid = cc._pelvis_bid
-            pot_qadr = next(
-                int(m.jnt_qposadr[j]) for j in range(m.njnt)
-                if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
-                and "pelvis" not in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or ""))
+        # locate a NON-robot freejoint (the pot) by its body name
+        pelvis_bid = cc._pelvis_bid
+        pot_qadr = next(
+            int(m.jnt_qposadr[j]) for j in range(m.njnt)
+            if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
+            and "pelvis" not in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or ""))
 
-            # (a) perturb the pot, step, and confirm it was NOT snapped back to a snapshot
-            before = np.array(md.qpos[pot_qadr:pot_qadr + 3])
-            md.qpos[pot_qadr] += 0.15
-            env.sim.forward()
-            moved_to = float(md.qpos[pot_qadr])
-            env.step(np.zeros(env.action_dim))
-            after = float(md.qpos[pot_qadr])
-            assert abs(after - before[0]) > 0.1, "pot was teleported back -- qpos clobbered!"
-            assert abs(after - moved_to) < 0.05, "pot did not evolve from its perturbed pose"
+        # (a) perturb the pot, step, and confirm it was NOT snapped back to a snapshot
+        before = np.array(md.qpos[pot_qadr:pot_qadr + 3])
+        md.qpos[pot_qadr] += 0.15
+        env.sim.forward()
+        moved_to = float(md.qpos[pot_qadr])
+        env.step(np.zeros(env.action_dim))
+        after = float(md.qpos[pot_qadr])
+        assert abs(after - before[0]) > 0.1, "pot was teleported back -- qpos clobbered!"
+        assert abs(after - moved_to) < 0.05, "pot did not evolve from its perturbed pose"
 
-            # (b) the band applies a force to the pelvis while enabled
-            assert np.any(md.xfrc_applied[pelvis_bid] != 0.0), "band applied no force"
+        # (b) the band applies a force to the pelvis while enabled
+        assert np.any(md.xfrc_applied[pelvis_bid] != 0.0), "band applied no force"
 
-            # (c) releasing the band zeros that force
-            cc.release_band()
-            env.step(np.zeros(env.action_dim))
-            assert np.all(md.xfrc_applied[pelvis_bid] == 0.0), "band force not cleared on release"
-        finally:
-            env.close()
+        # (c) releasing the band zeros that force
+        cc.release_band()
+        env.step(np.zeros(env.action_dim))
+        assert np.all(md.xfrc_applied[pelvis_bid] == 0.0), "band force not cleared on release"
     finally:
-        _patch_source(None)
+        env.close()

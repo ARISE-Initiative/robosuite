@@ -31,6 +31,7 @@ import robosuite  # noqa: F401  registers SonicG1 / Dex3 / SONIC_WBC
 from robosuite.controllers import load_composite_controller_config
 from robosuite.controllers.composite.sonic_whole_body_controller import WBC_CONFIG
 from robosuite.scripts.collect_sonic_g1_demos import SonicArenaEnv, SONIC_CFG, match_base_sim_physics
+from robosuite.utils.sonic.action_sources import DDSActionSource
 
 DEPLOY = os.environ.get("SONIC_DEPLOY", "/home/ajay/code/GR00T-WholeBodyControl/gear_sonic_deploy")
 CPP_BIN = os.path.join(DEPLOY, "target", "release", "g1_deploy_onnx_ref")
@@ -70,6 +71,7 @@ def _launch_cpp(motion):
 
 def _render(model, mj_data, qpos_seq, out_mp4, sim_dt, fps=30):
     """Offscreen-render a recorded qpos sequence to mp4 (pelvis-tracking cam; needs EGL)."""
+    import imageio
     os.environ.setdefault("MUJOCO_GL", "egl")
     pelvis = next(b for b in range(model.nbody)
                   if "pelvis" in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) or ""))
@@ -79,16 +81,16 @@ def _render(model, mj_data, qpos_seq, out_mp4, sim_dt, fps=30):
     cam.trackbodyid = pelvis
     cam.distance, cam.azimuth, cam.elevation = 3.5, 120, -15
     stride = max(1, int(round((1.0 / fps) / sim_dt)))
-    ff = subprocess.Popen(
-        ["ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", "640x480",
-         "-r", str(fps), "-i", "-", "-pix_fmt", "yuv420p", out_mp4],
-        stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    for t in range(0, len(qpos_seq), stride):
-        mj_data.qpos[:] = qpos_seq[t]
-        mujoco.mj_forward(model, mj_data)
-        renderer.update_scene(mj_data, camera=cam)
-        ff.stdin.write(renderer.render().tobytes())
-    ff.stdin.close(); ff.wait()
+    writer = imageio.get_writer(out_mp4, fps=fps)
+    try:
+        for t in range(0, len(qpos_seq), stride):
+            mj_data.qpos[:] = qpos_seq[t]
+            mujoco.mj_forward(model, mj_data)
+            renderer.update_scene(mj_data, camera=cam)
+            writer.append_data(renderer.render())
+    finally:
+        writer.close()
+        renderer.close()
 
 
 @pytest.mark.skipif(not _LIVE_OK,
@@ -106,7 +108,9 @@ def test_sonic_live_dds_tracking(motion):
     match_base_sim_physics(env.sim.model._model)
     controller = env.robots[0].composite_controller
     mj_data, model = env.sim.data._data, env.sim.model._model
-    action = np.zeros(env.action_dim)
+    source = DDSActionSource(controller._cfg)
+    source.reset(env)
+    hold_action = np.zeros(env.action_dim)
     sim_dt = float(model.opt.timestep)
 
     cpp = _launch_cpp(motion)
@@ -124,9 +128,16 @@ def test_sonic_live_dds_tracking(motion):
     nxt = time.perf_counter()
     try:
         while state["phase"] != "done":
-            env.step(action)
+            action = source.act(env)
+            if action is None:
+                env.step(hold_action)
+            else:
+                if source.gains:
+                    controller.set_command_gains(source.gains)
+                env.step(action)
             if state["rec"]:
-                engine = controller._sonic
+                engine = source._engine
+                assert engine is not None, "DDS source did not initialize its SONIC map engine"
                 body_q.append(mj_data.qpos[engine.qpos_adr].copy())            # 29, MOTOR order
                 fb_pose.append(mj_data.qpos[engine.free_qadr:engine.free_qadr + 7].copy())
                 if VIDEO_DIR:
