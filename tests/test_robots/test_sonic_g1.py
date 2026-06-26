@@ -399,6 +399,75 @@ def test_sonic_data_collection_replay(tmp_path):
 
 
 @pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
+def test_sonic_startup_band_holds_reference_yaw():
+    """A startup band referenced to the spawn pose should not yaw Sonic back to
+    world identity when the kitchen spawns the robot facing a fixture."""
+    from scipy.spatial.transform import Rotation
+
+    cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
+                            "controllers", "config", "robots", "default_sonic_g1.json")
+    env = robosuite.make("TwoArmLift", robots=["SonicG1"],
+                         controller_configs=load_composite_controller_config(controller=cfg_path),
+                         has_renderer=False, has_offscreen_renderer=False,
+                         use_camera_obs=False, control_freq=20)
+    try:
+        env.reset()
+        cc = env.robots[0].composite_controller
+        m = env.sim.model._model
+        md = env.sim.data._data
+        pelvis_jid = next(
+            j for j in range(m.njnt)
+            if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
+            and "pelvis" in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or "")
+        )
+        qadr = int(m.jnt_qposadr[pelvis_jid])
+        qvadr = int(m.jnt_dofadr[pelvis_jid])
+
+        yaw = np.pi / 2.0
+        ref_rot = Rotation.from_euler("z", yaw)
+        ref_quat = ref_rot.as_quat()
+        md.qpos[qadr + 3:qadr + 7] = [ref_quat[3], ref_quat[0], ref_quat[1], ref_quat[2]]
+        md.qvel[qvadr:qvadr + 6] = 0.0
+        env.sim.forward()
+        env.step(np.zeros(env.action_dim))  # builds the engine, pelvis id, and reference-yaw band
+        pelvis_bid = cc._pelvis_bid
+        md.qpos[qadr + 3:qadr + 7] = [ref_quat[3], ref_quat[0], ref_quat[1], ref_quat[2]]
+        md.qvel[qvadr:qvadr + 6] = 0.0
+        env.sim.forward()
+        cc._apply_band(md)
+        assert abs(md.xfrc_applied[pelvis_bid, 5]) < 1e-6
+
+        rolled = (ref_rot * Rotation.from_euler("x", 0.1)).as_quat()
+        md.qpos[qadr + 3:qadr + 7] = [rolled[3], rolled[0], rolled[1], rolled[2]]
+        md.qvel[qvadr:qvadr + 6] = 0.0
+        env.sim.forward()
+        cc._apply_band(md)
+        assert np.linalg.norm(md.xfrc_applied[pelvis_bid, 3:5]) > 10.0
+        assert abs(md.xfrc_applied[pelvis_bid, 5]) < 1e-6
+    finally:
+        env.close()
+
+
+@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
+def test_legacy_elastic_band_torques_yaw_to_identity():
+    """The upstream gear_sonic band still yaws nonzero headings toward identity.
+    SONIC_WBC handles the RoboCasa spawn-yaw reference locally."""
+    from gear_sonic.utils.mujoco_sim.unitree_sdk2py_bridge import ElasticBand
+
+    yaw = np.pi / 2.0
+    quat_wxyz = np.array([np.cos(yaw / 2.0), 0.0, 0.0, np.sin(yaw / 2.0)])
+    pose = np.zeros(13)
+    pose[0:3] = np.array([0.0, 0.0, 1.0])
+    pose[3:7] = quat_wxyz
+
+    legacy = ElasticBand()
+    legacy.point = pose[0:3].copy()
+    legacy_wrench = legacy.Advance(pose)
+
+    assert abs(legacy_wrench[5]) > 100.0
+
+
+@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
 def test_sonic_startup_band_is_object_safe():
     """The live-DDS startup hold is an elastic band -- a force on the PELVIS body only,
     NEVER a qpos write. Regression: the old freeze/fall-recovery pinned the WHOLE qpos

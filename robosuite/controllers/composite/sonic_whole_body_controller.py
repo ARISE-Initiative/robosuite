@@ -25,6 +25,7 @@ import yaml
 from robosuite.controllers.composite.composite_controller import (
     CompositeController, register_composite_controller)
 from robosuite.utils.sonic.controller import G1SonicController
+from scipy.spatial.transform import Rotation
 
 
 def _wbc_config_path():
@@ -51,6 +52,7 @@ class SonicWholeBodyController(CompositeController):
         # Startup elastic band: spring-damper force on the PELVIS body only (never a qpos write),
         # holding the floating base up during the C++ handoff. Released via release_band()/'9'.
         self._band = None
+        self._band_ref_rot = None
         self._pelvis_bid = None
         self.band_enabled = True
 
@@ -96,6 +98,7 @@ class SonicWholeBodyController(CompositeController):
         self._action_q = None
         self._cmd_gains = {}
         self._band = None
+        self._band_ref_rot = None
         self._pelvis_bid = None
         self.band_enabled = True
 
@@ -149,9 +152,13 @@ class SonicWholeBodyController(CompositeController):
                  and int(model.jnt_qposadr[j]) == engine.free_qadr), None)
 
     def _apply_band(self, mj_data):
-        """Hold the floating base up during the C++ startup/handoff with an elastic band: a
-        spring-damper force + uprighting torque on the PELVIS body, written to xfrc_applied[pelvis]
-        ONLY. Cleared when band_enabled is False (manual release)."""
+        """Hold the floating base up during the C++ startup/handoff with an elastic band.
+
+        The band applies a spring-damper force plus an orientation-hold torque on
+        the PELVIS body, written to xfrc_applied[pelvis] ONLY. The orientation
+        reference is the spawn/reset pelvis pose, so kitchens that spawn Sonic
+        facing a counter are not rotated back to world-zero yaw.
+        """
         bid = self._pelvis_bid
         if not self.band_enabled:
             mj_data.xfrc_applied[bid] = 0.0
@@ -161,12 +168,22 @@ class SonicWholeBodyController(CompositeController):
             self._band = ElasticBand()
             self._band.point = np.array(mj_data.xpos[bid])  # anchor at the spawn stand pose
             self._band.length = 0.0
+            quat = mj_data.xquat[bid]
+            self._band_ref_rot = Rotation.from_quat([quat[1], quat[2], quat[3], quat[0]])
         model = self._maps._mj_model
         vel = np.zeros(6)  # mj_objectVelocity -> [angular(3), linear(3)] in world frame
         mujoco.mj_objectVelocity(model, mj_data, mujoco.mjtObj.mjOBJ_BODY, bid, vel, 0)
-        # ElasticBand.Advance wants pose = [pos(3), quat(4), lin_vel(3), ang_vel(3)]
-        pose = np.concatenate([mj_data.xpos[bid], mj_data.xquat[bid], vel[3:6], vel[0:3]])
-        mj_data.xfrc_applied[bid] = self._band.Advance(pose)
+        lin_vel, ang_vel = vel[3:6], vel[0:3]
+        quat = mj_data.xquat[bid]
+        rot = Rotation.from_quat([quat[1], quat[2], quat[3], quat[0]])
+        rotvec = (rot * self._band_ref_rot.inv()).as_rotvec()
+        force = (
+            self._band.kp_pos
+            * (self._band.point - mj_data.xpos[bid] + np.array([0.0, 0.0, self._band.length]))
+            - self._band.kd_pos * lin_vel
+        )
+        torque = -self._band.kp_ang * rotvec - self._band.kd_ang * ang_vel
+        mj_data.xfrc_applied[bid] = np.concatenate([force, torque])
 
     def _action_by_source(self):
         """Slice the flat q* action into {body, lhand, rhand} blocks (matching the source's concat)."""
