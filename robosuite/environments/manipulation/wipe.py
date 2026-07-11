@@ -237,6 +237,7 @@ class Wipe(ManipulationEnv):
         self.table_height_std = self.task_config["table_height_std"]
         self.delta_height = None  # sample variation in height done in load_model
         self.table_offset = np.array(self.task_config["table_offset"])
+        self.base_table_offset = np.array(self.task_config["table_offset"])
         self.table_friction = self.task_config["table_friction"]
         self.table_friction_std = self.task_config["table_friction_std"]
         self.line_width = self.task_config["line_width"]
@@ -534,9 +535,8 @@ class Wipe(ManipulationEnv):
 
         # Get robot's contact geoms
         self.robot_contact_geoms = self.robots[0].robot_model.contact_geoms
-        if self.delta_height is None:
-            self.delta_height = self.rng.normal(self.table_height, self.table_height_std)
-        self.table_offset[2] += self.delta_height
+        self.delta_height = self.rng.normal(self.table_height, self.table_height_std)
+        self.table_offset[2] = self.base_table_offset[2] + self.delta_height
         mujoco_arena = WipeArena(
             table_full_size=self.table_full_size,
             table_friction=self.table_friction,
