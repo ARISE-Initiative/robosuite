@@ -122,6 +122,9 @@ class Controller(object, metaclass=abc.ABCMeta):
         # Torques being outputted by the controller
         self.torques = None
 
+        # External torque compensation
+        self.external_torque_compensation = 0
+
         # Update flag to prevent redundant update calls
         self.new_update = True
 

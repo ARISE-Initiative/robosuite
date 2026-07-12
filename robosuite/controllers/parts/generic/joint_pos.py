@@ -175,7 +175,9 @@ class JointPositionController(Controller):
         # initialize
         self.goal_qpos = None
 
+        self.desired_torque_as_acceleration = kwargs.get("desired_torque_as_acceleration", True)
         self.use_torque_compensation = kwargs.get("use_torque_compensation", True)
+        self.use_external_torque_compensation = kwargs.get("use_external_torque_compensation", False)
 
     def set_goal(self, action, set_qpos=None):
         """
@@ -259,13 +261,19 @@ class JointPositionController(Controller):
 
         position_error = desired_qpos - self.joint_pos
         vel_pos_error = -self.joint_vel
-        desired_torque = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
+        self.torques = np.multiply(np.array(position_error), np.array(self.kp)) + np.multiply(vel_pos_error, self.kd)
 
-        # Return desired torques plus gravity compensations
+        # The computed self.torques may represent acceleration rather than actual torques,
+        # depending on the meaning of PD gains.
+        # This usage is used to maintain compatibility with other controllers in robosuite.
+        if self.desired_torque_as_acceleration:
+            self.torques = np.dot(self.mass_matrix, self.torques)
+
+        # Return desired torques plus gravity compensation
         if self.use_torque_compensation:
-            self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation
-        else:
-            self.torques = desired_torque
+            self.torques += self.torque_compensation
+        elif self.use_external_torque_compensation:
+            self.torques += self.external_torque_compensation
 
         # Always run superclass call for any cleanups at the end
         super().run_controller()
