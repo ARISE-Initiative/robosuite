@@ -44,11 +44,11 @@
   </default>
 
   <worldbody>
-    <body name="right_gripper" pos="0 0 0" quat="1 0 0 0">
+    <body name="right_gripper" pos="0 0 -0.05" quat="0 0.707107 0 0.707107">
         <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1"/>
         <inertial pos="0 0 0.0" quat="0.707107 0.707107 0 0" mass="0.3" diaginertia="0.09 0.07 0.05" />
         <!-- This site was added for visualization. -->
-        <body name="eef" pos="0 0 0.0" quat="0.707 0. -0.707 0.">
+        <body name="eef" pos="0.2 0 0" quat="0.5 0.5 0.5 0.5">
             <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="0 0 1 0.5" type="sphere" group="1"/>
             <site name="ee_x" pos="0.1 0 0" size="0.005 .1"  quat="0.707105  0 0.707108 0 " rgba="1 0 0 0" type="cylinder" group="1"/>
             <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1"/>
