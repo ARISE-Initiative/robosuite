@@ -1,4 +1,5 @@
 import os
+import time
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from copy import deepcopy
@@ -136,6 +137,16 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
+        # How often (every Nth step()) to run the expensive once-per-step bookkeeping in step()
+        # -- reward()/_check_success() and any subclass _post_action work (e.g. robocasa's
+        # per-fixture update_state()). Default 1 == every step (unchanged behavior). Raise it for
+        # high-rate control where reward is unused and success only needs an occasional check
+        # (e.g. SONIC data collection); skipped steps reuse the previous (reward, done, info).
+        self.post_action_freq = 1
+        # How often (every Nth step()) to refresh the built-in viewer (self.viewer.update()).
+        # Default 1 == every step (unchanged). Raise it to render at a lower rate than the control
+        # loop -- e.g. 20 Hz render under a 200 Hz control loop (render_freq = control_freq/20).
+        self.render_freq = 1
         self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
@@ -215,6 +226,13 @@ class MujocoEnv(metaclass=EnvMeta):
         """
         self.cur_time = 0
         self.model_timestep = macros.SIMULATION_TIMESTEP
+        # RTF (real-time-factor) monitor: when console logging is verbose
+        # (macros.CONSOLE_LOGGING_LEVEL == "DEBUG"), step() prints a [real-time] line ~1x/sec with
+        # sim-time advanced vs wall-time elapsed. Read-only accounting -- the env does NOT throttle
+        # itself; callers that need real time pace their own step loop (e.g. the SONIC collectors).
+        self._rt_verbose = macros.CONSOLE_LOGGING_LEVEL == "DEBUG"
+        self._rt_n = 0
+        self._rt_t0 = None
         if self.model_timestep <= 0:
             raise ValueError("Invalid simulation timestep defined!")
         self.control_freq = control_freq
@@ -504,13 +522,48 @@ class MujocoEnv(metaclass=EnvMeta):
             self._update_observables()
             policy_step = False
 
+            # --- RTF accounting (verbose only; read-only -- this env does NOT throttle; the
+            # caller paces its own step loop if it needs real time) ---
+            if self._rt_verbose:
+                self._rt_n += 1
+                if self._rt_t0 is None:
+                    self._rt_t0 = time.perf_counter()
+
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
 
-        reward, done, info = self._post_action(action)
+        # --- RTF report (~1x/sec), printed only when console logging is verbose. Reports the
+        # achieved sim-vs-wall ratio (wall includes any pacing the caller's loop did between
+        # steps); flags sub-real-time so a too-heavy scene / loaded box is visible. ---
+        if self._rt_verbose and self._rt_t0 is not None:
+            _T = time.perf_counter() - self._rt_t0
+            if _T >= 1.0:
+                _sim = self._rt_n * self.model_timestep
+                _rtf = _sim / _T
+                print(
+                    f"[real-time] {self._rt_n} substeps | wall {_T * 1e3:.0f}ms | sim {_sim * 1e3:.0f}ms "
+                    f"| RTF~{_rtf:.2f}x" + ("  <-- BEHIND real-time" if _rtf < 0.97 else ""),
+                    flush=True,
+                )
+                self._rt_t0 = time.perf_counter()
+                self._rt_n = 0
+
+        # Expensive once-per-step bookkeeping -- reward()/_check_success() and (robocasa) the
+        # per-fixture update_state() loop -- dominates the step on heavy task scenes (~2.5 ms of a
+        # ~4.5 ms DivideBuffetTrays step at 200 Hz). self.post_action_freq (default 1 == every step)
+        # runs it only every Nth step for high-rate control where reward is unused and success only
+        # needs an occasional check; skipped steps reuse the last (reward, done, info) -- done stays
+        # put (high-rate collection runs with ignore_done).
+        if self.post_action_freq <= 1 or self.timestep % self.post_action_freq == 0 \
+                or not hasattr(self, "_last_post_action"):
+            reward, done, info = self._post_action(action)
+            self._last_post_action = (reward, done, info)
+        else:
+            reward, done, info = self._last_post_action
 
         if self.viewer is not None and self.renderer != "mujoco":
-            self.viewer.update()
+            if self.render_freq <= 1 or self.timestep % self.render_freq == 0:
+                self.viewer.update()  # throttle the built-in viewer render off the control loop
         elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
             self.initialize_renderer()

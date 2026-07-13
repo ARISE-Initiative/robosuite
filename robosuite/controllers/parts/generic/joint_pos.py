@@ -310,3 +310,70 @@ class JointPositionController(Controller):
     @property
     def name(self):
         return "JOINT_POSITION"
+
+
+class JointPositionVelocityController(JointPositionController):
+    """JointPositionController extended to track a streamed external joint PD+feedforward
+    command, as SONIC does over DDS. Standard JointPositionController is position-only
+    (drives dq -> 0, no feedforward); SONIC needs a velocity setpoint dq* and a
+    feedforward torque tau_ff, with an output clip to the per-motor effort limit:
+
+        tau = clip(tau_ff + kp*(q* - q) + kd*(dq* - dq),  -effort, +effort)
+
+    set_pd_command(q*, dq*, kp, kd, tau_ff) sets the full command directly each step
+    (bypassing set_goal's delta/scaling); torque_limits is the per-joint effort clip.
+    reset_goal / control_limits are inherited from JointPositionController."""
+
+    def __init__(self, *args, **kwargs):
+        torque_limits = kwargs.pop("torque_limits", None)
+        super().__init__(*args, **kwargs)
+        njnt = len(self.qpos_index)
+        self.desired_vel = np.zeros(njnt)             # dq* (default 0 -> kd damps to rest)
+        self.torque_feedforward = np.zeros(njnt)      # tau_ff (default 0)
+        self.torque_limits = np.array(torque_limits) if torque_limits is not None else None
+
+    def set_pd_command(self, qpos, qvel=None, kp=None, kd=None, tau_feedforward=None):
+        """Set an absolute joint-space PD command directly (q*, dq*, kp, kd, tau_ff),
+        bypassing set_goal's delta/scaling. Used when an external policy streams a full
+        per-joint command each step (SONIC over DDS) rather than a position action."""
+        self.goal_qpos = np.asarray(qpos, dtype=float)
+        if qvel is not None:
+            self.desired_vel = np.asarray(qvel, dtype=float)
+        if kp is not None:
+            self.kp = np.asarray(kp, dtype=float)
+        if kd is not None:
+            self.kd = np.asarray(kd, dtype=float)
+        if tau_feedforward is not None:
+            self.torque_feedforward = np.asarray(tau_feedforward, dtype=float)
+        if self.interpolator is not None:
+            self.interpolator.set_goal(self.goal_qpos)
+
+    def run_controller(self):
+        """PD law with velocity setpoint + feedforward + effort clip (see class doc)."""
+        if self.goal_qpos is None:
+            self.set_goal(np.zeros(self.control_dim))
+        self.update()
+
+        if self.interpolator is not None and self.interpolator.order == 1:
+            desired_qpos = self.interpolator.get_interpolated_goal()
+        else:
+            desired_qpos = np.array(self.goal_qpos)
+
+        position_error = desired_qpos - self.joint_pos
+        vel_pos_error = self.desired_vel - self.joint_vel        # dq* - dq
+        desired_torque = np.multiply(position_error, self.kp) + np.multiply(vel_pos_error, self.kd)
+
+        if self.use_torque_compensation:
+            self.torques = np.dot(self.mass_matrix, desired_torque) + self.torque_compensation + self.torque_feedforward
+        else:
+            self.torques = desired_torque + self.torque_feedforward
+
+        if self.torque_limits is not None:
+            self.torques = np.clip(self.torques, self.torque_limits[0], self.torque_limits[1])
+
+        Controller.run_controller(self)  # base cleanup (skip JointPositionController.run_controller)
+        return self.torques
+
+    @property
+    def name(self):
+        return "JOINT_POSITION_VELOCITY"
