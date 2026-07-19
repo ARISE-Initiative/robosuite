@@ -83,10 +83,10 @@ class IKSolver:
         elif input_type == "pkl":
             self.mocap_ids = [self.full_model.body(name).mocapid[0] for name in robot_config["mocap_bodies"]]
             self.pkl_t = 0
-            import pickle
+            import json
 
-            with open(input_file, "rb") as f:
-                input_file = pickle.load(f)
+            with open(input_file, "r") as f:
+                input_file = json.load(f)
             self.history = input_file
 
         # Nullspace control
