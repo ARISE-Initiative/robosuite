@@ -207,15 +207,16 @@ class DomainRandomizationWrapper(Wrapper):
         # normal env reset
         ret = super().reset()
 
+        # a hard reset frees the old sim and builds a new one, so point the
+        # modders at it before reading any model parameters from them
+        for modder in self.modders:
+            modder.update_sim(self.env.sim)
+
         # save the original env parameters
         self.save_default_domain()
 
         # reset counter for doing domain randomization at a particular frequency
         self.step_counter = 0
-
-        # update sims
-        for modder in self.modders:
-            modder.update_sim(self.env.sim)
 
         if self.randomize_on_reset:
             # domain randomize + regenerate observation
