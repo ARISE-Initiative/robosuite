@@ -51,13 +51,13 @@
         <!-- Note: This model is a tendon-driven variation of the model found at https://github.com/abr/abr_control/blob/master/abr_control/arms/jaco2/jaco2.xml -->
         <body name="right_gripper" pos="0 0 0">
             <inertial pos="0 0 0" mass="1e-6" diaginertia="1e-08 1e-08 1e-08" />
+            <!-- Measure the complete gripper subtree from its mounting body. -->
+            <site name="ft_frame" pos="0 0 0" quat="0 -1 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
             <body name="palm" pos="0 0 0" quat="0 -1 0 0">
                 <inertial pos="0 0 -0.06" quat="0.5 0.5 -0.5 0.5" mass="0.99" diaginertia="0.0005816 0.000345324 0.000345324" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" material="carbon_hand" name="hand_visual" mesh="hand_3finger" />
                 <geom type="mesh" contype="0" conaffinity="0" group="1" material="grey_plastic_hand" name="hand_ring_visual" mesh="ring_small" />
                 <geom type="mesh" group="0" material="carbon_hand" mesh="hand_3finger" name="hand_collision" />
-
-                <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
 
                 <!-- This site was added for visualization. -->
                 <body name="eef" pos="0 0 -0.1775" quat="0 0.707105 0.707108 0 ">
