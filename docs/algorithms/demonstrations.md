@@ -14,12 +14,14 @@ See the [devices page](https://robosuite.ai/docs/modules/devices.html) for detai
 
 ## Replaying Human Demonstrations
 
-We have included an example script that illustrates how demonstrations can be loaded and played back. Our [playback_demonstrations_from_hdf5](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py) script selects demonstration episodes at random from a demonstration pickle file and replays them.
+We have included an example script that illustrates how demonstrations can be loaded and played back. Our [playback_demonstrations_from_hdf5](https://github.com/ARISE-Initiative/robosuite/blob/master/robosuite/scripts/playback_demonstrations_from_hdf5.py) script selects demonstration episodes at random from a `demo.hdf5` file collected with robosuite and replays them.
 
 
 ## Existing Datasets
 
-We have included some sample demonstrations for each task at `models/assets/demonstrations`.
+Sample demonstrations are no longer bundled with the robosuite repository. To create a `demo.hdf5` file that can be used directly with the playback script above, collect demonstrations with `collect_human_demonstrations.py`.
+
+Public robot manipulation datasets are available from the [robomimic v0.1 dataset collection](https://robomimic.github.io/docs/datasets/robomimic_v0.1.html), which provides a download script and direct download links for the tasks it supports. These datasets are distributed for use with robomimic, so consult its [robosuite dataset documentation](https://robomimic.github.io/docs/datasets/robosuite.html) for format conversion and observation extraction instructions.
 
 
 ## Structure of collected demonstrations
@@ -55,7 +57,7 @@ The reason for storing mujoco states instead of raw observations is to make it e
 
 ## Using Demonstrations for Learning
 
-The [robomimic](https://arise-initiative.github.io/robomimic-web/) framework makes it easy to train policies using your own [datasets collected with robosuite](https://arise-initiative.github.io/robomimic-web/docs/introduction/datasets.html#robosuite-hdf5-datasets). The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.
+The [robomimic](https://robomimic.github.io/docs/) framework makes it easy to train policies using your own [datasets collected with robosuite](https://robomimic.github.io/docs/datasets/robosuite.html). The framework also contains many useful examples for how to integrate hdf5 datasets into your own learning pipeline.
 
 The robosuite repository also has some utilities for using the demonstrations to alter the start state distribution of training episodes for learning RL policies - this have proved effective in [several](https://arxiv.org/abs/1802.09564) [prior](https://arxiv.org/abs/1807.06919) [works](https://arxiv.org/abs/1804.02717). For example, we provide a generic utility for setting various types of learning curriculums which dictate how to sample from demonstration episodes when doing an environment reset. For more information see the `DemoSamplerWrapper` class.
 
