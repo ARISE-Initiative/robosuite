@@ -10,7 +10,7 @@ Arguments:
     --visualize-gripper (optional): If set, will visualize the gripper site
 
 Example:
-    $ python playback_demonstrations_from_hdf5.py --folder ../models/assets/demonstrations/lift/
+    $ python playback_demonstrations_from_hdf5.py --folder /path/to/demonstrations/lift/
 """
 
 import argparse
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         type=str,
         required=True,
         help="Path to your demonstration folder that contains the demo.hdf5 file, e.g.: "
-        "'path_to_assets_dir/demonstrations/YOUR_DEMONSTRATION'",
+        "'/path/to/demonstrations/YOUR_DEMONSTRATION'",
     ),
     parser.add_argument(
         "--use-actions",
