@@ -460,9 +460,8 @@ class Wipe(ManipulationEnv):
                 self.sim.model.geom_rgba[new_active_marker_geom_id][3] = 0
                 # Add this marker the wiped list
                 self.wiped_markers.append(new_active_marker)
-                # Add reward if we're using the dense reward
-                if self.reward_shaping:
-                    reward += self.unit_wiped_reward
+                # Reward each newly wiped marker for both sparse and dense rewards
+                reward += self.unit_wiped_reward
 
             # Additional reward components if using dense rewards
             if self.reward_shaping:
