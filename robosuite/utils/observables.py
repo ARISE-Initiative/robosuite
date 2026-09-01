@@ -222,14 +222,23 @@ class Observable:
             force (bool): If True, will force the observable to update its internal value to the newest value.
         """
         if self._enabled:
+            if force:
+                # A forced refresh is outside the periodic sampling schedule.
+                obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
+                self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
+                obs_cache[self.name] = np.array(self._current_observed_value)
+                return
+
             # Increment internal time counter
             self._time_since_last_sample += timestep
 
             # If the delayed sampling time has been passed and we haven't sampled yet for this sampling period,
             # we should grab a new measurement
             if (
-                not self._sampled and self._sampling_timestep - self._current_delay >= self._time_since_last_sample
-            ) or force:
+                not self._sampled
+                and self._current_delay < self._sampling_timestep
+                and self._time_since_last_sample >= self._sampling_timestep - self._current_delay
+            ):
                 # Get newest raw value, corrupt it, filter it, and set it as our current observed value
                 obs = np.array(self._filter(self._corrupter(self._sensor(obs_cache))))
                 self._current_observed_value = obs[0] if len(obs.shape) == 1 and obs.shape[0] == 1 else obs
@@ -265,6 +274,7 @@ class Observable:
         self._time_since_last_sample = 0.0
         self._current_delay = self._delayer()
         self._current_observed_value = 0 if self._is_number else np.zeros(self._data_shape)
+        self._sampled = False
 
     def is_enabled(self):
         """
