@@ -117,6 +117,12 @@ class InverseKinematicsController(JointPositionController):
             kv=kv,
             policy_freq=policy_freq,
             velocity_limits=[-1, 1],
+            # ``compute_joint_positions`` returns absolute joint positions.  The
+            # wrapped position controller must therefore not interpret them as
+            # normalized deltas (the default), otherwise a zero IK action is
+            # repeatedly added to the current pose and can drive the arm into a
+            # singular configuration.
+            input_type="absolute",
             **kwargs,
         )
 
