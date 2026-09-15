@@ -1,5 +1,7 @@
 """
-6-DoF gripper with its open/close variant
+Robotiq 2F-85 gripper with an open/close variant.
+
+The MJCF is based on the MuJoCo Menagerie / OGBench 4-bar linkage model.
 """
 import numpy as np
 
@@ -16,32 +18,28 @@ class Robotiq85GripperBase(GripperModel):
     """
 
     def __init__(self, idn=0):
-        super().__init__(xml_path_completion("grippers/robotiq_gripper_85.xml"), idn=idn)
+        super().__init__(xml_path_completion("grippers/robotiq_2f85_menagerie/2f85_robosuite.xml"), idn=idn)
 
     def format_action(self, action):
         return action
 
     @property
     def init_qpos(self):
-        return np.array([-0.026, -0.267, -0.200, -0.026, -0.267, -0.200])
+        return np.zeros(8)
 
     @property
     def _important_geoms(self):
         return {
             "left_finger": [
-                "left_outer_finger_collision",
-                "left_inner_finger_collision",
-                "left_fingertip_collision",
-                "left_fingerpad_collision",
+                "left_pad1",
+                "left_pad2",
             ],
             "right_finger": [
-                "right_outer_finger_collision",
-                "right_inner_finger_collision",
-                "right_fingertip_collision",
-                "right_fingerpad_collision",
+                "right_pad1",
+                "right_pad2",
             ],
-            "left_fingerpad": ["left_fingerpad_collision"],
-            "right_fingerpad": ["right_fingerpad_collision"],
+            "left_fingerpad": ["left_pad1", "left_pad2"],
+            "right_fingerpad": ["right_pad1", "right_pad2"],
         }
 
 
@@ -62,9 +60,7 @@ class Robotiq85Gripper(Robotiq85GripperBase):
             AssertionError: [Invalid action dimension size]
         """
         assert len(action) == 1
-        self.current_action = np.clip(
-            self.current_action * np.array([1.0, 1.0]) + self.speed * np.sign(action), -1.0, 1.0
-        )
+        self.current_action = np.clip(self.current_action + self.speed * np.sign(action), -1.0, 1.0)
         return self.current_action
 
     @property

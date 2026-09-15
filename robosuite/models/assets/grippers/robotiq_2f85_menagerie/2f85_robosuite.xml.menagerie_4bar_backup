@@ -1,0 +1,131 @@
+<mujoco model="robotiq_2f85">
+  <compiler angle="radian" autolimits="true" />
+  <option cone="elliptic" impratio="10" />
+  <asset>
+    <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <material name="silicone" rgba="0.1882 0.1882 0.1882 1" />
+    <material name="gray" rgba="0.4627 0.4627 0.4627 1" />
+    <material name="black" rgba="0.149 0.149 0.149 1" />
+    <material name="pad_gray" rgba="0.5 0.5 0.5 1" />
+    <mesh file="assets/base_mount.stl" scale="0.001 0.001 0.001" name="base_mount" />
+    <mesh file="assets/base.stl" scale="0.001 0.001 0.001" name="base" />
+    <mesh file="assets/driver.stl" scale="0.001 0.001 0.001" name="driver" />
+    <mesh file="assets/coupler.stl" scale="0.001 0.001 0.001" name="coupler" />
+    <mesh file="assets/follower.stl" scale="0.001 0.001 0.001" name="follower" />
+    <mesh file="assets/pad.stl" scale="0.001 0.001 0.001" name="pad" />
+    <mesh file="assets/silicone_pad.stl" scale="0.001 0.001 0.001" name="silicone_pad" />
+    <mesh file="assets/spring_link.stl" scale="0.001 0.001 0.001" name="spring_link" />
+  </asset>
+  <worldbody>
+    <body name="base_mount" pos="0 0 0.007">
+      <geom mesh="base_mount" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+      <geom mesh="base_mount" type="mesh" group="0" />
+      <body name="base" pos="0 0 0.0038">
+        <inertial mass="0.777441" pos="0 -2.70394e-05 0.0354675" quat="1 -0.00152849 0 0" diaginertia="0.000260285 0.000225381 0.000152708" />
+        <geom mesh="base" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+        <geom mesh="base" type="mesh" group="0" />
+        <site name="pinch" pos="0 0 0.145" type="sphere" group="5" rgba="0.9 0.9 0.9 1" size="0.005" />
+        <body name="right_driver" pos="0 0.0306011 0.054904">
+          <inertial mass="0.00899563" pos="2.96931e-12 0.0177547 0.00107314" quat="0.681301 0.732003 0 0" diaginertia="1.72352e-06 1.60906e-06 3.22006e-07" />
+          <joint name="right_driver_joint" axis="1 0 0" range="0 0.8" armature="0.005" damping="0.1" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+          <geom mesh="driver" material="gray" type="mesh" contype="0" conaffinity="0" group="1" />
+          <geom mesh="driver" type="mesh" group="0" />
+          <body name="right_coupler" pos="0 0.0315 -0.0041">
+            <inertial mass="0.0140974" pos="0 0.00301209 0.0232175" quat="0.705636 -0.0455904 0.0455904 0.705636" diaginertia="4.16206e-06 3.52216e-06 8.88131e-07" />
+            <joint name="right_coupler_joint" axis="1 0 0" range="-1.57 0" armature="0.001" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+            <geom mesh="coupler" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+            <geom mesh="coupler" type="mesh" group="0" />
+          </body>
+        </body>
+        <body name="right_spring_link" pos="0 0.0132 0.0609">
+          <inertial mass="0.0221642" pos="-8.65005e-09 0.0181624 0.0212658" quat="0.663403 -0.244737 0.244737 0.663403" diaginertia="8.96853e-06 6.71733e-06 2.63931e-06" />
+          <joint name="right_spring_link_joint" axis="1 0 0" range="-0.29670597283 0.8" armature="0.001" stiffness="0.05" springref="2.62" damping="0.00125" />
+          <geom mesh="spring_link" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+          <geom mesh="spring_link" type="mesh" group="0" />
+          <body name="right_follower" pos="0 0.055 0.0375">
+            <inertial mass="0.0125222" pos="0 -0.011046 0.0124786" quat="1 0.1664 0 0" diaginertia="2.67415e-06 2.4559e-06 6.02031e-07" />
+            <joint name="right_follower_joint" axis="1 0 0" range="-0.872664 0.872664" armature="0.001" pos="0 -0.018 0.0065" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+            <geom mesh="follower" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+            <geom mesh="follower" type="mesh" group="0" />
+            <body name="right_pad" pos="0 -0.0189 0.01352">
+              <geom name="right_pad1" type="box" group="0" mass="0" pos="0 -0.0026 0.028125" size="0.011 0.004 0.009375" friction="0.7" solimp="0.95 0.99 0.001" solref="0.004 1" priority="1" rgba="0.55 0.55 0.55 1" />
+              <geom name="right_pad2" type="box" group="0" mass="0" pos="0 -0.0026 0.009375" size="0.011 0.004 0.009375" friction="0.6" solimp="0.95 0.99 0.001" solref="0.004 1" priority="1" rgba="0.45 0.45 0.45 1" />
+              <inertial mass="0.0035" pos="0 -0.0025 0.0185" quat="0.707107 0 0 0.707107" diaginertia="4.73958e-07 3.64583e-07 1.23958e-07" />
+              <geom mesh="pad" material="pad_gray" type="mesh" contype="0" conaffinity="0" group="1" />
+              <body name="right_silicone_pad">
+                <geom mesh="silicone_pad" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="left_driver" pos="0 -0.0306011 0.054904" quat="0 0 0 1">
+          <inertial mass="0.00899563" pos="0 0.0177547 0.00107314" quat="0.681301 0.732003 0 0" diaginertia="1.72352e-06 1.60906e-06 3.22006e-07" />
+          <joint name="left_driver_joint" axis="1 0 0" range="0 0.8" armature="0.005" damping="0.1" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+          <geom mesh="driver" material="gray" type="mesh" contype="0" conaffinity="0" group="1" />
+          <geom mesh="driver" type="mesh" group="0" />
+          <body name="left_coupler" pos="0 0.0315 -0.0041">
+            <inertial mass="0.0140974" pos="0 0.00301209 0.0232175" quat="0.705636 -0.0455904 0.0455904 0.705636" diaginertia="4.16206e-06 3.52216e-06 8.88131e-07" />
+            <joint name="left_coupler_joint" axis="1 0 0" range="-1.57 0" armature="0.001" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+            <geom mesh="coupler" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+            <geom mesh="coupler" type="mesh" group="0" />
+          </body>
+        </body>
+        <body name="left_spring_link" pos="0 -0.0132 0.0609" quat="0 0 0 1">
+          <inertial mass="0.0221642" pos="-8.65005e-09 0.0181624 0.0212658" quat="0.663403 -0.244737 0.244737 0.663403" diaginertia="8.96853e-06 6.71733e-06 2.63931e-06" />
+          <joint name="left_spring_link_joint" axis="1 0 0" range="-0.29670597283 0.8" armature="0.001" stiffness="0.05" springref="2.62" damping="0.00125" />
+          <geom mesh="spring_link" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+          <geom mesh="spring_link" type="mesh" group="0" />
+          <body name="left_follower" pos="0 0.055 0.0375">
+            <inertial mass="0.0125222" pos="0 -0.011046 0.0124786" quat="1 0.1664 0 0" diaginertia="2.67415e-06 2.4559e-06 6.02031e-07" />
+            <joint name="left_follower_joint" axis="1 0 0" range="-0.872664 0.872664" armature="0.001" pos="0 -0.018 0.0065" solimplimit="0.95 0.99 0.001" solreflimit="0.005 1" />
+            <geom mesh="follower" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+            <geom mesh="follower" type="mesh" group="0" />
+            <body name="left_pad" pos="0 -0.0189 0.01352">
+              <geom name="left_pad1" type="box" group="0" mass="0" pos="0 -0.0026 0.028125" size="0.011 0.004 0.009375" friction="0.7" solimp="0.95 0.99 0.001" solref="0.004 1" priority="1" rgba="0.55 0.55 0.55 1" />
+              <geom name="left_pad2" type="box" group="0" mass="0" pos="0 -0.0026 0.009375" size="0.011 0.004 0.009375" friction="0.6" solimp="0.95 0.99 0.001" solref="0.004 1" priority="1" rgba="0.45 0.45 0.45 1" />
+              <inertial mass="0.0035" pos="0 -0.0025 0.0185" quat="1 0 0 1" diaginertia="4.73958e-07 3.64583e-07 1.23958e-07" />
+              <geom mesh="pad" material="pad_gray" type="mesh" contype="0" conaffinity="0" group="1" />
+              <body name="left_silicone_pad">
+                <geom mesh="silicone_pad" material="black" type="mesh" contype="0" conaffinity="0" group="1" />
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="eef" pos="0 0 0.145">
+          <site name="grip_site" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1" />
+          <site name="ee_x" pos="0.1 0 0" size="0.005 .1" quat="0.707105 0 0.707108 0" rgba="1 0 0 0" type="cylinder" group="1" />
+          <site name="ee_y" pos="0 0.1 0" size="0.005 .1" quat="0.707105 0.707108 0 0" rgba="0 1 0 0" type="cylinder" group="1" />
+          <site name="ee_z" pos="0 0 0.1" size="0.005 .1" quat="1 0 0 0" rgba="0 0 1 0" type="cylinder" group="1" />
+          <site name="grip_site_cylinder" pos="0 0 0" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1" />
+        </body>
+      </body>
+      <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
+    </body>
+  </worldbody>
+  <contact>
+    <exclude body1="base" body2="left_driver" />
+    <exclude body1="base" body2="right_driver" />
+    <exclude body1="base" body2="left_spring_link" />
+    <exclude body1="base" body2="right_spring_link" />
+    <exclude body1="right_coupler" body2="right_follower" />
+    <exclude body1="left_coupler" body2="left_follower" />
+  </contact>
+  <tendon>
+    <fixed name="split">
+      <joint joint="right_driver_joint" coef="0.5" />
+      <joint joint="left_driver_joint" coef="0.5" />
+    </fixed>
+  </tendon>
+  <equality>
+    <connect anchor="0 0 0" body1="right_follower" body2="right_coupler" solimp="0.95 0.99 0.001" solref="0.005 1" />
+    <connect anchor="0 0 0" body1="left_follower" body2="left_coupler" solimp="0.95 0.99 0.001" solref="0.005 1" />
+    <joint joint1="right_driver_joint" joint2="left_driver_joint" polycoef="0 1 0 0 0" solimp="0.95 0.99 0.001" solref="0.005 1" />
+  </equality>
+  <actuator>
+    <general name="fingers_actuator" tendon="split" forcerange="-5 5" ctrlrange="0 255" gainprm="0.3137255 0 0" biasprm="0 -100 -10" biastype="affine" />
+  </actuator>
+  <sensor>
+    <force name="force_ee" site="ft_frame" />
+    <torque name="torque_ee" site="ft_frame" />
+  </sensor>
+</mujoco>

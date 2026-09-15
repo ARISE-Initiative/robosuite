@@ -29,6 +29,60 @@ class PandaOmron(Panda):
         }
 
 
+class UR5eOmron(UR5e):
+    @property
+    def default_base(self):
+        return "OmronMobileBase"
+
+    @property
+    def default_controller_config(self):
+        return {"right": "default_ur5e", "base": "joint_velocity"}
+
+
+class JacoOmron(Jaco):
+    @property
+    def default_base(self):
+        return "OmronMobileBase"
+
+    @property
+    def default_gripper(self):
+        return {"right": "PandaGripper"}
+
+    @property
+    def default_controller_config(self):
+        return {"right": "default_jaco", "base": "joint_velocity"}
+
+    @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.6, -0.1, 0),
+            "empty": (-0.6, 0, 0),
+            "table": lambda table_length: (-0.16 - table_length / 2, 0, 0),
+        }
+
+
+class IIWAOmron(IIWA):
+    @property
+    def default_base(self):
+        return "OmronMobileBase"
+
+    @property
+    def default_arms(self):
+        return {"right": "IIWA"}
+
+    @property
+    def init_torso_qpos(self):
+        return np.array([0.2])
+
+    @property
+    def base_xpos_offset(self):
+        return {
+            "bins": (-0.6, -0.1, 0),
+            "empty": (-0.6, 0, 0),
+            "table": lambda table_length: (-0.16 - table_length / 2, 0, 0),
+        }
+
+
 class SpotWithArm(SpotArm):
     @property
     def default_base(self):
