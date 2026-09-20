@@ -145,7 +145,7 @@ def create_gaussian_sampled_delayer(mean, std):
         function: delayer
     """
     assert mean >= 0, "Inputted mean delay must be non-negative!"
-    return lambda: max(0.0, int(np.round(mean + std * np.random.randn())))
+    return lambda: max(0.0, mean + std * np.random.randn())
 
 
 # Common defaults to use
