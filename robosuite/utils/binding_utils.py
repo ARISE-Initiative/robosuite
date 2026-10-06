@@ -518,7 +518,7 @@ class MjModel(metaclass=_MjModelMeta):
             returns the a (start, end) tuple for pos[start:end] access.
         """
         joint_id = self.joint_name2id(name)
-        joint_type = self.jnt_type[joint_id]
+        joint_type = int(self.jnt_type[joint_id])
         joint_addr = self.jnt_qposadr[joint_id]
         if joint_type == mujoco.mjtJoint.mjJNT_FREE:
             ndim = 7
@@ -543,7 +543,7 @@ class MjModel(metaclass=_MjModelMeta):
             returns the a (start, end) tuple for vel[start:end] access.
         """
         joint_id = self.joint_name2id(name)
-        joint_type = self.jnt_type[joint_id]
+        joint_type = int(self.jnt_type[joint_id])
         joint_addr = self.jnt_dofadr[joint_id]
         if joint_type == mujoco.mjtJoint.mjJNT_FREE:
             ndim = 6
