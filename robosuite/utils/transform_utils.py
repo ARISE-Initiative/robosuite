@@ -639,7 +639,7 @@ def vel_in_A_to_vel_in_B(vel_A, ang_vel_A, pose_A_in_B):
 
 def force_in_A_to_force_in_B(force_A, torque_A, pose_A_in_B):
     """
-    Converts linear and rotational force at a point in frame A to the equivalent in frame B.
+    Converts a wrench about frame A's origin to the equivalent about frame B's origin.
 
     Args:
         force_A (np.array): (fx,fy,fz) linear force in A
@@ -655,8 +655,8 @@ def force_in_A_to_force_in_B(force_A, torque_A, pose_A_in_B):
     pos_A_in_B = pose_A_in_B[:3, 3]
     rot_A_in_B = pose_A_in_B[:3, :3]
     skew_symm = _skew_symmetric_translation(pos_A_in_B)
-    force_B = rot_A_in_B.T.dot(force_A)
-    torque_B = -rot_A_in_B.T.dot(skew_symm.dot(force_A)) + rot_A_in_B.T.dot(torque_A)
+    force_B = rot_A_in_B.dot(force_A)
+    torque_B = rot_A_in_B.dot(torque_A) + skew_symm.dot(force_B)
     return force_B, torque_B
 
 
