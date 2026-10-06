@@ -504,12 +504,12 @@ def quat2axisangle(quat):
     elif quat[3] < -1.0:
         quat[3] = -1.0
 
-    den = np.sqrt(1.0 - quat[3] * quat[3])
+    den = np.linalg.norm(quat[:3])
     if math.isclose(den, 0.0):
         # This is (close to) a zero degree rotation, immediately return
         return np.zeros(3)
 
-    return (quat[:3] * 2.0 * math.acos(quat[3])) / den
+    return quat[:3] * (2.0 * math.atan2(den, quat[3]) / den)
 
 
 def axisangle2quat(vec):
