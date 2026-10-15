@@ -128,6 +128,10 @@ class GymWrapper(Wrapper, gym.Env):
         """
         Extends env reset method to return observation instead of normal OrderedDict and optionally resets seed
 
+        Args:
+            seed (None or int): If provided, reseeds the environment before resetting. None continues the current RNG state.
+            options (dict): Unused, present for compatibility with gym.
+
         Returns:
             2-tuple:
                 - (np.array) observations from the environment
@@ -136,6 +140,11 @@ class GymWrapper(Wrapper, gym.Env):
         if seed is not None:
             if isinstance(seed, int):
                 np.random.seed(seed)
+                gym.Env.reset(self, seed=seed)
+                # Reseed in place so existing samplers keep using the environment RNG.
+                rng = self.env.rng
+                rng.bit_generator.state = type(rng.bit_generator)(seed).state
+                self._np_random = rng
             else:
                 raise TypeError("Seed must be an integer type!")
         ob_dict = self.env.reset()
