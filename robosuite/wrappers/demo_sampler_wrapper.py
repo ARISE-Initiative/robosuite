@@ -165,7 +165,8 @@ class DemoSamplerWrapper(Wrapper):
             self.sim.set_state_from_flattened(state)
             self.sim.forward()
 
-            return self.env._get_observation()
+            # Refresh cached observables after replacing the simulation state.
+            return self.env._get_observations(force_update=True)
 
     def sample(self):
         """
