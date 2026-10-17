@@ -752,7 +752,11 @@ class PickPlace(ManipulationEnv):
                 ]
             )
             r_reach = 1 - np.tanh(10.0 * dist)
-            self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6)
+            # only count the object if it is not currently being grasped; the gripper distance
+            # alone is not a reliable proxy for a release, since tall objects (e.g. Milk,
+            # Cereal) can be grasped near the top, far from their center
+            grasping = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=obj.contact_geoms)
+            self.objects_in_bins[i] = int((not self.not_in_bin(obj_pos, i)) and r_reach < 0.6 and not grasping)
 
         # returns True if a single object is in the correct bin
         if self.single_object_mode in {1, 2}:
