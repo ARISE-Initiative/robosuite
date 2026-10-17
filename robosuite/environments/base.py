@@ -86,7 +86,11 @@ class MujocoEnv(metaclass=EnvMeta):
             else, initialize these components in the first call to reset()
         renderer (str): string for the renderer to use
         renderer_config (dict): dictionary for the renderer configurations
-        seed (int): environment seed. Default is None, where environment is unseeded, ie. random
+        seed (int): explicit seed for the environment's random number generator, which controls
+            construction-time randomization (e.g.: object sizes and initial placements), initialization
+            noise, and randomization at reset. Default is None, in which case the seed is drawn from
+            NumPy's global RNG, so calling np.random.seed(...) before make() makes environment creation
+            reproducible across processes.
     Raises:
         ValueError: [Invalid renderer selection]
     """
@@ -142,6 +146,14 @@ class MujocoEnv(metaclass=EnvMeta):
         self.renderer_config = renderer_config
 
         self.seed = seed
+        if seed is None:
+            # No explicit seed was given: derive the environment RNG seed from
+            # NumPy's global RNG, so that calling np.random.seed(...) before
+            # make() also makes construction-time randomization (e.g.: object
+            # sizes and placements) reproducible across processes. Creating a
+            # default_rng(None) here would instead sample fresh OS entropy that
+            # no user-facing seed controls.
+            seed = np.random.randint(2**31)
         self.rng = np.random.default_rng(seed)
 
         self._ep_meta = {}
