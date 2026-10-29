@@ -73,6 +73,7 @@ Welcome to robosuite's documentation!
    :caption: Miscellaneous
 
    references
+   known_issues
    changelog
    acknowledgement
 
