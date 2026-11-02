@@ -111,3 +111,40 @@ def test_real_constructor_seed_sequence_is_unchanged(hard_reset):
     finally:
         wrapped.close()
         raw_env.close()
+
+
+@pytest.mark.parametrize("hard_reset", [False, True])
+def test_gymnasium_vector_reset_seed_list_repeats(hard_reset):
+    """Seed lists reach each real robot without replacing its original RNG."""
+    SyncVectorEnv = pytest.importorskip("gymnasium.vector").SyncVectorEnv
+
+    def make_wrapped():
+        wrapped = GymWrapper(make_env("Lift", hard_reset, seed=7))
+        # Gymnasium requires a metadata mapping; this test-only shim isolates seeding.
+        if wrapped.metadata is None:
+            wrapped.metadata = {}
+        return wrapped
+
+    vector = SyncVectorEnv([make_wrapped, make_wrapped])
+    try:
+        original_rngs = [wrapped.env.rng for wrapped in vector.envs]
+        assert original_rngs[0] is not original_rngs[1]
+
+        first, _ = vector.reset(seed=[123, 456])
+        first = first.copy()
+        for wrapped, rng in zip(vector.envs, original_rngs):
+            assert wrapped.env.rng is rng
+            assert wrapped.np_random is rng
+
+        vector.step(np.zeros(vector.action_space.shape))
+        second, _ = vector.reset(seed=[123, 456])
+        np.testing.assert_array_equal(first, second)
+        assert not np.array_equal(first[0], first[1])
+        for wrapped, rng in zip(vector.envs, original_rngs):
+            assert wrapped.env.rng is rng
+            assert wrapped.np_random is rng
+            assert wrapped.env.placement_initializer.rng is rng
+            assert wrapped.env.viewer is None
+            assert wrapped.env.sim._render_context_offscreen is None
+    finally:
+        vector.close()
