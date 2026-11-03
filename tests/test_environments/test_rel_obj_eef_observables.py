@@ -42,6 +42,15 @@ def test_rel_obj_eef_pos_uses_current_object_pose(env_name, objs):
                 np.testing.assert_allclose(
                     obs[key], _expected_rel_pos(obs, obj, "robot0_"), atol=1e-5, err_msg=f"{key} at step {step}"
                 )
+                # quaternions q and -q encode the same rotation; compare rotation matrices
+                quat_key = f"{obj}_to_robot0_eef_quat"
+                expected_rotation = T.quat2mat(obs["robot0_eef_quat"]).T @ T.quat2mat(obs[f"{obj}_quat"])
+                np.testing.assert_allclose(
+                    np.linalg.norm(obs[quat_key]), 1.0, atol=1e-5, err_msg=f"{quat_key} norm at step {step}"
+                )
+                np.testing.assert_allclose(
+                    T.quat2mat(obs[quat_key]), expected_rotation, atol=1e-5, err_msg=f"{quat_key} at step {step}"
+                )
             obs, _, _, _ = env.step(np.random.uniform(-1, 1, env.action_dim))
     finally:
         env.close()
