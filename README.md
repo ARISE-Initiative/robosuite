@@ -1,3 +1,9 @@
+# UFactory 850 for Robosuite
+
+Added the UFactory 850 robot to robosuite to extend its task capabilities.
+
+![gallery of_environments](docs/images/ufactory850.png)
+
 # robosuite
 
 ![gallery of_environments](docs/images/gallery.png)

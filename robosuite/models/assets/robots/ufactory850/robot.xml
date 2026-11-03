@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<!-- Derived from UFACTORY xarm_ros2 (xarm_description, uf850).
+     Copyright (c) 2018, UFACTORY Inc. BSD-3-Clause; see LICENSE_xarm_ros2. -->
+
+<mujoco model="ufactory850">
+  <compiler angle="radian"/>
+  <actuator>
+    <motor ctrllimited="true" ctrlrange="-382.5 382.5" joint="joint1" name="torq_j1"/>
+    <motor ctrllimited="true" ctrlrange="-382.5 382.5" joint="joint2" name="torq_j2"/>
+    <motor ctrllimited="true" ctrlrange="-243.525 243.525" joint="joint3" name="torq_j3"/>
+    <motor ctrllimited="true" ctrlrange="-117.3 117.3" joint="joint4" name="torq_j4"/>
+    <motor ctrllimited="true" ctrlrange="-38.25 38.25" joint="joint5" name="torq_j5"/>
+    <motor ctrllimited="true" ctrlrange="-38.25 38.25" joint="joint6" name="torq_j6"/>
+  </actuator>
+  <asset>
+    <material name="White" specular="0.5" shininess="0.25" rgba="0.9 0.9 0.9 1"/>
+    <mesh name="link_base_vis" file="link_base_vis.stl"/>
+    <mesh name="link_base_col" file="link_base_col.stl"/>
+    <mesh name="link1_vis" file="link1_vis.stl"/>
+    <mesh name="link1_col" file="link1_col.stl"/>
+    <mesh name="link2_vis" file="link2_vis.stl"/>
+    <mesh name="link2_col" file="link2_col.stl"/>
+    <mesh name="link3_vis" file="link3_vis.stl"/>
+    <mesh name="link3_col" file="link3_col.stl"/>
+    <mesh name="link4_vis" file="link4_vis.stl"/>
+    <mesh name="link4_col" file="link4_col.stl"/>
+    <mesh name="link5_vis" file="link5_vis.stl"/>
+    <mesh name="link5_col" file="link5_col.stl"/>
+    <mesh name="link6_vis" file="link6_vis.stl"/>
+    <mesh name="link6_col" file="link6_col.stl"/>
+  </asset>
+  <worldbody>
+    <body name="base" pos="0 0 0">
+      <camera mode="fixed" name="robotview" pos="1.0 0 0.4" quat="0.653 0.271 0.271 0.653"/>
+      <inertial diaginertia="0 0 0" mass="0" pos="0 0 0"/>
+      <body name="fixed_base_link" pos="0 0 0">
+        <site name="right_center" pos="0 0 0" size="0.01" rgba="1 0.3 0.3 1" group="2"/>
+        <inertial pos="-0.00025599 -2.8579e-06 0.085749" mass="2.2684" fullinertia="0.0063949 0.0064375 0.0048631 -8.0653e-07 -2.1841e-05 -4.2181e-07"/>
+        <geom type="mesh" mesh="link_base_vis" material="White" contype="0" conaffinity="0" group="1"/>
+        <geom type="mesh" mesh="link_base_col" name="link_base_col" rgba="0.9 0.9 0.9 1"/>
+        <body name="link1" pos="0 0 0.364" quat="1.000000 0.000000 0.000000 0.000000">
+          <inertial pos="5.7e-05 0.013842 -0.02055" mass="4.807" fullinertia="0.022001729 0.018900685 0.012270188 -1.1152e-05 6.738e-06 -0.000364084"/>
+          <joint name="joint1" pos="0 0 0" axis="0 0 1" limited="true" range="-6.283185 6.283185" damping="0.001" frictionloss="0.01"/>
+          <geom type="mesh" mesh="link1_vis" material="White" contype="0" conaffinity="0" group="1"/>
+          <geom type="mesh" mesh="link1_col" name="link1_col" rgba="0.9 0.9 0.9 1"/>
+          <body name="link2" pos="0 0 0" quat="0.499998 0.500000 -0.500000 0.500002">
+            <inertial pos="0.323425 9.5e-05 0.007586" mass="3.28" fullinertia="0.007611984 0.06420854 0.0611757 -3.3561e-05 0.008240021 -1.6145e-05"/>
+            <joint name="joint2" pos="0 0 0" axis="0 0 1" limited="true" range="-2.303835 2.303835" damping="0.001" frictionloss="0.01"/>
+            <geom type="mesh" mesh="link2_vis" material="White" contype="0" conaffinity="0" group="1"/>
+            <geom type="mesh" mesh="link2_col" name="link2_col" rgba="0.9 0.9 0.9 1"/>
+            <body name="link3" pos="0.39 0 0" quat="-0.000003 -0.707105 0.707108 0.000003">
+              <inertial pos="0.128834 0.11341 0.00978" mass="2.237" fullinertia="0.009920314 0.008923236 0.014284809 -0.005137841 0.002628426 0.002412869"/>
+              <joint name="joint3" pos="0 0 0" axis="0 0 1" limited="true" range="-4.223697 0.061087" damping="0.001" frictionloss="0.01"/>
+              <geom type="mesh" mesh="link3_vis" material="White" contype="0" conaffinity="0" group="1"/>
+              <geom type="mesh" mesh="link3_col" name="link3_col" rgba="0.9 0.9 0.9 1"/>
+              <body name="link4" pos="0.15 0.426 0" quat="0.707105 -0.707108 0.000000 0.000000">
+                <inertial pos="0.000266 -0.03833 -0.101915" mass="2.041" fullinertia="0.019918597 0.017515194 0.004283807 -2.3185e-05 5.8169e-05 0.005878608"/>
+                <joint name="joint4" pos="0 0 0" axis="0 0 1" limited="true" range="-6.283185 6.283185" damping="0.001" frictionloss="0.01"/>
+                <geom type="mesh" mesh="link4_vis" material="White" contype="0" conaffinity="0" group="1"/>
+                <geom type="mesh" mesh="link4_col" name="link4_col" rgba="0.9 0.9 0.9 1"/>
+                <body name="link5" pos="0 0 0" quat="0.707105 -0.707108 0.000000 0.000000">
+                  <inertial pos="5.7e-05 -0.015267 -0.001015" mass="1.385" fullinertia="0.002077454 0.001109183 0.0020357 -5.026e-06 -6.99e-07 6.747e-06"/>
+                  <joint name="joint5" pos="0 0 0" axis="0 0 1" limited="true" range="-2.164200 2.164200" damping="0.001" frictionloss="0.01"/>
+                  <geom type="mesh" mesh="link5_vis" material="White" contype="0" conaffinity="0" group="1"/>
+                  <geom type="mesh" mesh="link5_col" name="link5_col" rgba="0.9 0.9 0.9 1"/>
+                  <body name="link6" pos="0 -0.09 0" quat="0.707105 0.707108 0.000000 0.000000">
+                    <inertial pos="0.000484 -0.000334 -0.014217" mass="0.225" fullinertia="0.000130252 0.000128308 0.0002325 -4.285e-06 3.19e-07 -3.86e-07"/>
+                    <joint name="joint6" pos="0 0 0" axis="0 0 1" limited="true" range="-6.283185 6.283185" damping="0.001" frictionloss="0.01"/>
+                    <geom type="mesh" mesh="link6_vis" material="White" contype="0" conaffinity="0" group="1"/>
+                    <geom type="mesh" mesh="link6_col" name="link6_col" rgba="0.9 0.9 0.9 1"/>
+                    <body name="right_hand" pos="0 0 0" quat="1 0 0 0">
+                      <camera mode="fixed" name="eye_in_hand" pos="0.05 0 0" quat="0 0.707108 0.707108 0" fovy="75"/>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
