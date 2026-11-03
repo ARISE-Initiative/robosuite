@@ -1,3 +1,6 @@
+<!-- Derived from UFACTORY xarm_ros2 (xarm_description, uf850).
+     Copyright (c) 2018, UFACTORY Inc. BSD-3-Clause; see LICENSE_xarm_ros2. -->
+
 <?xml version="1.0" ?>
 <mujoco model="ufactory850">
   <compiler angle="radian"/>
