@@ -556,9 +556,12 @@ class ToolHang(ManipulationEnv):
             self._get_obj_eef_rel_quat_sensor(full_pf, obj_name, f"{obj_name}_to_{full_pf}eef_quat", modality)
             for full_pf in full_prefixes
         ]
-        names = [fn.__name__ for fn in sensors]
-        sensors += [obj_pos, obj_quat]
-        names += [f"{obj_name}_pos", f"{obj_name}_quat"]
+        rel_names = [fn.__name__ for fn in sensors]
+
+        # absolute pose sensors must be registered first; observables update in registration order and the
+        # relative sensors read {obj_name}_pos / {obj_name}_quat from obs_cache
+        sensors = [obj_pos, obj_quat] + sensors
+        names = [f"{obj_name}_pos", f"{obj_name}_quat"] + rel_names
 
         return sensors, names
 

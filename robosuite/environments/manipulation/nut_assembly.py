@@ -574,10 +574,12 @@ class NutAssembly(ManipulationEnv):
             self._get_obj_eef_rel_quat_sensor(full_pf, nut_name, f"{nut_name}_to_{full_pf}eef_quat", modality)
             for full_pf in full_prefixes
         ]
-        names = [fn.__name__ for fn in sensors]
+        rel_names = [fn.__name__ for fn in sensors]
 
-        sensors += [nut_pos, nut_quat]
-        names += [f"{nut_name}_pos", f"{nut_name}_quat"]
+        # absolute pose sensors must be registered first; observables update in registration order and the
+        # relative sensors read {nut_name}_pos / {nut_name}_quat from obs_cache
+        sensors = [nut_pos, nut_quat] + sensors
+        names = [f"{nut_name}_pos", f"{nut_name}_quat"] + rel_names
 
         return sensors, names
 
