@@ -24,7 +24,7 @@ from robosuite.wrappers import Wrapper
 
 
 class GymWrapper(Wrapper, gym.Env):
-    metadata = None
+    metadata = {}
     render_mode = None
     """
     Initializes the Gym wrapper. Mimics many of the required functionalities of the Wrapper class
