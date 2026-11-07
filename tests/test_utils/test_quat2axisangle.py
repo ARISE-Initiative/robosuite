@@ -39,3 +39,17 @@ def test_quat2axisangle_preserves_long_angle_convention():
     assert quat[3] < 0
 
     np.testing.assert_allclose(T.quat2axisangle(quat), rotvec, rtol=0, atol=1e-12)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+@pytest.mark.parametrize("angle", [1e-4, 1e-3])
+def test_negative_quaternion_near_identity_retains_long_angle(dtype, angle):
+    axis = np.array([2.0, 1.0, -2.0]) / 3.0
+    quat = -Rotation.from_rotvec(angle * axis).as_quat().astype(dtype)
+    original = quat.copy()
+
+    rotvec = T.quat2axisangle(quat)
+
+    np.testing.assert_allclose(rotvec, (angle - 2 * np.pi) * axis, rtol=1e-6)
+    np.testing.assert_allclose(Rotation.from_rotvec(rotvec).as_matrix(), Rotation.from_quat(quat).as_matrix(), atol=1e-6)
+    np.testing.assert_array_equal(quat, original)
