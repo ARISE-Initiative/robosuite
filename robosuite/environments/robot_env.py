@@ -163,6 +163,7 @@ class RobotEnv(MujocoEnv):
         self.robot_names = robots
         self.robots = self._input2list(None, self.num_robots)
         self._action_dim = None
+        self._robot_action_dims = None
 
         # Robot base
         base_types = self._input2list(base_types, self.num_robots)
@@ -523,13 +524,13 @@ class RobotEnv(MujocoEnv):
         # Run superclass reset functionality
         super()._reset_internal()
 
-        # Reset action dim
-        self._action_dim = 0
-
-        # Reset robot and update action space dimension along the way
+        # Reset robot and update action space dimensions along the way. The per-robot dimensions are cached
+        # since computing them is relatively expensive, and they are needed at every simulation step.
+        self._robot_action_dims = []
         for robot in self.robots:
             robot.reset(deterministic=self.deterministic_reset, rng=self.rng)
-            self._action_dim += robot.action_dim
+            self._robot_action_dims.append(robot.action_dim)
+        self._action_dim = sum(self._robot_action_dims)
 
         # Update cameras if appropriate
         if self.use_camera_obs:
@@ -589,10 +590,10 @@ class RobotEnv(MujocoEnv):
 
         # Update robot joints based on controller actions
         cutoff = 0
-        for idx, robot in enumerate(self.robots):
-            robot_action = action[cutoff : cutoff + robot.action_dim]
+        for robot, robot_action_dim in zip(self.robots, self._robot_action_dims):
+            robot_action = action[cutoff : cutoff + robot_action_dim]
             robot.control(robot_action, policy_step=policy_step)
-            cutoff += robot.action_dim
+            cutoff += robot_action_dim
 
     def _load_robots(self):
         """
