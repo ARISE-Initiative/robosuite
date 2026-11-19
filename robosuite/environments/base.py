@@ -511,15 +511,14 @@ class MujocoEnv(metaclass=EnvMeta):
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
 
-        if self.post_action_freq <= 1 or self.timestep % self.post_action_freq == 0 \
-                or not hasattr(self, "_last_post_action"):
+        if self.timestep % self.post_action_freq == 0 or not hasattr(self, "_last_post_action"):
             reward, done, info = self._post_action(action)
             self._last_post_action = (reward, done, info)
         else:
             reward, done, info = self._last_post_action
 
         if self.viewer is not None and self.renderer != "mujoco":
-            if self.render_freq <= 1 or self.timestep % self.render_freq == 0:
+            if self.timestep % self.render_freq == 0:
                 self.viewer.update()
         elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
