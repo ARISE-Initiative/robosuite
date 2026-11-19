@@ -42,9 +42,10 @@ def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005):
             model.geom_solref[geom] = [0.02, 1.0]
 
 
-def collect_sonic_demos(env, render_hz):
+def collect_sonic_demos(env, render_hz, rtf_log):
     """Step the env in real time with SONIC's joint targets until the task succeeds or the viewer
-    is closed."""
+    is closed. With rtf_log, print the real-time factor (sim time / wall time) about once a
+    second."""
     controller = env.robots[0].composite_controller
     bridge = SonicRobosuiteBridge(controller.sonic_config)
     no_command = np.zeros(env.action_dim)  # an all-zero action makes the controller apply no torque
@@ -65,6 +66,7 @@ def collect_sonic_demos(env, render_hz):
     steps_per_render = max(1, round(env.control_freq / render_hz))
     step_count = success_steps = 0
     next_step_time = time.perf_counter()
+    rtf_steps, rtf_window_start = 0, next_step_time
     try:
         while window.is_running() and success_steps < 10:
             sonic_action = bridge.get_sonic_action(env)
@@ -80,6 +82,16 @@ def collect_sonic_demos(env, render_hz):
             # loop, not the env, keeps the sim in real time.
             next_step_time += env.control_timestep
             time.sleep(max(0.0, next_step_time - time.perf_counter()))
+            if rtf_log:
+                rtf_steps += 1
+                wall_elapsed = time.perf_counter() - rtf_window_start
+                if wall_elapsed >= 1.0:
+                    sim_elapsed = rtf_steps * env.control_timestep
+                    real_time_factor = sim_elapsed / wall_elapsed
+                    print(f"[real-time] {rtf_steps} steps | wall {wall_elapsed * 1e3:.0f}ms | "
+                          f"sim {sim_elapsed * 1e3:.0f}ms | RTF~{real_time_factor:.2f}x"
+                          + ("  <-- BEHIND real-time" if real_time_factor < 0.97 else ""), flush=True)
+                    rtf_steps, rtf_window_start = 0, time.perf_counter()
     finally:
         window.close()
     print("[collect] task success." if success_steps >= 10 else "[collect] viewer closed.", flush=True)
@@ -92,6 +104,7 @@ def main():
     parser.add_argument("--control-freq", type=int, default=200,
                         help="control and physics rate in Hz (one physics step per control step)")
     parser.add_argument("--render-hz", type=float, default=20.0, help="viewer refresh rate")
+    parser.add_argument("--rtf-log", action="store_true", help="print the real-time factor about once a second")
     args = parser.parse_args()
 
     macros.SIMULATION_TIMESTEP = 1 / args.control_freq  # robosuite reads it when it builds the env
@@ -104,7 +117,7 @@ def main():
     env.reset()
     match_base_sim_physics(env.sim.model._model)
     try:
-        collect_sonic_demos(env, args.render_hz)
+        collect_sonic_demos(env, args.render_hz, args.rtf_log)
     except KeyboardInterrupt:
         print("\n[collect] stopped.", flush=True)
     finally:
