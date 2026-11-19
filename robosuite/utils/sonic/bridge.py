@@ -15,21 +15,24 @@ BODY = slice(0, NUM_BODY_MOTORS)
 LEFT_HAND = slice(NUM_BODY_MOTORS, NUM_BODY_MOTORS + NUM_HAND_MOTORS)
 RIGHT_HAND = slice(NUM_BODY_MOTORS + NUM_HAND_MOTORS, NUM_BODY_MOTORS + 2 * NUM_HAND_MOTORS)
 
-# SONIC's PD gains are compile-time constants of its C++ deploy, sent as float32 with every command
-# (gear_sonic_deploy/src/g1/g1_deploy_onnx_ref/include/policy_parameters.hpp and dex3_hands.hpp):
-#   kp = armature * natural_freq^2,   kd = 2 * damping_ratio * armature * natural_freq
-_NATURAL_FREQ = 10 * 2.0 * 3.1415926535
-_DAMPING_RATIO = 2
-_ARMATURE = {"5020": 0.003609725, "7520_14": 0.010177520, "7520_22": 0.025101925, "4010": 0.00425}
-# (motor type, gain multiplier) of each body motor
-_LEG = [("7520_22", 1), ("7520_22", 1), ("7520_14", 1), ("7520_22", 1), ("5020", 2), ("5020", 2)]
-_WAIST = [("7520_14", 1), ("5020", 2), ("5020", 2)]
-_ARM = [("5020", 1)] * 5 + [("4010", 1)] * 2
-_BODY_MOTORS = _LEG + _LEG + _WAIST + _ARM + _ARM
-_BODY_KP = [multiplier * _ARMATURE[motor] * _NATURAL_FREQ * _NATURAL_FREQ for motor, multiplier in _BODY_MOTORS]
-_BODY_KD = [multiplier * 2.0 * _DAMPING_RATIO * _ARMATURE[motor] * _NATURAL_FREQ for motor, multiplier in _BODY_MOTORS]
-MOTOR_KP = np.float32(_BODY_KP + [1.5] * 2 * NUM_HAND_MOTORS).astype(float)
-MOTOR_KD = np.float32(_BODY_KD + [0.1] * 2 * NUM_HAND_MOTORS).astype(float)
+# SONIC's PD gains, in motor order. They are constants of SONIC's C++ deploy, sent as float32 with
+# every command: kps / kds in gear_sonic_deploy/src/g1/g1_deploy_onnx_ref/include/
+# policy_parameters.hpp (body) and kp 1.5 / kd 0.1 in dex3_hands.hpp (hands). The bridge raises if
+# SONIC ever sends different ones.
+MOTOR_KP = np.float32([
+    99.09843, 99.09843, 40.179237, 99.09843, 28.501245, 28.501245, 99.09843, 99.09843, 40.179237,
+    99.09843, 28.501245, 28.501245, 40.179237, 28.501245, 28.501245, 14.250623, 14.250623,
+    14.250623, 14.250623, 14.250623, 16.778328, 16.778328, 14.250623, 14.250623, 14.250623,
+    14.250623, 14.250623, 16.778328, 16.778328, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5,
+    1.5, 1.5, 1.5, 1.5,
+]).astype(float)
+MOTOR_KD = np.float32([
+    6.3088017, 6.3088017, 2.5578897, 6.3088017, 1.8144457, 1.8144457, 6.3088017, 6.3088017,
+    2.5578897, 6.3088017, 1.8144457, 1.8144457, 2.5578897, 1.8144457, 1.8144457, 0.90722287,
+    0.90722287, 0.90722287, 0.90722287, 0.90722287, 1.0681415, 1.0681415, 0.90722287, 0.90722287,
+    0.90722287, 0.90722287, 0.90722287, 1.0681415, 1.0681415, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+    0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
+]).astype(float)
 
 _BODY_JOINT_KEYWORDS = ["hip", "knee", "ankle", "waist", "shoulder", "elbow", "wrist"]
 
