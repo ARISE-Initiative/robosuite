@@ -1,20 +1,16 @@
-"""Opt-in LIVE-DDS faithfulness test for the native SonicG1 path.
+"""Opt-in live test of the SonicG1 path against the real SONIC C++ controller.
 
-Launches the real C++ SONIC controller (gear_sonic_deploy), drives the registered
-robosuite SonicG1 + SONIC_WBC over Unitree DDS, plays each motion, and asserts the native
-backend's joint tracking is as good as base_sim's: the nearest-reference-frame joint error
-must be within TOL of the recorded gold mean for that motion. (Closeness to gold, not just
-"it ran" -- so a motion the policy itself tracks poorly still passes iff native is no worse
-than base_sim, and a real integration regression fails.)
+Launches gear_sonic_deploy's g1_deploy_onnx_ref, drives SonicG1 + SONIC_WBC over Unitree DDS,
+has SONIC play each of its reference motions, and asserts that the joint tracking error is no worse
+(within TOLERANCE) than in the recorded run of that motion. About a minute per motion; needs an
+idle machine, because SONIC runs on the wall clock.
 
-Slow (~50 s/motion), launches a subprocess + opens DDS, and reuses the gold metric from the
-sonic_robosuite harness, so it is gated behind an opt-in env var on top of the C++-binary /
-config / gold checks. Set SONIC_LIVE_VIDEO_DIR to also render each run to an mp4 (needs EGL).
+    RUN_SONIC_LIVE=1 MUJOCO_GL=egl SONIC_DEPLOY=<GR00T-WholeBodyControl>/gear_sonic_deploy \
+        SONIC_ROBOSUITE_DIR=<sonic_robosuite> pytest tests/test_robots/test_sonic_g1_live.py -q
 
-    RUN_SONIC_LIVE=1 MUJOCO_GL=egl SONIC_LIVE_VIDEO_DIR=/tmp/sonic_vids \
-        pytest tests/test_robots/test_sonic_g1_live.py -q
-
-Overrides: SONIC_DEPLOY, SONIC_ROBOSUITE_DIR, SONIC_LIVE_VIDEO_DIR.
+SONIC_ROBOSUITE_DIR is the standalone sonic_robosuite harness, which holds the tracking metric and
+the recorded runs. It is not published.
+Set SONIC_LIVE_VIDEO_DIR to also render each run to an mp4.
 """
 import os
 import subprocess
@@ -27,150 +23,173 @@ import numpy as np
 import mujoco
 import pytest
 
-import robosuite  # noqa: F401  registers SonicG1 / Dex3 / SONIC_WBC
-from robosuite.controllers import load_composite_controller_config
-from robosuite.controllers.composite.sonic_whole_body_controller import WBC_CONFIG
-from robosuite.scripts.collect_sonic_g1_demos import SonicArenaEnv, SONIC_CFG, match_base_sim_physics
-from robosuite.utils.sonic.action_sources import DDSActionSource
+pytest.importorskip("gear_sonic")
 
-DEPLOY = os.environ.get("SONIC_DEPLOY", "/home/ajay/code/GR00T-WholeBodyControl/gear_sonic_deploy")
-CPP_BIN = os.path.join(DEPLOY, "target", "release", "g1_deploy_onnx_ref")
-REF_ROOT = os.path.join(DEPLOY, "reference", "example")
+import robosuite  # noqa: E402,F401  registers SonicG1 / Dex3 / SONIC_WBC
+from robosuite.controllers import load_composite_controller_config  # noqa: E402
+from robosuite.environments.base import REGISTERED_ENVS  # noqa: E402
+from robosuite.environments.manipulation.manipulation_env import ManipulationEnv  # noqa: E402
+from robosuite.models.arenas import EmptyArena  # noqa: E402
+from robosuite.models.tasks import ManipulationTask  # noqa: E402
+from robosuite.scripts.collect_sonic_g1_demos import SONIC_CFG, match_base_sim_physics  # noqa: E402
+from robosuite.utils.sonic.bridge import BODY, SonicRobosuiteBridge  # noqa: E402
+
+SONIC_DEPLOY_DIR = os.environ.get("SONIC_DEPLOY", "")
+SONIC_BINARY = os.path.join(SONIC_DEPLOY_DIR, "target", "release", "g1_deploy_onnx_ref")
+REFERENCE_MOTION_DIR = os.path.join(SONIC_DEPLOY_DIR, "reference", "example")
 VIDEO_DIR = os.environ.get("SONIC_LIVE_VIDEO_DIR")
-TOL = 0.04   # rad: native nearest-ref joint error may exceed gold by at most this (run-to-run noise)
+TOLERANCE = 0.04  # rad: the joint tracking error may exceed the recorded one by at most this (run-to-run noise)
 
-# The nearest-ref-frame metric + recorded gold streams live in the sonic_robosuite harness.
-sys.path.insert(0, os.path.join(os.environ.get("SONIC_ROBOSUITE_DIR", "/home/ajay/code/sonic_robosuite"), "tests"))
+sys.path.insert(0, os.path.join(os.environ.get("SONIC_ROBOSUITE_DIR", ""), "tests"))
 try:
-    from golden_common import tracking_metrics, GOLD_DIR  # noqa: E402
-    _HAVE_GOLD = True
+    from golden_common import tracking_metrics, GOLD_DIR as RECORDED_RUNS_DIR  # noqa: E402
+    _HAVE_RECORDED_RUNS = True
 except Exception:
-    _HAVE_GOLD = False
-    GOLD_DIR = ""
+    _HAVE_RECORDED_RUNS = False
 
-_LIVE_OK = (os.environ.get("RUN_SONIC_LIVE") == "1"
-            and os.path.exists(CPP_BIN) and os.path.exists(WBC_CONFIG) and _HAVE_GOLD)
+_LIVE_OK = os.environ.get("RUN_SONIC_LIVE") == "1" and os.path.exists(SONIC_BINARY) and _HAVE_RECORDED_RUNS
 
 MOTIONS = ["squat_001__A359", "walking_quip_360_R_002__A428",
            "neutral_kick_R_001__A543", "macarena_001__A545"]
 
 
-def _launch_cpp(motion):
+class SonicArenaEnv(ManipulationEnv):
+    """An empty floor holding the robot: nothing in the way of walking and kicking."""
+
+    def reward(self, action=None):
+        return 0.0
+
+    def _check_success(self):
+        return False
+
+    def _check_robot_configuration(self, robots):
+        pass
+
+    def _load_model(self):
+        super()._load_model()
+        arena = EmptyArena()
+        arena.set_origin([0, 0, 0])
+        self.model = ManipulationTask(
+            mujoco_arena=arena,
+            mujoco_robots=[robot.robot_model for robot in self.robots],
+            mujoco_objects=[],
+        )
+
+
+# Defining an env registers it; keep this test-only one out of robosuite.ALL_ENVIRONMENTS, which
+# upstream tests iterate.
+del REGISTERED_ENVS["SonicArenaEnv"]
+
+
+def _launch_sonic(motion):
     """Start the C++ SONIC controller for one motion (keyboard input over stdin)."""
     os.system("kill -9 $(pgrep -x g1_deploy_onnx_ref) 2>/dev/null")  # DDS hygiene: one at a time
     time.sleep(1)
     motion_dir = tempfile.mkdtemp(prefix="sonic_live_")
-    os.symlink(os.path.join(REF_ROOT, motion), os.path.join(motion_dir, motion))
-    cmd = ["./target/release/g1_deploy_onnx_ref", "lo", "policy/release/model_decoder.onnx",
-           motion_dir, "--obs-config", "policy/release/observation_config.yaml",
-           "--encoder-file", "policy/release/model_encoder.onnx",
-           "--input-type", "keyboard", "--output-type", "zmq", "--disable-crc-check"]
-    return subprocess.Popen(cmd, cwd=DEPLOY, stdin=subprocess.PIPE,
+    os.symlink(os.path.join(REFERENCE_MOTION_DIR, motion), os.path.join(motion_dir, motion))
+    command = ["./target/release/g1_deploy_onnx_ref", "lo", "policy/release/model_decoder.onnx",
+               motion_dir, "--obs-config", "policy/release/observation_config.yaml",
+               "--encoder-file", "policy/release/model_encoder.onnx",
+               "--input-type", "keyboard", "--output-type", "zmq", "--disable-crc-check"]
+    return subprocess.Popen(command, cwd=SONIC_DEPLOY_DIR, stdin=subprocess.PIPE,
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def _render(model, mj_data, qpos_seq, out_mp4, sim_dt, fps=30):
-    """Offscreen-render a recorded qpos sequence to mp4 (pelvis-tracking cam; needs EGL)."""
+def _render(model, data, qpos_frames, video_path, sim_dt, fps=30):
+    """Offscreen-render a recorded qpos sequence to mp4 (pelvis-tracking camera; needs EGL)."""
     import imageio
     os.environ.setdefault("MUJOCO_GL", "egl")
-    pelvis = next(b for b in range(model.nbody)
-                  if "pelvis" in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) or ""))
+    pelvis = next(body for body in range(model.nbody)
+                  if "pelvis" in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) or ""))
     renderer = mujoco.Renderer(model, 480, 640)
-    cam = mujoco.MjvCamera()
-    cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
-    cam.trackbodyid = pelvis
-    cam.distance, cam.azimuth, cam.elevation = 3.5, 120, -15
+    camera = mujoco.MjvCamera()
+    camera.type = mujoco.mjtCamera.mjCAMERA_TRACKING
+    camera.trackbodyid = pelvis
+    camera.distance, camera.azimuth, camera.elevation = 3.5, 120, -15
     stride = max(1, int(round((1.0 / fps) / sim_dt)))
-    writer = imageio.get_writer(out_mp4, fps=fps)
+    writer = imageio.get_writer(video_path, fps=fps)
     try:
-        for t in range(0, len(qpos_seq), stride):
-            mj_data.qpos[:] = qpos_seq[t]
-            mujoco.mj_forward(model, mj_data)
-            renderer.update_scene(mj_data, camera=cam)
+        for frame in range(0, len(qpos_frames), stride):
+            data.qpos[:] = qpos_frames[frame]
+            mujoco.mj_forward(model, data)
+            renderer.update_scene(data, camera=camera)
             writer.append_data(renderer.render())
     finally:
         writer.close()
         renderer.close()
 
 
-@pytest.mark.skipif(not _LIVE_OK,
-                    reason="opt-in: RUN_SONIC_LIVE=1 + C++ binary + gear_sonic config + gold")
+@pytest.mark.skipif(not _LIVE_OK, reason="opt-in: RUN_SONIC_LIVE=1, SONIC_DEPLOY, SONIC_ROBOSUITE_DIR")
 @pytest.mark.parametrize("motion", MOTIONS)
 def test_sonic_live_dds_tracking(motion):
-    if not os.path.exists(os.path.join(REF_ROOT, motion)):
-        pytest.skip(f"reference motion {motion} not under {REF_ROOT}")
+    if not os.path.exists(os.path.join(REFERENCE_MOTION_DIR, motion)):
+        pytest.skip(f"reference motion {motion} not under {REFERENCE_MOTION_DIR}")
 
-    cfg = load_composite_controller_config(controller=SONIC_CFG)
-    env = SonicArenaEnv(robots=["SonicG1"], controller_configs=cfg, has_renderer=False,
-                        has_offscreen_renderer=False, use_camera_obs=False, control_freq=500,
-                        hard_reset=False, ignore_done=True, horizon=10_000_000)
+    env = SonicArenaEnv(robots=["SonicG1"],
+                        controller_configs=load_composite_controller_config(controller=SONIC_CFG),
+                        has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
+                        control_freq=500, hard_reset=False, ignore_done=True)
     env.reset()
     match_base_sim_physics(env.sim.model._model)
     controller = env.robots[0].composite_controller
-    mj_data, model = env.sim.data._data, env.sim.model._model
-    source = DDSActionSource(controller._cfg)
-    source.reset(env)
-    hold_action = np.zeros(env.action_dim)
+    data, model = env.sim.data._data, env.sim.model._model
+    motor_map = controller.motor_map
+    bridge = SonicRobosuiteBridge(controller.sonic_config)
+    no_command = np.zeros(env.action_dim)
     sim_dt = float(model.opt.timestep)
 
-    cpp = _launch_cpp(motion)
-    state = {"phase": "load", "rec": False}
+    sonic_process = _launch_sonic(motion)
+    state = {"phase": "load", "recording": False}
 
     def drive():
-        time.sleep(20); cpp.stdin.write(b"]"); cpp.stdin.flush()   # control active
+        time.sleep(20); sonic_process.stdin.write(b"]"); sonic_process.stdin.flush()   # control active
         time.sleep(2); controller.release_band()                  # drop the startup band
-        time.sleep(8); cpp.stdin.write(b"T"); cpp.stdin.flush()    # play the motion
-        state["rec"] = True
+        time.sleep(8); sonic_process.stdin.write(b"T"); sonic_process.stdin.flush()    # play the motion
+        state["recording"] = True
         time.sleep(16); state["phase"] = "done"
     threading.Thread(target=drive, daemon=True).start()
 
-    body_q, fb_pose, qpos_seq = [], [], []
-    nxt = time.perf_counter()
+    body_q, base_pose, qpos_frames = [], [], []
+    next_step_time = time.perf_counter()
     try:
-        while state["phase"] != "done":
-            action = source.act(env)
-            if action is None:
-                env.step(hold_action)
-            else:
-                if source.gains:
-                    controller.set_command_gains(source.gains)
-                env.step(action)
-            if state["rec"]:
-                engine = source._engine
-                assert engine is not None, "DDS source did not initialize its SONIC map engine"
-                body_q.append(mj_data.qpos[engine.qpos_adr].copy())            # 29, MOTOR order
-                fb_pose.append(mj_data.qpos[engine.free_qadr:engine.free_qadr + 7].copy())
+        while state["phase"] != "done" and sonic_process.poll() is None:
+            action = bridge.get_sonic_action(env)
+            env.step(no_command if action is None else action)
+            if state["recording"]:
+                body_q.append(data.qpos[motor_map.qpos_adr[BODY]].copy())
+                base_pose.append(data.qpos[motor_map.base_qpos_adr:motor_map.base_qpos_adr + 7].copy())
                 if VIDEO_DIR:
-                    qpos_seq.append(np.array(mj_data.qpos))
-            nxt += sim_dt
-            slp = nxt - time.perf_counter()
-            if slp > 0:
-                time.sleep(slp)
+                    qpos_frames.append(np.array(data.qpos))
+            next_step_time += sim_dt
+            sleep_time = next_step_time - time.perf_counter()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
     finally:
         try:
-            cpp.terminate(); cpp.wait(timeout=5)
+            sonic_process.terminate(); sonic_process.wait(timeout=5)
         except Exception:
             os.system("kill -9 $(pgrep -x g1_deploy_onnx_ref) 2>/dev/null")
 
-    body_q, fb_pose = np.asarray(body_q), np.asarray(fb_pose)
+    assert state["phase"] == "done", "the SONIC C++ controller exited before the motion finished"
+    body_q, base_pose = np.asarray(body_q), np.asarray(base_pose)
     assert len(body_q) > 100 and np.all(np.isfinite(body_q)), "no / non-finite live data"
     achieved_hz = len(body_q) / 16.0   # the record window is 16 s wall-clock
 
     if VIDEO_DIR:
         os.makedirs(VIDEO_DIR, exist_ok=True)
-        _render(model, mj_data, np.asarray(qpos_seq), os.path.join(VIDEO_DIR, f"{motion}.mp4"), sim_dt)
+        _render(model, data, np.asarray(qpos_frames), os.path.join(VIDEO_DIR, f"{motion}.mp4"), sim_dt)
 
-    native = tracking_metrics(body_q, fb_pose, motion)
-    gold_npz = dict(np.load(os.path.join(GOLD_DIR, motion + ".npz"), allow_pickle=True))
-    gold = tracking_metrics(gold_npz["body_q"], gold_npz["floating_base_pose"], motion)
-    print(f"[live] {motion}: native mean={native['mean']:.4f} drift={native['drift']:.2f}m  vs  "
-          f"gold mean={gold['mean']:.4f} drift={gold['drift']:.2f}m  | {achieved_hz:.0f} Hz (tol={TOL})", flush=True)
+    live = tracking_metrics(body_q, base_pose, motion)
+    recorded_run = dict(np.load(os.path.join(RECORDED_RUNS_DIR, motion + ".npz"), allow_pickle=True))
+    recorded = tracking_metrics(recorded_run["body_q"], recorded_run["floating_base_pose"], motion)
+    print(f"[live] {motion}: live mean={live['mean']:.4f} drift={live['drift']:.2f}m  vs  recorded "
+          f"mean={recorded['mean']:.4f} drift={recorded['drift']:.2f}m  | {achieved_hz:.0f} Hz (tol={TOLERANCE})",
+          flush=True)
     env.close()
-    # The C++ is wall-clock paced: a sub-real-time sim over-advances its reference and tracking
-    # degrades, so don't false-fail -- skip. The native live loop's healthy steady state is
-    # ~350-415 Hz (high run-to-run variance) and stays gold-faithful there; below ~350 Hz the box
-    # is loaded / the motion has fallen, so faithfulness is undefined. (See design doc 13.5.)
+    # SONIC runs on the wall clock, so a sim that falls behind real time (a loaded machine, or a
+    # robot that fell) tracks worse for reasons unrelated to the integration: skip, don't fail.
     if achieved_hz < 350:
-        pytest.skip(f"{motion}: sim ran sub-real-time ({achieved_hz:.0f} Hz); faithfulness undefined")
-    assert native["mean"] <= gold["mean"] + TOL, (
-        f"{motion}: native joint error {native['mean']:.4f} exceeds gold {gold['mean']:.4f} + {TOL}")
+        pytest.skip(f"{motion}: the sim ran below real time ({achieved_hz:.0f} Hz), so the tracking "
+                    "comparison is not meaningful")
+    assert live["mean"] <= recorded["mean"] + TOLERANCE, (
+        f"{motion}: live joint error {live['mean']:.4f} exceeds the recorded {recorded['mean']:.4f} + {TOLERANCE}")

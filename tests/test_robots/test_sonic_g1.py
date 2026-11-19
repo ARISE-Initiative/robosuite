@@ -1,195 +1,40 @@
-"""Tests for the native SonicG1 robot + Dex3 grippers + SonicWholeBodyController.
+"""Tests for the SonicG1 robot, its Dex3 grippers and the SONIC_WBC controller.
 
-Covers:
-  - registration (SonicG1 / SonicG1Fixed / Dex3 grippers / SONIC_WBC)
-  - assembly: robosuite RobotModel + Dex3 grippers reassemble to the SAME physics as
-    the source model (43 DOF, mass preserved)
-  - OSC via robosuite.make: SonicG1Fixed in a task env, arms controlled by OSC_POSE
-    (the right EEF moves under an OSC pose command)  [self-contained]
-  - SONIC_WBC: the SONIC composite controller drives the assembled robot (right arm
-    gets its real 25/5 Nm effort, ctrl finite)  [needs external gear_sonic config]
-  - floating base: the free-floating SonicG1 keeps a top-level pelvis freejoint in a
-    real robosuite env (NullBase) and SONIC reads the robot's base, not task clutter
-  - data collection: the native SonicG1 + SONIC_WBC records a robosuite demo.hdf5
-    (states + per-step SONIC targets)  [needs gold command stream]
+Apart from the registration test they need gear_sonic installed (the controller reads its config)
+and skip without it. The recorded-torque test also needs $SONIC_RECORDED_RUNS_DIR: runs of the
+SONIC C++ controller recorded with the standalone sonic_robosuite harness (its tests/gold
+directory), one .npz per motion holding the joint states, SONIC's commands and the torques that
+harness applied. The harness and the recordings are not published.
 """
 import os
+import threading
+from types import SimpleNamespace
 
 import mujoco
 import numpy as np
 import pytest
 
-import robosuite  # noqa: F401  registers SonicG1[/Fixed] + Dex3 grippers + SONIC_WBC
+import robosuite
 from robosuite.controllers import load_composite_controller_config
 from robosuite.models import MujocoWorldBase
 from robosuite.models.arenas import EmptyArena
 from robosuite.models.grippers.sonic_dex3_gripper import SonicDex3LeftGripper, SonicDex3RightGripper
-from robosuite.models.robots.manipulators.sonic_g1_robot import SonicG1, SonicG1Fixed
-from robosuite.controllers.composite.sonic_whole_body_controller import (
-    SonicWholeBodyController, WBC_CONFIG)
-from robosuite.utils.sonic.controller import MotorCommand
+from robosuite.models.robots.manipulators.sonic_g1_robot import SonicG1
+from robosuite.scripts.collect_sonic_g1_demos import SONIC_CFG, match_base_sim_physics
+from robosuite.utils.sonic.bridge import BODY, LEFT_HAND, MOTOR_KD, MOTOR_KP, RIGHT_HAND
+
+RECORDED_RUNS_DIR = os.environ.get("SONIC_RECORDED_RUNS_DIR", "")
+RECORDED_MOTIONS = ["squat_001__A359", "walking_quip_360_R_002__A428", "neutral_kick_R_001__A543",
+                    "forward_lunge_R_001__A359_M", "tired_one_leg_jumping_R_001__A359",
+                    "dance_in_da_party_001__A464", "macarena_001__A545"]
 
 
-def _first_existing(*paths):
-    for path in paths:
-        if os.path.exists(path):
-            return path
-    return paths[0]
-
-
-GEAR_MODEL = _first_existing(
-    "/home/amaddukuri/Projects/GR00T-WholeBodyControl/gear_sonic/data/robot_model/model_data/g1/g1_29dof_with_hand.xml",
-    "/home/ajay/code/GR00T-WholeBodyControl/gear_sonic/data/robot_model/model_data/g1/g1_29dof_with_hand.xml",
-)
-
-
-def _assemble():
-    """SonicG1Fixed + Dex3 grippers merged into an EmptyArena (robosuite machinery)."""
-    m = SonicG1Fixed(idn=0)
-    m.add_gripper(SonicDex3RightGripper(idn="0_right"), m.eef_name["right"])
-    m.add_gripper(SonicDex3LeftGripper(idn="0_left"), m.eef_name["left"])
-    world = MujocoWorldBase()
-    world.merge(EmptyArena())
-    world.merge(m)
-    return world.get_model(mode="mujoco")
-
-
-class _Sim:
-    """Minimal robosuite-sim duck type for G1SonicController."""
-    def __init__(self, m, d):
-        self.model = type("M", (), {"_model": m})()
-        self.data = type("D", (), {"_data": d})()
-
-
-def engine_pd_torques(engine, cmd, hands=None):
-    """The SONIC per-motor PD law evaluated against the engine's CURRENT sim state,
-    returned as ``{actuator_index: torque}`` clipped to per-motor effort:
-    ``tau_i = clip(tau_ff_i + kp_i*(q*_i - q_i) + kd_i*(dq*_i - dq_i))``.
-    This is the reference the SONIC_WBC part-controller dispatch must reproduce; it lives
-    in test code because production drives the same law through JointPosition(Velocity)
-    controllers, not this dict (read-only -- writes nothing)."""
-    md = engine.sim.data._data if hasattr(engine.sim.data, "_data") else engine.sim.data
-    out = {}
-    q = md.qpos[engine.qpos_adr]
-    dq = md.qvel[engine.qvel_adr]
-    body = np.clip(cmd.tau + cmd.kp * (cmd.q - q) + cmd.kd * (cmd.dq - dq),
-                   -engine.effort_limit, engine.effort_limit)
-    for k, ci in enumerate(engine.ctrl_idx):
-        out[int(ci)] = float(body[k])
-    if hands is not None and engine.has_hands:
-        lcmd, rcmd = hands
-        for hc, (qa, va, ci), eff in ((lcmd, engine._lh, engine._lh_eff),
-                                      (rcmd, engine._rh, engine._rh_eff)):
-            ht = np.clip(hc.tau + hc.kp * (hc.q - md.qpos[qa]) + hc.kd * (hc.dq - md.qvel[va]),
-                         -eff, eff)
-            for k, c in enumerate(ci):
-                out[int(c)] = float(ht[k])
-    return out
-
-
-def drive_engine_direct(engine, data):
-    """Test-only direct PD substep (replaces the removed G1SonicController.apply): build
-    obs + read the command, then write engine_pd_torques straight to ctrl. Used to drive
-    the engine on a bare MjModel without robosuite's controller stack."""
-    _obs, cmd, hands = engine.exchange()
-    if cmd is None:
-        data.ctrl[engine.ctrl_idx] = 0.0
-        return
-    for actidx, tau in engine_pd_torques(engine, cmd, hands).items():
-        data.ctrl[actidx] = tau
-
-
-def _action_from_gold(gold, idx=0):
-    return np.concatenate([gold["cmd_q"][idx], gold["lh_cmd_q"][idx], gold["rh_cmd_q"][idx]])
-
-
-def _gains_from_gold(gold, idx=0):
-    return {
-        "body": (np.asarray(gold["cmd_kp"][idx], dtype=float), np.asarray(gold["cmd_kd"][idx], dtype=float)),
-        "lhand": (np.asarray(gold["lh_cmd_kp"][idx], dtype=float), np.asarray(gold["lh_cmd_kd"][idx], dtype=float)),
-        "rhand": (np.asarray(gold["rh_cmd_kp"][idx], dtype=float), np.asarray(gold["rh_cmd_kd"][idx], dtype=float)),
-    }
-
-
-def _commands_from_action(action, gains):
-    action = np.asarray(action, dtype=float)
-    z_body = np.zeros(29)
-    z_hand = np.zeros(7)
-    cmd = MotorCommand(
-        q=action[:29],
-        dq=z_body.copy(),
-        kp=gains["body"][0],
-        kd=gains["body"][1],
-        tau=z_body.copy(),
-    )
-    lh = MotorCommand(
-        q=action[29:36],
-        dq=z_hand.copy(),
-        kp=gains["lhand"][0],
-        kd=gains["lhand"][1],
-        tau=z_hand.copy(),
-    )
-    rh = MotorCommand(
-        q=action[36:43],
-        dq=z_hand.copy(),
-        kp=gains["rhand"][0],
-        kd=gains["rhand"][1],
-        tau=z_hand.copy(),
-    )
-    return cmd, (lh, rh)
-
-
-# --- Test-only command sources (moved out of robosuite.utils.sonic.sources; production
-# only ships DDSCommandSource). Both duck-type the source interface the engine needs:
-# update(obs) + read() [+ read_hands()]. ---
-class ReferenceMockSource:
-    """Replays per-motor joint targets (motor order) as PD targets; advances one frame
-    per read(), holds the last once exhausted."""
-    def __init__(self, motor_targets, kp, kd):
-        self.targets = np.asarray(motor_targets, dtype=np.float64)  # (T, n)
-        self.kp = np.asarray(kp, dtype=np.float64)
-        self.kd = np.asarray(kd, dtype=np.float64)
-        self.n = self.targets.shape[1]
-        self.t = 0
-
-    def update(self, obs):
-        pass
-
-    def read(self):
-        idx = min(self.t, self.targets.shape[0] - 1)
-        self.t += 1
-        return MotorCommand(q=self.targets[idx], dq=np.zeros(self.n),
-                            kp=self.kp, kd=self.kd, tau=np.zeros(self.n))
-
-
-class ReplayCommandSource:
-    """Deterministically replays a recorded per-step command stream (body + Dex3 hands)
-    from a golden npz -- one frame per read(), holds the last once exhausted."""
-    def __init__(self, gold):
-        self.q, self.dq = gold["cmd_q"], gold["cmd_dq"]
-        self.kp, self.kd, self.tau = gold["cmd_kp"], gold["cmd_kd"], gold["cmd_tau"]
-        self.T = self.q.shape[0]
-        self.has_hands = "lh_cmd_q" in gold
-        if self.has_hands:
-            self._lh = {f: gold[f"lh_cmd_{f}"] for f in ("q", "dq", "kp", "kd", "tau")}
-            self._rh = {f: gold[f"rh_cmd_{f}"] for f in ("q", "dq", "kp", "kd", "tau")}
-        self.t = self._cur = 0
-
-    def update(self, obs):
-        pass
-
-    def read(self):
-        i = self._cur = min(self.t, self.T - 1)
-        self.t += 1
-        return MotorCommand(self.q[i], self.dq[i], self.kp[i], self.kd[i], self.tau[i])
-
-    def read_hands(self):
-        if not self.has_hands:
-            return None
-        i = self._cur
-        lc = MotorCommand(*[self._lh[f][i] for f in ("q", "dq", "kp", "kd", "tau")])
-        rc = MotorCommand(*[self._rh[f][i] for f in ("q", "dq", "kp", "kd", "tau")])
-        return lc, rc
+def _make_env(env_name, control_freq):
+    pytest.importorskip("gear_sonic")
+    return robosuite.make(env_name, robots=["SonicG1"],
+                          controller_configs=load_composite_controller_config(controller=SONIC_CFG),
+                          has_renderer=False, has_offscreen_renderer=False,
+                          use_camera_obs=False, control_freq=control_freq)
 
 
 def test_registration():
@@ -197,323 +42,287 @@ def test_registration():
     from robosuite.models.grippers import GRIPPER_MAPPING
     from robosuite.controllers.composite.composite_controller import (
         REGISTERED_COMPOSITE_CONTROLLERS_DICT)
-    assert "SonicG1" in ROBOT_CLASS_MAPPING and "SonicG1Fixed" in ROBOT_CLASS_MAPPING
+    assert "SonicG1" in ROBOT_CLASS_MAPPING
     assert "SonicDex3LeftGripper" in GRIPPER_MAPPING
     assert "SonicDex3RightGripper" in GRIPPER_MAPPING
     assert "SONIC_WBC" in REGISTERED_COMPOSITE_CONTROLLERS_DICT
 
 
 def test_assembles():
-    model = _assemble()
-    assert model.nu == 43  # 29 body + 7 + 7 Dex3
-    if os.path.exists(GEAR_MODEL):
-        orig = mujoco.MjModel.from_xml_path(GEAR_MODEL)
-        assert model.nu == orig.nu
-        rmass = sum(model.body_mass[b] for b in range(model.nbody)
-                    if any(k in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, b) or "")
-                           for k in ["hip", "knee", "ankle", "waist", "torso", "shoulder", "elbow",
-                                     "wrist", "hand", "pelvis", "link", "gripper", "eef", "base"]))
-        assert abs(rmass - sum(orig.body_mass)) < 1e-3  # physics preserved
+    """SonicG1 + Dex3 grippers assemble to 43 actuators and, compared with gear_sonic's source
+    model, to the same total mass."""
+    robot = SonicG1(idn=0)
+    robot.add_gripper(SonicDex3RightGripper(idn="0_right"), robot.eef_name["right"])
+    robot.add_gripper(SonicDex3LeftGripper(idn="0_left"), robot.eef_name["left"])
+    world = MujocoWorldBase()
+    world.merge(EmptyArena())
+    world.merge(robot)
+    model = world.get_model(mode="mujoco")
+    assert model.nu == 43
+
+    gear_sonic = pytest.importorskip("gear_sonic")
+    source = mujoco.MjModel.from_xml_path(os.path.join(
+        os.path.dirname(gear_sonic.__file__), "data", "robot_model", "model_data", "g1", "g1_29dof_with_hand.xml"))
+    assert source.nu == 43
+    assert abs(sum(model.body_mass) - sum(source.body_mass)) < 1e-3
 
 
-def test_osc_robosuite_make():
-    """SonicG1Fixed loads into a task env and OSC moves the right arm's EEF."""
-    cfg = load_composite_controller_config(controller="BASIC")  # OSC_POSE arms
-    env = robosuite.make("TwoArmLift", robots=["SonicG1Fixed"], controller_configs=cfg,
-                         has_renderer=False, has_offscreen_renderer=False,
-                         use_camera_obs=False, control_freq=20)
+def test_motor_map_follows_sonic_motor_order():
+    leg = ["hip_pitch", "hip_roll", "hip_yaw", "knee", "ankle_pitch", "ankle_roll"]
+    arm = ["shoulder_pitch", "shoulder_roll", "shoulder_yaw", "elbow", "wrist_roll", "wrist_pitch", "wrist_yaw"]
+    finger = ["thumb_0", "thumb_1", "thumb_2", "middle_0", "middle_1", "index_0", "index_1"]
+    expected = ([f"robot0_l_leg_{joint}_joint" for joint in leg] + [f"robot0_r_leg_{joint}_joint" for joint in leg]
+                + [f"robot0_torso_waist_{axis}_joint" for axis in ("yaw", "roll", "pitch")]
+                + [f"robot0_l_{joint}_joint" for joint in arm] + [f"robot0_r_{joint}_joint" for joint in arm]
+                + [f"gripper0_left_left_hand_{joint}_joint" for joint in finger]
+                + [f"gripper0_right_right_hand_{joint}_joint" for joint in finger])
+    env = _make_env("Lift", control_freq=20)
     try:
         env.reset()
-        low, _ = env.action_spec
-        grip = env.robots[0].gripper["right"].important_sites["grip_site"]
-        eef0 = env.sim.data.get_site_xpos(grip).copy()
-        action = np.zeros_like(low)
-        action[0] = 0.6  # +x pose delta on the right arm
-        for _ in range(50):
+        motor_map = env.robots[0].composite_controller.motor_map
+        assert motor_map.joint_names == expected
+        assert np.array_equal(motor_map.effort_limit[15:29], [25, 25, 25, 25, 25, 5, 5] * 2)  # both arms
+        assert np.array_equal(motor_map.effort_limit[LEFT_HAND], motor_map.effort_limit[RIGHT_HAND])
+    finally:
+        env.close()
+
+
+@pytest.mark.parametrize("target_offset, reaches_effort_limit", [(0.02, False), (2.0, True)])
+def test_sonic_wbc_applies_sonic_pd_law(target_offset, reaches_effort_limit):
+    """The torque SONIC_WBC applies through robosuite's per-part controllers equals SONIC's PD law
+    evaluated directly on the motor arrays: tau = clip(kp * (target - q) - kd * dq, effort). Every
+    motor gets a different target. Near the joints no motor reaches its effort limit, so a routing
+    swap between any two motors shows; far away, body and hand motors are clipped."""
+    # control_freq=500 -> one sim substep per env.step, so ctrl was computed at the pre-step state
+    env = _make_env("TwoArmLift", control_freq=500)
+    try:
+        env.reset()
+        motor_map = env.robots[0].composite_controller.motor_map
+        data = env.sim.data._data
+        action = data.qpos[motor_map.qpos_adr] + np.linspace(-target_offset, target_offset, env.action_dim)
+        clipped = np.zeros(env.action_dim, dtype=bool)
+        for _ in range(10):
+            torque = MOTOR_KP * (action - data.qpos[motor_map.qpos_adr]) - MOTOR_KD * data.qvel[motor_map.qvel_adr]
+            expected = np.clip(torque, -motor_map.effort_limit, motor_map.effort_limit)
+            clipped |= np.abs(torque) > motor_map.effort_limit
             env.step(action)
-        eef1 = env.sim.data.get_site_xpos(grip).copy()
-        assert np.all(np.isfinite(env.sim.data.ctrl))
-        assert np.linalg.norm(eef1 - eef0) > 0.02, "OSC did not move the right EEF"
+            assert np.allclose(data.ctrl[motor_map.actuator_ids], expected, atol=1e-9)
+        if reaches_effort_limit:
+            assert clipped[BODY].any() and clipped[LEFT_HAND].any() and clipped[RIGHT_HAND].any()
+        else:
+            assert not clipped.any()
     finally:
         env.close()
 
 
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
-def test_engine_pd_and_effort_on_assembled_model():
-    """The SONIC engine (G1SonicController) drives the assembled robot directly via its
-    PD law (bypass path): the right arm gets its real 25/5 Nm effort and the write
-    stays finite/bounded."""
-    import yaml
-    from robosuite.utils.sonic.controller import G1SonicController
-    with open(WBC_CONFIG) as f:
-        cfg = yaml.load(f, Loader=yaml.FullLoader)
-    model = _assemble()
-    model.opt.timestep = 0.002
-    model.opt.integrator = int(mujoco.mjtIntegrator.mjINT_EULER)
-    model.opt.cone = int(mujoco.mjtCone.mjCONE_PYRAMIDAL)
-    model.opt.impratio = 1.0
-    data = mujoco.MjData(model)
-    mujoco.mj_forward(model, data)
-
-    src = ReferenceMockSource(np.zeros((1, 29)),
-                              np.array(cfg["MOTOR_KP"][:29], float),
-                              np.array(cfg["MOTOR_KD"][:29], float))
-    sonic = G1SonicController(_Sim(model, data), src, cfg)
-    assert sonic.num_motors == 29 and sonic.has_hands
-    # right arm must get its real effort (25/5 Nm), not the left-hand 0.7 Nm
-    ra = [i for i, n in enumerate(sonic.motor_joint_names) if "r_shoulder" in n or "r_elbow" in n]
-    assert ra and all(sonic.effort_limit[i] >= 25.0 for i in ra)
-
-    for _ in range(200):
-        drive_engine_direct(sonic, data)
-        mujoco.mj_step(model, data)
-    assert np.all(np.isfinite(data.ctrl)) and np.all(np.isfinite(data.qpos))
-    assert np.abs(data.ctrl).max() < 200.0
-
-
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
-def test_sonic_wbc_robosuite_make_matches_engine():
-    """SONIC_WBC drives SonicG1Fixed inside a robosuite.make env by routing the DDS
-    command to per-part JointPositionControllers (PD law from live state). The applied
-    ctrl matches the SONIC engine's own PD torque (compute_torques) on every actuator
-    -- legs/torso/arms AND both grippers -- confirming the controller computes the law
-    (no left/right swap, no gravcomp/scaling drift, hands included)."""
-
-    cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
-                            "controllers", "config", "robots", "default_sonic_g1.json")
-    cfg = load_composite_controller_config(controller=cfg_path)
-    assert cfg["type"] == "SONIC_WBC"
-    # control_freq=500 -> one sim substep (hence one PD dispatch) per env.step, so the
-    # applied ctrl is computed at the same state we evaluate the engine reference at.
-    env = robosuite.make("TwoArmLift", robots=["SonicG1Fixed"], controller_configs=cfg,
-                         has_renderer=False, has_offscreen_renderer=False,
-                         use_camera_obs=False, control_freq=500)
+def test_match_base_sim_physics_sets_sonic_physics_options():
+    env = _make_env("Lift", control_freq=500)
     try:
         env.reset()
-        cc = env.robots[0].composite_controller
-        gains = {
-            "body": (np.array(cc._cfg["MOTOR_KP"][:29], float), np.array(cc._cfg["MOTOR_KD"][:29], float)),
-            "lhand": (np.full(7, 2.0), np.full(7, 0.1)),
-            "rhand": (np.full(7, 2.0), np.full(7, 0.1)),
-        }
-        action = np.zeros(env.action_dim)
-        cc.set_command_gains(gains)
-        env.step(action)  # build the maps + part plan
-        ref = None
-        for _ in range(10):  # stop before the zero-target command collapses the fixed-base legs
-            # The action command is constant, so the command we evaluate here is exactly the
-            # command env.step dispatches. Compute the reference at the CURRENT state, before
-            # env.step advances it.
-            cmd, hands = _commands_from_action(action, gains)
-            ref = engine_pd_torques(cc._maps, cmd, hands)  # {actuator_index: torque}
-            env.step(action)                              # routed per-part PD dispatch
-            idx = np.array(sorted(ref))                   # all 43 SONIC actuators
-            applied = env.sim.data.ctrl[idx]
-            engine = np.array([ref[i] for i in idx])
-            assert np.allclose(applied, engine, atol=1e-9), \
-                f"part-controller PD != engine PD (max {np.abs(applied - engine).max():.2e})"
-        s = cc._maps  # both grippers actually exercised (14 hand actuators routed)
-        assert s.has_hands and len(s._lh[2]) == 7 and len(s._rh[2]) == 7
-        assert {int(c) for c in list(s._lh[2]) + list(s._rh[2])} <= set(ref)
-        assert np.all(np.isfinite(env.sim.data.ctrl))
+        model = env.sim.model._model
+        match_base_sim_physics(model)
+        assert model.opt.integrator == mujoco.mjtIntegrator.mjINT_EULER
+        assert model.opt.cone == mujoco.mjtCone.mjCONE_PYRAMIDAL
+        assert model.opt.impratio == 1.0 and model.opt.density == 0.0 and model.opt.viscosity == 0.0
+        floor_geoms = [geom for geom in range(model.ngeom) if model.geom_type[geom] == mujoco.mjtGeom.mjGEOM_PLANE]
+        assert floor_geoms and all(model.geom_friction[geom, 0] == 1.0 for geom in floor_geoms)
     finally:
         env.close()
 
 
-# gold command streams live in the sonic_robosuite harness repo; override with $SONIC_GOLD_DIR.
-GOLD_DIR = os.environ.get("SONIC_GOLD_DIR") or _first_existing(
-    "/home/amaddukuri/Projects/sonic_robosuite/tests/gold",
-    "/home/ajay/code/sonic_robosuite/tests/gold",
-)
-
-
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
 def test_sonic_g1_floating_base_in_env():
-    """The free-floating SonicG1 keeps a TRUE top-level pelvis freejoint inside a real
-    robosuite env (NullBase, not welded by the base machinery), and the SONIC obs reads
-    the robot's own freejoint."""
-    from robosuite.scripts.collect_sonic_g1_demos import SonicArenaEnv, SONIC_CFG, match_base_sim_physics
-    env = SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=SONIC_CFG),
-                        has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
-                        control_freq=500, hard_reset=False, ignore_done=True, horizon=10_000)
+    """SonicG1 keeps a top-level pelvis freejoint inside a robosuite env, and the motor map
+    resolves that joint as the robot's base."""
+    env = _make_env("Lift", control_freq=500)
     try:
         env.reset()
-        match_base_sim_physics(env.sim.model._model)
-        m = env.sim.model._model
-        pid = next(b for b in range(m.nbody) if "pelvis" in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, b) or ""))
-        # pelvis is top-level (child of world) and carries a free joint -> truly floating
-        assert mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.body_parentid[pid]) == "world"
-        assert m.body_jntnum[pid] == 1
-        assert m.jnt_type[m.body_jntadr[pid]] == int(mujoco.mjtJoint.mjJNT_FREE)
-        # SONIC controller resolves the ROBOT's freejoint for its base obs
-        cc = env.robots[0].composite_controller
-        env.step(np.zeros(env.action_dim))  # build maps
-        assert cc._maps.free_qadr == int(m.jnt_qposadr[m.body_jntadr[pid]])
+        model = env.sim.model._model
+        pelvis = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "robot0_pelvis")
+        assert model.body_parentid[pelvis] == 0  # child of the world
+        assert model.body_jntnum[pelvis] == 1
+        assert model.jnt_type[model.body_jntadr[pelvis]] == int(mujoco.mjtJoint.mjJNT_FREE)
+        motor_map = env.robots[0].composite_controller.motor_map
+        assert motor_map.pelvis_body_id == pelvis
+        assert motor_map.base_qpos_adr == int(model.jnt_qposadr[model.body_jntadr[pelvis]])
         for _ in range(20):
             env.step(np.zeros(env.action_dim))
-        assert np.all(np.isfinite(env.sim.data.ctrl))
+        assert np.all(np.isfinite(env.sim.data.qpos))
     finally:
         env.close()
 
 
-@pytest.mark.skipif(not (os.path.exists(WBC_CONFIG) and os.path.isdir(GOLD_DIR)),
-                    reason="gear_sonic config / gold command stream unavailable")
-def test_sonic_data_collection_replay(tmp_path):
-    """End-to-end: drive the native floating SonicG1 with the golden command stream and
-    record a robosuite demo.hdf5 (states + per-step SONIC targets)."""
-    import h5py
-    from robosuite.scripts import collect_sonic_g1_demos as C
-    from robosuite.wrappers import DataCollectionWrapper
-
-    gold = dict(np.load(os.path.join(GOLD_DIR, "squat_001__A359.npz"), allow_pickle=True))
-    env = None
+@pytest.mark.skipif(not os.path.isdir(RECORDED_RUNS_DIR),
+                    reason="set SONIC_RECORDED_RUNS_DIR to the recorded runs of the SONIC controller")
+@pytest.mark.parametrize("motion", RECORDED_MOTIONS)
+def test_sonic_wbc_reproduces_recorded_torques(motion):
+    """At the joint states and SONIC commands of a recorded run (every 16th frame), SONIC_WBC
+    applies the torques the recording harness applied, for the body and both hands: same gains
+    and PD law. Body motors reach their effort limit in the one-leg jumping and the macarena."""
+    recorded = dict(np.load(os.path.join(RECORDED_RUNS_DIR, motion + ".npz"), allow_pickle=True))
+    for motors, prefix in ((BODY, "cmd"), (LEFT_HAND, "lh_cmd"), (RIGHT_HAND, "rh_cmd")):
+        assert np.array_equal(recorded[f"{prefix}_kp"][0], MOTOR_KP[motors])
+        assert np.array_equal(recorded[f"{prefix}_kd"][0], MOTOR_KD[motors])
+    env = _make_env("Lift", control_freq=20)
     try:
-        base = C.SonicArenaEnv(robots=["SonicG1"], controller_configs=load_composite_controller_config(controller=C.SONIC_CFG),
-                               has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
-                               control_freq=500, hard_reset=False, ignore_done=True, horizon=10_000)
-        tmp = str(tmp_path / "tmp")
-        env = DataCollectionWrapper(base, tmp)
-        env.reset()  # robot spawns standing via SonicG1.init_qpos
-        C.match_base_sim_physics(base.sim.model._model)
-        base.robots[0].composite_controller.set_command_gains(_gains_from_gold(gold))
-        for t in range(60):
-            env.step(_action_from_gold(gold, t))
-        env.close()
-        out = str(tmp_path / "out")
-        C.gather_to_hdf5(tmp, out, "SonicArenaEnv", {"type": "SONIC_WBC", "robot": "SonicG1"})
-        with h5py.File(os.path.join(out, "demo.hdf5"), "r") as f:
-            demos = list(f["data"].keys())
-            assert len(demos) >= 1
-            s = f["data"][demos[0]]["states"][:]
-            a = f["data"][demos[0]]["actions"][:]
-            assert s.shape[0] == a.shape[0] and s.shape[0] > 0
-            assert a.shape[1] == base.action_dim
-            assert not np.all(a == 0)  # SONIC targets recorded
-            assert f["data"][demos[0]].attrs["model_file"]  # replayable model
+        env.reset()
+        robot = env.robots[0]
+        motor_map = robot.composite_controller.motor_map
+        data = env.sim.data._data
+        # robosuite's part controllers read the joint state cached at reset on their first run
+        robot.control(np.ones(env.action_dim), policy_step=True)
+        worst_error = 0.0
+        for frame in range(0, len(recorded["cmd_q"]), 16):
+            data.qpos[motor_map.qpos_adr] = np.concatenate(
+                [recorded["body_q"][frame], recorded["left_hand_q"][frame], recorded["right_hand_q"][frame]])
+            data.qvel[motor_map.qvel_adr] = np.concatenate(
+                [recorded["body_dq"][frame], recorded["left_hand_dq"][frame], recorded["right_hand_dq"][frame]])
+            env.sim.forward()
+            targets = np.concatenate(
+                [recorded["cmd_q"][frame], recorded["lh_cmd_q"][frame], recorded["rh_cmd_q"][frame]])
+            robot.control(targets, policy_step=True)
+            expected = np.concatenate(
+                [recorded["tau_body"][frame], recorded["tau_lh"][frame], recorded["tau_rh"][frame]])
+            worst_error = max(worst_error, float(np.abs(data.ctrl[motor_map.actuator_ids] - expected).max()))
+        assert worst_error < 1e-6, f"{motion}: applied torque differs from the recorded one by {worst_error:.2e}"
     finally:
-        if env is not None:
-            try:
-                env.close()
-            except Exception:
-                pass
+        env.close()
 
 
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
+class _FakeUnitreeDds:
+    """Stands in for gear_sonic's UnitreeSdk2Bridge: holds the latest commands without opening DDS."""
+
+    def __init__(self, sonic_config):
+        self.low_cmd_lock, self.left_hand_cmd_lock, self.right_hand_cmd_lock = (threading.Lock() for _ in range(3))
+        self.published = []
+        self.reset()
+
+    def reset(self):
+        self.low_cmd_received = self.left_hand_cmd_received = self.right_hand_cmd_received = False
+
+    def PublishLowState(self, obs):
+        self.published.append(obs)
+
+    def receive(self, targets, kp, kd):
+        """Store one body and two hand commands holding the 43 targets and gains, in motor order."""
+        motor_cmds = [SimpleNamespace(q=target, kp=motor_kp, kd=motor_kd)
+                      for target, motor_kp, motor_kd in zip(targets, kp, kd)]
+        self.low_cmd = SimpleNamespace(motor_cmd=motor_cmds[BODY])
+        self.left_hand_cmd = SimpleNamespace(motor_cmd=motor_cmds[LEFT_HAND])
+        self.right_hand_cmd = SimpleNamespace(motor_cmd=motor_cmds[RIGHT_HAND])
+        self.low_cmd_received = self.left_hand_cmd_received = self.right_hand_cmd_received = True
+
+
+def test_bridge_returns_targets_only_while_sonic_commands(monkeypatch):
+    """SonicRobosuiteBridge.get_sonic_action against a fake DDS layer: it always publishes the robot
+    state, and returns SONIC's 43 targets only once body and hand commands with SONIC's gains arrive."""
+    pytest.importorskip("unitree_sdk2py")
+    gear_sonic_dds = pytest.importorskip("gear_sonic.utils.mujoco_sim.unitree_sdk2py_bridge")
+    import unitree_sdk2py.core.channel as unitree_channel
+    from robosuite.utils.sonic import bridge as sonic_bridge
+
+    monkeypatch.setattr(gear_sonic_dds, "UnitreeSdk2Bridge", _FakeUnitreeDds)
+    monkeypatch.setattr(unitree_channel, "ChannelFactoryInitialize", lambda *args: None)
+    monkeypatch.setattr(sonic_bridge, "_dds_initialized", False)
+    env = _make_env("Lift", control_freq=20)
+    try:
+        env.reset()
+        bridge = sonic_bridge.SonicRobosuiteBridge(env.robots[0].composite_controller.sonic_config)
+        dds = bridge.unitree_dds
+        targets = np.linspace(-0.3, 0.3, env.action_dim)
+
+        assert bridge.get_sonic_action(env) is None  # nothing received yet
+        assert dds.published[-1]["body_q"].shape == (29,) and dds.published[-1]["left_hand_q"].shape == (7,)
+
+        dds.receive(targets, MOTOR_KP, MOTOR_KD)
+        assert np.array_equal(bridge.get_sonic_action(env), targets)
+
+        dds.right_hand_cmd_received = False  # a hand command is still missing
+        assert bridge.get_sonic_action(env) is None
+
+        damping_kp, damping_kd = MOTOR_KP.copy(), MOTOR_KD.copy()
+        damping_kp[BODY], damping_kd[BODY] = 0.0, 8.0  # SONIC's damping-only stop command
+        dds.receive(targets, damping_kp, damping_kd)
+        assert bridge.get_sonic_action(env) is None
+
+        for changed_motor in (BODY.start, LEFT_HAND.start, RIGHT_HAND.start):  # gains changed on the SONIC side
+            changed_kp = MOTOR_KP.copy()
+            changed_kp[changed_motor] *= 2
+            dds.receive(targets, changed_kp, MOTOR_KD)
+            with pytest.raises(RuntimeError):
+                bridge.get_sonic_action(env)
+
+        dds.receive(targets, MOTOR_KP, MOTOR_KD)
+        bridge.reset()
+        assert bridge.get_sonic_action(env) is None
+    finally:
+        env.close()
+
+
 def test_sonic_startup_band_holds_reference_yaw():
-    """A startup band referenced to the spawn pose should not yaw Sonic back to
-    world identity when the kitchen spawns the robot facing a fixture."""
+    """The startup band is referenced to the spawn pose, so it does not yaw the robot back to
+    world identity when an env spawns it facing a fixture."""
     from scipy.spatial.transform import Rotation
 
-    cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
-                            "controllers", "config", "robots", "default_sonic_g1.json")
-    env = robosuite.make("TwoArmLift", robots=["SonicG1"],
-                         controller_configs=load_composite_controller_config(controller=cfg_path),
-                         has_renderer=False, has_offscreen_renderer=False,
-                         use_camera_obs=False, control_freq=20)
+    env = _make_env("TwoArmLift", control_freq=20)
     try:
         env.reset()
-        cc = env.robots[0].composite_controller
-        m = env.sim.model._model
-        md = env.sim.data._data
-        pelvis_jid = next(
-            j for j in range(m.njnt)
-            if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
-            and "pelvis" in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or "")
-        )
-        qadr = int(m.jnt_qposadr[pelvis_jid])
-        qvadr = int(m.jnt_dofadr[pelvis_jid])
+        controller = env.robots[0].composite_controller
+        motor_map = controller.motor_map
+        data = env.sim.data._data
+        pelvis, qpos_adr, qvel_adr = motor_map.pelvis_body_id, motor_map.base_qpos_adr, motor_map.base_qvel_adr
 
-        yaw = np.pi / 2.0
-        ref_rot = Rotation.from_euler("z", yaw)
-        ref_quat = ref_rot.as_quat()
-        md.qpos[qadr + 3:qadr + 7] = [ref_quat[3], ref_quat[0], ref_quat[1], ref_quat[2]]
-        md.qvel[qvadr:qvadr + 6] = 0.0
-        env.sim.forward()
-        env.step(np.zeros(env.action_dim))  # builds the engine, pelvis id, and reference-yaw band
-        pelvis_bid = cc._pelvis_bid
-        md.qpos[qadr + 3:qadr + 7] = [ref_quat[3], ref_quat[0], ref_quat[1], ref_quat[2]]
-        md.qvel[qvadr:qvadr + 6] = 0.0
-        env.sim.forward()
-        cc._apply_band(md)
-        assert abs(md.xfrc_applied[pelvis_bid, 5]) < 1e-6
+        def set_pelvis_rotation(rotation):
+            quat = rotation.as_quat()
+            data.qpos[qpos_adr + 3:qpos_adr + 7] = [quat[3], quat[0], quat[1], quat[2]]
+            data.qvel[qvel_adr:qvel_adr + 6] = 0.0
+            env.sim.forward()
 
-        rolled = (ref_rot * Rotation.from_euler("x", 0.1)).as_quat()
-        md.qpos[qadr + 3:qadr + 7] = [rolled[3], rolled[0], rolled[1], rolled[2]]
-        md.qvel[qvadr:qvadr + 6] = 0.0
-        env.sim.forward()
-        cc._apply_band(md)
-        assert np.linalg.norm(md.xfrc_applied[pelvis_bid, 3:5]) > 10.0
-        assert abs(md.xfrc_applied[pelvis_bid, 5]) < 1e-6
+        spawn_rotation = Rotation.from_euler("z", np.pi / 2.0)
+        set_pelvis_rotation(spawn_rotation)
+        env.step(np.zeros(env.action_dim))  # anchors the band at this pose
+        set_pelvis_rotation(spawn_rotation)
+        controller._apply_band()
+        assert abs(data.xfrc_applied[pelvis, 5]) < 1e-6
+
+        set_pelvis_rotation(spawn_rotation * Rotation.from_euler("x", 0.1))
+        controller._apply_band()
+        assert np.linalg.norm(data.xfrc_applied[pelvis, 3:5]) > 10.0
+        assert abs(data.xfrc_applied[pelvis, 5]) < 1e-6
     finally:
         env.close()
 
 
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
-def test_legacy_elastic_band_torques_yaw_to_identity():
-    """The upstream gear_sonic band still yaws nonzero headings toward identity.
-    SONIC_WBC handles the RoboCasa spawn-yaw reference locally."""
-    from gear_sonic.utils.mujoco_sim.unitree_sdk2py_bridge import ElasticBand
-
-    yaw = np.pi / 2.0
-    quat_wxyz = np.array([np.cos(yaw / 2.0), 0.0, 0.0, np.sin(yaw / 2.0)])
-    pose = np.zeros(13)
-    pose[0:3] = np.array([0.0, 0.0, 1.0])
-    pose[3:7] = quat_wxyz
-
-    legacy = ElasticBand()
-    legacy.point = pose[0:3].copy()
-    legacy_wrench = legacy.Advance(pose)
-
-    assert abs(legacy_wrench[5]) > 100.0
-
-
-@pytest.mark.skipif(not os.path.exists(WBC_CONFIG), reason="gear_sonic config unavailable")
 def test_sonic_startup_band_is_object_safe():
-    """The live-DDS startup hold is an elastic band -- a force on the PELVIS body only,
-    NEVER a qpos write. Regression: the old freeze/fall-recovery pinned the WHOLE qpos
-    vector, which would teleport any free task object (e.g. TwoArmLift's pot) back to a
-    snapshot each step. Here we perturb the pot, step, and assert (a) the pot evolves
-    freely (not snapped back), (b) the band applies a force to the pelvis, and (c)
-    releasing the band zeros that force."""
-
-    cfg_path = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
-                            "controllers", "config", "robots", "default_sonic_g1.json")
-    # floating SonicG1 in an env WITH a free task object (the pot)
-    env = robosuite.make("TwoArmLift", robots=["SonicG1"],
-                         controller_configs=load_composite_controller_config(controller=cfg_path),
-                         has_renderer=False, has_offscreen_renderer=False,
-                         use_camera_obs=False, control_freq=20)
+    """The startup band is a force on the pelvis only, never a qpos write: a perturbed task object
+    (TwoArmLift's pot) evolves freely, and releasing the band zeros the force. With no SONIC
+    command (zero action) the controller applies no torque."""
+    env = _make_env("TwoArmLift", control_freq=20)
     try:
         env.reset()
-        cc = env.robots[0].composite_controller
-        m = env.sim.model._model
-        md = env.sim.data._data
-        env.step(np.zeros(env.action_dim))  # builds the engine + band; sets _pelvis_bid
-        assert cc._pelvis_bid is not None, "floating base not detected"
+        controller = env.robots[0].composite_controller
+        motor_map = controller.motor_map
+        model = env.sim.model._model
+        data = env.sim.data._data
+        pelvis = motor_map.pelvis_body_id
+        pot_qpos_adr = next(
+            int(model.jnt_qposadr[joint]) for joint in range(model.njnt)
+            if model.jnt_type[joint] == mujoco.mjtJoint.mjJNT_FREE and model.jnt_bodyid[joint] != pelvis)
 
-        # locate a NON-robot freejoint (the pot) by its body name
-        pelvis_bid = cc._pelvis_bid
-        pot_qadr = next(
-            int(m.jnt_qposadr[j]) for j in range(m.njnt)
-            if m.jnt_type[j] == mujoco.mjtJoint.mjJNT_FREE
-            and "pelvis" not in (mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_BODY, m.jnt_bodyid[j]) or ""))
-
-        # (a) perturb the pot, step, and confirm it was NOT snapped back to a snapshot
-        before = np.array(md.qpos[pot_qadr:pot_qadr + 3])
-        md.qpos[pot_qadr] += 0.15
-        env.sim.forward()
-        moved_to = float(md.qpos[pot_qadr])
         env.step(np.zeros(env.action_dim))
-        after = float(md.qpos[pot_qadr])
-        assert abs(after - before[0]) > 0.1, "pot was teleported back -- qpos clobbered!"
+        before = float(data.qpos[pot_qpos_adr])
+        data.qpos[pot_qpos_adr] += 0.15
+        env.sim.forward()
+        moved_to = float(data.qpos[pot_qpos_adr])
+        env.step(np.zeros(env.action_dim))
+        after = float(data.qpos[pot_qpos_adr])
+        assert abs(after - before) > 0.1, "pot was teleported back -- qpos clobbered!"
         assert abs(after - moved_to) < 0.05, "pot did not evolve from its perturbed pose"
 
-        # (b) the band applies a force to the pelvis while enabled
-        assert np.any(md.xfrc_applied[pelvis_bid] != 0.0), "band applied no force"
+        assert np.any(data.xfrc_applied[pelvis] != 0.0), "band applied no force"
+        assert not data.ctrl[motor_map.actuator_ids].any(), "zero action applied torque"
 
-        # (c) releasing the band zeros that force
-        cc.release_band()
+        controller.release_band()
         env.step(np.zeros(env.action_dim))
-        assert np.all(md.xfrc_applied[pelvis_bid] == 0.0), "band force not cleared on release"
+        assert np.all(data.xfrc_applied[pelvis] == 0.0), "band force not cleared on release"
     finally:
         env.close()

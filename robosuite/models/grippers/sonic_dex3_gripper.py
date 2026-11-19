@@ -1,15 +1,12 @@
-"""Dex3 three-finger grippers for the SonicG1 (7 DOF/side). Split from SONIC's
-validated model so joints/meshes/ranges match the integrated model the C++ dex3
-command stream maps to."""
+"""Dex3 three-finger grippers of the SonicG1 (7 DOF per side), generated from SONIC's G1 model by
+build_sonic_g1_assets.py."""
 import numpy as np
 from robosuite.models.grippers.gripper_model import GripperModel
-from robosuite.models.grippers import register_gripper
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 _FINGER_SIGN = np.array([1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0])
 
 
-@register_gripper
 class SonicDex3LeftGripper(GripperModel):
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("grippers/sonic_dex3_left.xml"), idn=idn)
@@ -32,7 +29,6 @@ class SonicDex3LeftGripper(GripperModel):
         return 7
 
 
-@register_gripper
 class SonicDex3RightGripper(GripperModel):
     def __init__(self, idn=0):
         super().__init__(xml_path_completion("grippers/sonic_dex3_right.xml"), idn=idn)

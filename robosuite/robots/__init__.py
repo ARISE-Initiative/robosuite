@@ -32,7 +32,6 @@ ROBOT_CLASS_MAPPING = {
     "PandaDexLH": FixedBaseRobot,
     "XArm7": FixedBaseRobot,
     "SonicG1": LeggedRobot,
-    "SonicG1Fixed": LeggedRobot,
 }
 
 target_type_mapping = {

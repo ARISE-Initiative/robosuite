@@ -4,33 +4,25 @@
         "arms": {
             "right": {
                 "type": "JOINT_POSITION_VELOCITY",
-                "use_torque_compensation": false,
                 "interpolation": null,
                 "gripper": {
-                    "type": "JOINT_POSITION_VELOCITY",
-                    "use_torque_compensation": false,
-                    "interpolation": null
+                    "type": "JOINT_POSITION_VELOCITY"
                 }
             },
             "left": {
                 "type": "JOINT_POSITION_VELOCITY",
-                "use_torque_compensation": false,
                 "interpolation": null,
                 "gripper": {
-                    "type": "JOINT_POSITION_VELOCITY",
-                    "use_torque_compensation": false,
-                    "interpolation": null
+                    "type": "JOINT_POSITION_VELOCITY"
                 }
             }
         },
         "torso": {
             "type": "JOINT_POSITION_VELOCITY",
-            "use_torque_compensation": false,
             "interpolation": null
         },
         "legs": {
             "type": "JOINT_POSITION_VELOCITY",
-            "use_torque_compensation": false,
             "interpolation": null
         }
     }

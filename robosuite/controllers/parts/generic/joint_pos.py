@@ -313,16 +313,13 @@ class JointPositionController(Controller):
 
 
 class JointPositionVelocityController(JointPositionController):
-    """JointPositionController extended to track a streamed external joint PD+feedforward
-    command, as SONIC does over DDS. Standard JointPositionController is position-only
-    (drives dq -> 0, no feedforward); SONIC needs a velocity setpoint dq* and a
-    feedforward torque tau_ff, with an output clip to the per-motor effort limit:
+    """JointPositionController that takes a full joint-space PD command each step, as an
+    external whole-body controller such as SONIC sends, instead of a position action. With torque
+    compensation off and torque_limits set, as SONIC_WBC configures it, it applies
 
-        tau = clip(tau_ff + kp*(q* - q) + kd*(dq* - dq),  -effort, +effort)
+        tau = clip(tau_ff + kp * (q* - q) + kd * (dq* - dq), torque_limits)
 
-    set_pd_command(q*, dq*, kp, kd, tau_ff) sets the full command directly each step
-    (bypassing set_goal's delta/scaling); torque_limits is the per-joint effort clip.
-    reset_goal / control_limits are inherited from JointPositionController."""
+    set_pd_command sets q*, dq*, kp, kd and tau_ff directly, bypassing set_goal's delta/scaling."""
 
     def __init__(self, *args, **kwargs):
         torque_limits = kwargs.pop("torque_limits", None)
@@ -333,9 +330,8 @@ class JointPositionVelocityController(JointPositionController):
         self.torque_limits = np.array(torque_limits) if torque_limits is not None else None
 
     def set_pd_command(self, qpos, qvel=None, kp=None, kd=None, tau_feedforward=None):
-        """Set an absolute joint-space PD command directly (q*, dq*, kp, kd, tau_ff),
-        bypassing set_goal's delta/scaling. Used when an external policy streams a full
-        per-joint command each step (SONIC over DDS) rather than a position action."""
+        """Set the absolute joint targets and, optionally, the velocity targets, gains and
+        feedforward torque (each keeps its previous value when omitted)."""
         self.goal_qpos = np.asarray(qpos, dtype=float)
         if qvel is not None:
             self.desired_vel = np.asarray(qvel, dtype=float)
