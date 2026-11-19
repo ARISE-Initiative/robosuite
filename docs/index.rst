@@ -27,6 +27,7 @@ Welcome to robosuite's documentation!
    modules/devices
    modules/renderers
    modules/controllers
+   modules/sonic_g1
 
 .. toctree::
    :maxdepth: 1
