@@ -265,6 +265,7 @@ class Observable:
         self._time_since_last_sample = 0.0
         self._current_delay = self._delayer()
         self._current_observed_value = 0 if self._is_number else np.zeros(self._data_shape)
+        self._sampled = False
 
     def is_enabled(self):
         """
