@@ -136,6 +136,10 @@ class MujocoEnv(metaclass=EnvMeta):
         self.cur_time = None
         self.model_timestep = None
         self.control_timestep = None
+        # Run _post_action (reward, success check) every Nth step(); skipped steps reuse the last result
+        self.post_action_freq = 1
+        # Update the built-in viewer every Nth step()
+        self.render_freq = 1
         self.deterministic_reset = False  # Whether to add randomized resetting of objects / robot joints
 
         self.renderer = renderer
@@ -507,10 +511,15 @@ class MujocoEnv(metaclass=EnvMeta):
         # Note: this is done all at once to avoid floating point inaccuracies
         self.cur_time += self.control_timestep
 
-        reward, done, info = self._post_action(action)
+        if self.timestep % self.post_action_freq == 0 or not hasattr(self, "_last_post_action"):
+            reward, done, info = self._post_action(action)
+            self._last_post_action = (reward, done, info)
+        else:
+            reward, done, info = self._last_post_action
 
         if self.viewer is not None and self.renderer != "mujoco":
-            self.viewer.update()
+            if self.timestep % self.render_freq == 0:
+                self.viewer.update()
         elif self.has_renderer and self.renderer == "mjviewer" and self.viewer is None:
             # need to launch again after it was destroyed
             self.initialize_renderer()

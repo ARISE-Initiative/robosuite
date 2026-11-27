@@ -16,6 +16,7 @@ from .inspire_hands import InspireLeftHand, InspireRightHand
 from .fourier_hands import FourierLeftHand, FourierRightHand
 from .xarm7_gripper import XArm7Gripper
 from .suction_gripper import SuctionGripper
+from .sonic_dex3_gripper import SonicDex3LeftGripper, SonicDex3RightGripper
 
 GRIPPER_MAPPING = {
     "RethinkGripper": RethinkGripper,
@@ -34,6 +35,8 @@ GRIPPER_MAPPING = {
     "FourierRightHand": FourierRightHand,
     "XArm7Gripper": XArm7Gripper,
     "SuctionGripper": SuctionGripper,
+    "SonicDex3LeftGripper": SonicDex3LeftGripper,
+    "SonicDex3RightGripper": SonicDex3RightGripper,
     None: NullGripper,
 }
 
