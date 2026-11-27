@@ -19,20 +19,100 @@ RIGHT_HAND = slice(NUM_BODY_MOTORS + NUM_HAND_MOTORS, NUM_BODY_MOTORS + 2 * NUM_
 # every command: kps / kds in gear_sonic_deploy/src/g1/g1_deploy_onnx_ref/include/
 # policy_parameters.hpp (body) and kp 1.5 / kd 0.1 in dex3_hands.hpp (hands). The bridge raises if
 # SONIC ever sends different ones.
-MOTOR_KP = np.float32([
-    99.09843, 99.09843, 40.179237, 99.09843, 28.501245, 28.501245, 99.09843, 99.09843, 40.179237,
-    99.09843, 28.501245, 28.501245, 40.179237, 28.501245, 28.501245, 14.250623, 14.250623,
-    14.250623, 14.250623, 14.250623, 16.778328, 16.778328, 14.250623, 14.250623, 14.250623,
-    14.250623, 14.250623, 16.778328, 16.778328, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5,
-    1.5, 1.5, 1.5, 1.5,
-]).astype(float)
-MOTOR_KD = np.float32([
-    6.3088017, 6.3088017, 2.5578897, 6.3088017, 1.8144457, 1.8144457, 6.3088017, 6.3088017,
-    2.5578897, 6.3088017, 1.8144457, 1.8144457, 2.5578897, 1.8144457, 1.8144457, 0.90722287,
-    0.90722287, 0.90722287, 0.90722287, 0.90722287, 1.0681415, 1.0681415, 0.90722287, 0.90722287,
-    0.90722287, 0.90722287, 0.90722287, 1.0681415, 1.0681415, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-    0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1,
-]).astype(float)
+MOTOR_KP = np.float32(
+    [
+        99.09843,
+        99.09843,
+        40.179237,
+        99.09843,
+        28.501245,
+        28.501245,
+        99.09843,
+        99.09843,
+        40.179237,
+        99.09843,
+        28.501245,
+        28.501245,
+        40.179237,
+        28.501245,
+        28.501245,
+        14.250623,
+        14.250623,
+        14.250623,
+        14.250623,
+        14.250623,
+        16.778328,
+        16.778328,
+        14.250623,
+        14.250623,
+        14.250623,
+        14.250623,
+        14.250623,
+        16.778328,
+        16.778328,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+        1.5,
+    ]
+).astype(float)
+MOTOR_KD = np.float32(
+    [
+        6.3088017,
+        6.3088017,
+        2.5578897,
+        6.3088017,
+        1.8144457,
+        1.8144457,
+        6.3088017,
+        6.3088017,
+        2.5578897,
+        6.3088017,
+        1.8144457,
+        1.8144457,
+        2.5578897,
+        1.8144457,
+        1.8144457,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        1.0681415,
+        1.0681415,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        0.90722287,
+        1.0681415,
+        1.0681415,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+    ]
+).astype(float)
 
 _BODY_JOINT_KEYWORDS = ["hip", "knee", "ankle", "waist", "shoulder", "elbow", "wrist"]
 
@@ -51,16 +131,22 @@ class SonicG1MotorMap:
         body_names = [mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) for body in range(model.nbody)]
 
         def actuators_named(*keywords):
-            return [actuator for actuator, name in enumerate(actuator_joint_names)
-                    if any(keyword in name for keyword in keywords)]
+            return [
+                actuator
+                for actuator, name in enumerate(actuator_joint_names)
+                if any(keyword in name for keyword in keywords)
+            ]
 
         # Body motors are in actuator order (the Unitree motor order). Each hand's motors are in
         # joint order, which is how gear_sonic's DDS bridge indexes the Dex3 state and command.
         body = actuators_named(*_BODY_JOINT_KEYWORDS)
         left_hand = sorted(actuators_named("left_hand"), key=lambda actuator: actuator_joints[actuator])
         right_hand = sorted(actuators_named("right_hand"), key=lambda actuator: actuator_joints[actuator])
-        assert (len(body), len(left_hand), len(right_hand)) == (NUM_BODY_MOTORS, NUM_HAND_MOTORS, NUM_HAND_MOTORS), (
-            "SONIC_WBC needs the SonicG1 with both of its Dex3 hands")
+        assert (len(body), len(left_hand), len(right_hand)) == (
+            NUM_BODY_MOTORS,
+            NUM_HAND_MOTORS,
+            NUM_HAND_MOTORS,
+        ), "SONIC_WBC needs the SonicG1 with both of its Dex3 hands"
 
         self.actuator_ids = np.array(body + left_hand + right_hand)
         self.joint_ids = actuator_joints[self.actuator_ids]
@@ -72,9 +158,11 @@ class SonicG1MotorMap:
         effort = np.array(sonic_config["motor_effort_limit_list"])
         self.effort_limit = np.concatenate([effort[0:22], effort[29:36], effort[22:29], effort[36:43]])
 
-        base_joint = next(joint for joint in range(model.njnt)
-                          if model.jnt_type[joint] == mujoco.mjtJoint.mjJNT_FREE
-                          and "pelvis" in body_names[model.jnt_bodyid[joint]])
+        base_joint = next(
+            joint
+            for joint in range(model.njnt)
+            if model.jnt_type[joint] == mujoco.mjtJoint.mjJNT_FREE and "pelvis" in body_names[model.jnt_bodyid[joint]]
+        )
         self.pelvis_body_id = int(model.jnt_bodyid[base_joint])
         self.base_qpos_adr = int(model.jnt_qposadr[base_joint])
         self.base_qvel_adr = int(model.jnt_dofadr[base_joint])
@@ -87,9 +175,9 @@ class SonicG1MotorMap:
         torso_velocity = np.zeros(6)  # mj_objectVelocity returns [angular, linear]; SONIC reads [linear, angular]
         mujoco.mj_objectVelocity(model, data, mujoco.mjtObj.mjOBJ_BODY, self.torso_body_id, torso_velocity, 1)
         return {
-            "floating_base_pose": np.array(data.qpos[base_qpos:base_qpos + 7]),
-            "floating_base_vel": np.array(data.qvel[base_qvel:base_qvel + 6]),
-            "floating_base_acc": np.array(data.qacc[base_qvel:base_qvel + 6]),
+            "floating_base_pose": np.array(data.qpos[base_qpos : base_qpos + 7]),
+            "floating_base_vel": np.array(data.qvel[base_qvel : base_qvel + 6]),
+            "floating_base_acc": np.array(data.qacc[base_qvel : base_qvel + 6]),
             "secondary_imu_quat": np.array(data.xquat[self.torso_body_id]),
             "secondary_imu_vel": np.concatenate([torso_velocity[3:6], torso_velocity[0:3]]),
             "body_q": data.qpos[self.qpos_adr[BODY]],
@@ -132,9 +220,11 @@ class SonicRobosuiteBridge:
         with dds.low_cmd_lock, dds.left_hand_cmd_lock, dds.right_hand_cmd_lock:
             if not (dds.low_cmd_received and dds.left_hand_cmd_received and dds.right_hand_cmd_received):
                 return None
-            motor_cmds = (list(dds.low_cmd.motor_cmd)[:NUM_BODY_MOTORS]
-                          + list(dds.left_hand_cmd.motor_cmd)[:NUM_HAND_MOTORS]
-                          + list(dds.right_hand_cmd.motor_cmd)[:NUM_HAND_MOTORS])
+            motor_cmds = (
+                list(dds.low_cmd.motor_cmd)[:NUM_BODY_MOTORS]
+                + list(dds.left_hand_cmd.motor_cmd)[:NUM_HAND_MOTORS]
+                + list(dds.right_hand_cmd.motor_cmd)[:NUM_HAND_MOTORS]
+            )
         kp = np.array([motor_cmd.kp for motor_cmd in motor_cmds])
         kd = np.array([motor_cmd.kd for motor_cmd in motor_cmds])
         if not kp[BODY].any():
@@ -142,5 +232,6 @@ class SonicRobosuiteBridge:
         if not (np.array_equal(kp, MOTOR_KP) and np.array_equal(kd, MOTOR_KD)):
             raise RuntimeError(
                 "SONIC is sending PD gains that differ from robosuite's MOTOR_KP / MOTOR_KD. SONIC_WBC "
-                "supports only SONIC's default gains (no --motor-kp-scale / --motor-kd-scale).")
+                "supports only SONIC's default gains (no --motor-kp-scale / --motor-kd-scale)."
+            )
         return np.array([motor_cmd.q for motor_cmd in motor_cmds])

@@ -325,8 +325,8 @@ class JointPositionVelocityController(JointPositionController):
         torque_limits = kwargs.pop("torque_limits", None)
         super().__init__(*args, **kwargs)
         njnt = len(self.qpos_index)
-        self.desired_vel = np.zeros(njnt)             # dq* (default 0 -> kd damps to rest)
-        self.torque_feedforward = np.zeros(njnt)      # tau_ff (default 0)
+        self.desired_vel = np.zeros(njnt)  # dq* (default 0 -> kd damps to rest)
+        self.torque_feedforward = np.zeros(njnt)  # tau_ff (default 0)
         self.torque_limits = np.array(torque_limits) if torque_limits is not None else None
 
     def set_pd_command(self, qpos, qvel=None, kp=None, kd=None, tau_feedforward=None):
@@ -356,7 +356,7 @@ class JointPositionVelocityController(JointPositionController):
             desired_qpos = np.array(self.goal_qpos)
 
         position_error = desired_qpos - self.joint_pos
-        vel_pos_error = self.desired_vel - self.joint_vel        # dq* - dq
+        vel_pos_error = self.desired_vel - self.joint_vel  # dq* - dq
         desired_torque = np.multiply(position_error, self.kp) + np.multiply(vel_pos_error, self.kd)
 
         if self.use_torque_compensation:

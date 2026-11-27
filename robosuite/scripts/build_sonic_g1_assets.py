@@ -18,6 +18,7 @@ import shutil
 import xml.etree.ElementTree as ET
 
 import gear_sonic
+
 from robosuite.models import assets_root
 
 SOURCE_DIR = os.path.join(os.path.dirname(gear_sonic.__file__), "data/robot_model/model_data/g1")
@@ -29,13 +30,21 @@ HAND_RGBA = "0.2 0.2 0.2 1"
 
 # robosuite assigns a joint to a part by its name: names containing "leg" go to the legs, "torso"
 # to the torso and the rest to the arms. Each (old, new) pair renames the joints containing old.
-JOINT_RENAMES = [("left_hip", "l_leg_hip"), ("right_hip", "r_leg_hip"),
-                 ("left_knee", "l_leg_knee"), ("right_knee", "r_leg_knee"),
-                 ("left_ankle", "l_leg_ankle"), ("right_ankle", "r_leg_ankle"),
-                 ("waist_", "torso_waist_"),
-                 ("left_shoulder", "l_shoulder"), ("right_shoulder", "r_shoulder"),
-                 ("left_elbow", "l_elbow"), ("right_elbow", "r_elbow"),
-                 ("left_wrist", "l_wrist"), ("right_wrist", "r_wrist")]
+JOINT_RENAMES = [
+    ("left_hip", "l_leg_hip"),
+    ("right_hip", "r_leg_hip"),
+    ("left_knee", "l_leg_knee"),
+    ("right_knee", "r_leg_knee"),
+    ("left_ankle", "l_leg_ankle"),
+    ("right_ankle", "r_leg_ankle"),
+    ("waist_", "torso_waist_"),
+    ("left_shoulder", "l_shoulder"),
+    ("right_shoulder", "r_shoulder"),
+    ("left_elbow", "l_elbow"),
+    ("right_elbow", "r_elbow"),
+    ("left_wrist", "l_wrist"),
+    ("right_wrist", "r_wrist"),
+]
 
 
 def rename_joint(name):
@@ -78,8 +87,11 @@ def main():
             wrist.remove(finger)
         eef = ET.SubElement(wrist, "body", {"name": f"{side}_eef", "pos": "0 0 0"})
         ET.SubElement(eef, "inertial", {"pos": "0 0 0", "mass": "0", "diaginertia": "0 0 0"})
-        ET.SubElement(wrist, "site", {"name": f"{side}_center", "pos": "0 0 0",
-                                      "size": "0.01", "group": "2", "rgba": "1 0.3 0.3 1"})
+        ET.SubElement(
+            wrist,
+            "site",
+            {"name": f"{side}_center", "pos": "0 0 0", "size": "0.01", "group": "2", "rgba": "1 0.3 0.3 1"},
+        )
 
     # Robot body: move the hand motors to the grippers, drop the hand sensors and the finger
     # meshes, and copy the remaining meshes next to robot.xml.
@@ -130,22 +142,53 @@ def main():
             mesh.set("file", os.path.join(GRIPPER_MESH_SUBDIR, file_name))
             gripper_asset.append(mesh)
         gripper_worldbody = ET.SubElement(gripper, "worldbody")
-        base = ET.SubElement(gripper_worldbody, "body",
-                             {"name": f"{side[0]}_gripper_base", "pos": "0 0 0", "quat": "1 0 0 0"})
+        base = ET.SubElement(
+            gripper_worldbody, "body", {"name": f"{side[0]}_gripper_base", "pos": "0 0 0", "quat": "1 0 0 0"}
+        )
         ET.SubElement(base, "inertial", {"pos": "0 0 0", "mass": "0", "diaginertia": "0 0 0"})
-        ET.SubElement(base, "site", {"name": "ft_frame", "pos": "0 0 0", "size": "0.01",
-                                     "rgba": "1 0 0 0", "type": "sphere", "group": "1"})
+        ET.SubElement(
+            base,
+            "site",
+            {"name": "ft_frame", "pos": "0 0 0", "size": "0.01", "rgba": "1 0 0 0", "type": "sphere", "group": "1"},
+        )
         eef = ET.SubElement(base, "body", {"name": "eef", "pos": "0.05 0 0"})
         ET.SubElement(eef, "inertial", {"pos": "0 0 0", "mass": "0", "diaginertia": "0 0 0"})
-        ET.SubElement(eef, "site", {"name": "grip_site", "pos": "0 0 0", "size": "0.01",
-                                    "rgba": "1 1 0 1", "type": "sphere", "group": "2"})
-        for axis, quat, rgba, pos in (("x", "0.707105 0 0.707108 0", "1 0 0 0", "0.1 0 0"),
-                                      ("y", "0.707105 0.707108 0 0", "0 1 0 0", "0 0.1 0"),
-                                      ("z", "1 0 0 0", "0 0 1 0", "0 0 0.1")):
-            ET.SubElement(eef, "site", {"name": f"ee_{axis}", "pos": pos, "size": "0.005 .1",
-                                        "quat": quat, "rgba": rgba, "type": "cylinder", "group": "1"})
-        ET.SubElement(eef, "site", {"name": "grip_site_cylinder", "pos": "0 0 0", "quat": "1 0 0 0",
-                                    "size": "0.005 0.5", "rgba": "0 1 0 0.3", "type": "cylinder", "group": "1"})
+        ET.SubElement(
+            eef,
+            "site",
+            {"name": "grip_site", "pos": "0 0 0", "size": "0.01", "rgba": "1 1 0 1", "type": "sphere", "group": "2"},
+        )
+        for axis, quat, rgba, pos in (
+            ("x", "0.707105 0 0.707108 0", "1 0 0 0", "0.1 0 0"),
+            ("y", "0.707105 0.707108 0 0", "0 1 0 0", "0 0.1 0"),
+            ("z", "1 0 0 0", "0 0 1 0", "0 0 0.1"),
+        ):
+            ET.SubElement(
+                eef,
+                "site",
+                {
+                    "name": f"ee_{axis}",
+                    "pos": pos,
+                    "size": "0.005 .1",
+                    "quat": quat,
+                    "rgba": rgba,
+                    "type": "cylinder",
+                    "group": "1",
+                },
+            )
+        ET.SubElement(
+            eef,
+            "site",
+            {
+                "name": "grip_site_cylinder",
+                "pos": "0 0 0",
+                "quat": "1 0 0 0",
+                "size": "0.005 0.5",
+                "rgba": "0 1 0 0.3",
+                "type": "cylinder",
+                "group": "1",
+            },
+        )
         base.extend(gripper_fingers[side])
         ET.SubElement(gripper, "actuator").extend(hand_motors[side])
         gripper_sensors = ET.SubElement(gripper, "sensor")  # robosuite reads force_ee and torque_ee

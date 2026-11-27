@@ -24,8 +24,9 @@ import robosuite.macros as macros
 from robosuite.controllers import load_composite_controller_config
 from robosuite.utils.sonic.bridge import SonicRobosuiteBridge
 
-SONIC_CFG = os.path.join(os.path.dirname(os.path.abspath(robosuite.__file__)),
-                         "controllers", "config", "robots", "default_sonic_g1.json")
+SONIC_CFG = os.path.join(
+    os.path.dirname(os.path.abspath(robosuite.__file__)), "controllers", "config", "robots", "default_sonic_g1.json"
+)
 
 
 def match_base_sim_physics(model, floor_friction=1.0, floor_torsion=0.005):
@@ -62,14 +63,18 @@ def collect_sonic_demos(env, render_hz, rtf_log):
             controller.toggle_band()
             print(f"[collect] elastic band {'on' if controller.band_enabled else 'off'}", flush=True)
 
-    window = mujoco.viewer.launch_passive(env.sim.model._model, env.sim.data._data, show_left_ui=False,
-                                          show_right_ui=False, key_callback=toggle_band_on_9)
+    window = mujoco.viewer.launch_passive(
+        env.sim.model._model, env.sim.data._data, show_left_ui=False, show_right_ui=False, key_callback=toggle_band_on_9
+    )
     window.opt.geomgroup[0] = 0  # robosuite puts collision geoms in group 0; hide them as its renderer does
     window.cam.type = mujoco.mjtCamera.mjCAMERA_TRACKING
     window.cam.trackbodyid = controller.motor_map.pelvis_body_id
     window.cam.distance, window.cam.azimuth, window.cam.elevation = 3.0, 120, -20
-    print("[collect] waiting for SONIC: engage it (']' in its terminal, or A+B+X+Y in VR), then "
-          "press '9' in the viewer to release the band.", flush=True)
+    print(
+        "[collect] waiting for SONIC: engage it (']' in its terminal, or A+B+X+Y in VR), then "
+        "press '9' in the viewer to release the band.",
+        flush=True,
+    )
 
     steps_per_render = max(1, round(env.control_freq / render_hz))
     step_count = success_steps = 0
@@ -100,9 +105,12 @@ def collect_sonic_demos(env, render_hz, rtf_log):
                 if wall_elapsed >= 1.0:
                     sim_elapsed = rtf_steps * env.control_timestep
                     real_time_factor = sim_elapsed / wall_elapsed
-                    print(f"[real-time] {rtf_steps} steps | wall {wall_elapsed * 1e3:.0f}ms | "
-                          f"sim {sim_elapsed * 1e3:.0f}ms | RTF~{real_time_factor:.2f}x"
-                          + ("  <-- BEHIND real-time" if real_time_factor < 0.97 else ""), flush=True)
+                    print(
+                        f"[real-time] {rtf_steps} steps | wall {wall_elapsed * 1e3:.0f}ms | "
+                        f"sim {sim_elapsed * 1e3:.0f}ms | RTF~{real_time_factor:.2f}x"
+                        + ("  <-- BEHIND real-time" if real_time_factor < 0.97 else ""),
+                        flush=True,
+                    )
                     rtf_steps, rtf_window_start = 0, time.perf_counter()
     finally:
         window.close()
@@ -111,12 +119,19 @@ def collect_sonic_demos(env, render_hz, rtf_log):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--environment", default="Lift",
-                        help="a robosuite environment that keeps the robot's Dex3 hands (not Wipe or TwoArmPegInHole)")
-    parser.add_argument("--control-freq", type=int, default=200,
-                        help="control and physics rate in Hz (one physics step per control step). With the PGS "
-                             "solver, 200 Hz is contact-stable and keeps real time under contact; 500 Hz falls "
-                             "behind (RTF ~0.9x) once contacts pile up")
+    parser.add_argument(
+        "--environment",
+        default="Lift",
+        help="a robosuite environment that keeps the robot's Dex3 hands (not Wipe or TwoArmPegInHole)",
+    )
+    parser.add_argument(
+        "--control-freq",
+        type=int,
+        default=200,
+        help="control and physics rate in Hz (one physics step per control step). With the PGS "
+        "solver, 200 Hz is contact-stable and keeps real time under contact; 500 Hz falls "
+        "behind (RTF ~0.9x) once contacts pile up",
+    )
     parser.add_argument("--render-hz", type=float, default=20.0, help="viewer refresh rate")
     parser.add_argument("--rtf-log", action="store_true", help="print the real-time factor about once a second")
     args = parser.parse_args()
@@ -124,10 +139,16 @@ def main():
     macros.SIMULATION_TIMESTEP = 1 / args.control_freq  # robosuite reads it when it builds the env
 
     env = robosuite.make(
-        args.environment, robots=["SonicG1"],
+        args.environment,
+        robots=["SonicG1"],
         controller_configs=load_composite_controller_config(controller=SONIC_CFG),
-        control_freq=args.control_freq, has_renderer=False, has_offscreen_renderer=False,
-        use_camera_obs=False, hard_reset=False, ignore_done=True)
+        control_freq=args.control_freq,
+        has_renderer=False,
+        has_offscreen_renderer=False,
+        use_camera_obs=False,
+        hard_reset=False,
+        ignore_done=True,
+    )
     env.reset()
     match_base_sim_physics(env.sim.model._model)
     # PGS instead of the default Newton solver: under the dense hand-object contacts of a grasp,

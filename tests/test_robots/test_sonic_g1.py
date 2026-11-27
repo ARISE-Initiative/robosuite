@@ -24,24 +24,35 @@ from robosuite.scripts.collect_sonic_g1_demos import SONIC_CFG, match_base_sim_p
 from robosuite.utils.sonic.bridge import BODY, LEFT_HAND, MOTOR_KD, MOTOR_KP, RIGHT_HAND
 
 RECORDED_RUNS_DIR = os.environ.get("SONIC_RECORDED_RUNS_DIR", "")
-RECORDED_MOTIONS = ["squat_001__A359", "walking_quip_360_R_002__A428", "neutral_kick_R_001__A543",
-                    "forward_lunge_R_001__A359_M", "tired_one_leg_jumping_R_001__A359",
-                    "dance_in_da_party_001__A464", "macarena_001__A545"]
+RECORDED_MOTIONS = [
+    "squat_001__A359",
+    "walking_quip_360_R_002__A428",
+    "neutral_kick_R_001__A543",
+    "forward_lunge_R_001__A359_M",
+    "tired_one_leg_jumping_R_001__A359",
+    "dance_in_da_party_001__A464",
+    "macarena_001__A545",
+]
 
 
 def _make_env(env_name, control_freq):
     pytest.importorskip("gear_sonic")
-    return robosuite.make(env_name, robots=["SonicG1"],
-                          controller_configs=load_composite_controller_config(controller=SONIC_CFG),
-                          has_renderer=False, has_offscreen_renderer=False,
-                          use_camera_obs=False, control_freq=control_freq)
+    return robosuite.make(
+        env_name,
+        robots=["SonicG1"],
+        controller_configs=load_composite_controller_config(controller=SONIC_CFG),
+        has_renderer=False,
+        has_offscreen_renderer=False,
+        use_camera_obs=False,
+        control_freq=control_freq,
+    )
 
 
 def test_registration():
-    from robosuite.robots import ROBOT_CLASS_MAPPING
+    from robosuite.controllers.composite.composite_controller import REGISTERED_COMPOSITE_CONTROLLERS_DICT
     from robosuite.models.grippers import GRIPPER_MAPPING
-    from robosuite.controllers.composite.composite_controller import (
-        REGISTERED_COMPOSITE_CONTROLLERS_DICT)
+    from robosuite.robots import ROBOT_CLASS_MAPPING
+
     assert "SonicG1" in ROBOT_CLASS_MAPPING
     assert "SonicDex3LeftGripper" in GRIPPER_MAPPING
     assert "SonicDex3RightGripper" in GRIPPER_MAPPING
@@ -61,8 +72,11 @@ def test_assembles():
     assert model.nu == 43
 
     gear_sonic = pytest.importorskip("gear_sonic")
-    source = mujoco.MjModel.from_xml_path(os.path.join(
-        os.path.dirname(gear_sonic.__file__), "data", "robot_model", "model_data", "g1", "g1_29dof_with_hand.xml"))
+    source = mujoco.MjModel.from_xml_path(
+        os.path.join(
+            os.path.dirname(gear_sonic.__file__), "data", "robot_model", "model_data", "g1", "g1_29dof_with_hand.xml"
+        )
+    )
     assert source.nu == 43
     assert abs(sum(model.body_mass) - sum(source.body_mass)) < 1e-3
 
@@ -71,11 +85,15 @@ def test_motor_map_follows_sonic_motor_order():
     leg = ["hip_pitch", "hip_roll", "hip_yaw", "knee", "ankle_pitch", "ankle_roll"]
     arm = ["shoulder_pitch", "shoulder_roll", "shoulder_yaw", "elbow", "wrist_roll", "wrist_pitch", "wrist_yaw"]
     finger = ["thumb_0", "thumb_1", "thumb_2", "middle_0", "middle_1", "index_0", "index_1"]
-    expected = ([f"robot0_l_leg_{joint}_joint" for joint in leg] + [f"robot0_r_leg_{joint}_joint" for joint in leg]
-                + [f"robot0_torso_waist_{axis}_joint" for axis in ("yaw", "roll", "pitch")]
-                + [f"robot0_l_{joint}_joint" for joint in arm] + [f"robot0_r_{joint}_joint" for joint in arm]
-                + [f"gripper0_left_left_hand_{joint}_joint" for joint in finger]
-                + [f"gripper0_right_right_hand_{joint}_joint" for joint in finger])
+    expected = (
+        [f"robot0_l_leg_{joint}_joint" for joint in leg]
+        + [f"robot0_r_leg_{joint}_joint" for joint in leg]
+        + [f"robot0_torso_waist_{axis}_joint" for axis in ("yaw", "roll", "pitch")]
+        + [f"robot0_l_{joint}_joint" for joint in arm]
+        + [f"robot0_r_{joint}_joint" for joint in arm]
+        + [f"gripper0_left_left_hand_{joint}_joint" for joint in finger]
+        + [f"gripper0_right_right_hand_{joint}_joint" for joint in finger]
+    )
     env = _make_env("Lift", control_freq=20)
     try:
         env.reset()
@@ -151,8 +169,10 @@ def test_sonic_g1_floating_base_in_env():
         env.close()
 
 
-@pytest.mark.skipif(not os.path.isdir(RECORDED_RUNS_DIR),
-                    reason="set SONIC_RECORDED_RUNS_DIR to the recorded runs of the SONIC controller")
+@pytest.mark.skipif(
+    not os.path.isdir(RECORDED_RUNS_DIR),
+    reason="set SONIC_RECORDED_RUNS_DIR to the recorded runs of the SONIC controller",
+)
 @pytest.mark.parametrize("motion", RECORDED_MOTIONS)
 def test_sonic_wbc_reproduces_recorded_torques(motion):
     """At the joint states and SONIC commands of a recorded run (every 16th frame), SONIC_WBC
@@ -173,15 +193,19 @@ def test_sonic_wbc_reproduces_recorded_torques(motion):
         worst_error = 0.0
         for frame in range(0, len(recorded["cmd_q"]), 16):
             data.qpos[motor_map.qpos_adr] = np.concatenate(
-                [recorded["body_q"][frame], recorded["left_hand_q"][frame], recorded["right_hand_q"][frame]])
+                [recorded["body_q"][frame], recorded["left_hand_q"][frame], recorded["right_hand_q"][frame]]
+            )
             data.qvel[motor_map.qvel_adr] = np.concatenate(
-                [recorded["body_dq"][frame], recorded["left_hand_dq"][frame], recorded["right_hand_dq"][frame]])
+                [recorded["body_dq"][frame], recorded["left_hand_dq"][frame], recorded["right_hand_dq"][frame]]
+            )
             env.sim.forward()
             targets = np.concatenate(
-                [recorded["cmd_q"][frame], recorded["lh_cmd_q"][frame], recorded["rh_cmd_q"][frame]])
+                [recorded["cmd_q"][frame], recorded["lh_cmd_q"][frame], recorded["rh_cmd_q"][frame]]
+            )
             robot.control(targets, policy_step=True)
             expected = np.concatenate(
-                [recorded["tau_body"][frame], recorded["tau_lh"][frame], recorded["tau_rh"][frame]])
+                [recorded["tau_body"][frame], recorded["tau_lh"][frame], recorded["tau_rh"][frame]]
+            )
             worst_error = max(worst_error, float(np.abs(data.ctrl[motor_map.actuator_ids] - expected).max()))
         assert worst_error < 1e-6, f"{motion}: applied torque differs from the recorded one by {worst_error:.2e}"
     finally:
@@ -204,8 +228,9 @@ class _FakeUnitreeDds:
 
     def receive(self, targets, kp, kd):
         """Store one body and two hand commands holding the 43 targets and gains, in motor order."""
-        motor_cmds = [SimpleNamespace(q=target, kp=motor_kp, kd=motor_kd)
-                      for target, motor_kp, motor_kd in zip(targets, kp, kd)]
+        motor_cmds = [
+            SimpleNamespace(q=target, kp=motor_kp, kd=motor_kd) for target, motor_kp, motor_kd in zip(targets, kp, kd)
+        ]
         self.low_cmd = SimpleNamespace(motor_cmd=motor_cmds[BODY])
         self.left_hand_cmd = SimpleNamespace(motor_cmd=motor_cmds[LEFT_HAND])
         self.right_hand_cmd = SimpleNamespace(motor_cmd=motor_cmds[RIGHT_HAND])
@@ -218,6 +243,7 @@ def test_bridge_returns_targets_only_while_sonic_commands(monkeypatch):
     pytest.importorskip("unitree_sdk2py")
     gear_sonic_dds = pytest.importorskip("gear_sonic.utils.mujoco_sim.unitree_sdk2py_bridge")
     import unitree_sdk2py.core.channel as unitree_channel
+
     from robosuite.utils.sonic import bridge as sonic_bridge
 
     monkeypatch.setattr(gear_sonic_dds, "UnitreeSdk2Bridge", _FakeUnitreeDds)
@@ -273,8 +299,8 @@ def test_sonic_startup_band_holds_reference_yaw():
 
         def set_pelvis_rotation(rotation):
             quat = rotation.as_quat()
-            data.qpos[qpos_adr + 3:qpos_adr + 7] = [quat[3], quat[0], quat[1], quat[2]]
-            data.qvel[qvel_adr:qvel_adr + 6] = 0.0
+            data.qpos[qpos_adr + 3 : qpos_adr + 7] = [quat[3], quat[0], quat[1], quat[2]]
+            data.qvel[qvel_adr : qvel_adr + 6] = 0.0
             env.sim.forward()
 
         spawn_rotation = Rotation.from_euler("z", np.pi / 2.0)
@@ -305,8 +331,10 @@ def test_sonic_startup_band_is_object_safe():
         data = env.sim.data._data
         pelvis = motor_map.pelvis_body_id
         pot_qpos_adr = next(
-            int(model.jnt_qposadr[joint]) for joint in range(model.njnt)
-            if model.jnt_type[joint] == mujoco.mjtJoint.mjJNT_FREE and model.jnt_bodyid[joint] != pelvis)
+            int(model.jnt_qposadr[joint])
+            for joint in range(model.njnt)
+            if model.jnt_type[joint] == mujoco.mjtJoint.mjJNT_FREE and model.jnt_bodyid[joint] != pelvis
+        )
 
         env.step(np.zeros(env.action_dim))
         before = float(data.qpos[pot_qpos_adr])

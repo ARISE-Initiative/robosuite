@@ -13,10 +13,10 @@ import os
 
 import mujoco
 import numpy as np
-from robosuite.controllers.composite.composite_controller import (
-    CompositeController, register_composite_controller)
-from robosuite.utils.sonic.bridge import MOTOR_KD, MOTOR_KP, NUM_HAND_MOTORS, SonicG1MotorMap
 from scipy.spatial.transform import Rotation
+
+from robosuite.controllers.composite.composite_controller import CompositeController, register_composite_controller
+from robosuite.utils.sonic.bridge import MOTOR_KD, MOTOR_KP, NUM_HAND_MOTORS, SonicG1MotorMap
 
 # Startup band spring and damper gains (gear_sonic's ElasticBand)
 BAND_KP_POS, BAND_KD_POS, BAND_KP_ANG, BAND_KD_ANG = 10000, 1000, 1000, 10
@@ -32,8 +32,9 @@ class SonicWholeBodyController(CompositeController):
         import yaml
 
         # joint and effort limits, and the DDS settings SonicRobosuiteBridge needs
-        config_path = os.path.join(os.path.dirname(gear_sonic.__file__),
-                                   "utils", "mujoco_sim", "wbc_configs", "g1_29dof_sonic_model12.yaml")
+        config_path = os.path.join(
+            os.path.dirname(gear_sonic.__file__), "utils", "mujoco_sim", "wbc_configs", "g1_29dof_sonic_model12.yaml"
+        )
         with open(config_path) as config_file:
             self.sonic_config = yaml.load(config_file, Loader=yaml.FullLoader)
         self.motor_map = SonicG1MotorMap(sim, self.sonic_config)

@@ -39,12 +39,39 @@ class SonicG1(LeggedManipulatorModel):
     def init_qpos(self):
         # SONIC's deployed default pose (the C++ holds it before policy control starts), in this
         # robot's joint order
-        return np.array([
-            -0.312, 0.0, 0.0, 0.669, -0.363, 0.0,
-            -0.312, 0.0, 0.0, 0.669, -0.363, 0.0,
-            0.0, 0.0, 0.0,
-            0.2, 0.2, 0.0, 0.6, 0.0, 0.0, 0.0,
-            0.2, -0.2, 0.0, 0.6, 0.0, 0.0, 0.0])
+        return np.array(
+            [
+                -0.312,
+                0.0,
+                0.0,
+                0.669,
+                -0.363,
+                0.0,
+                -0.312,
+                0.0,
+                0.0,
+                0.669,
+                -0.363,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.2,
+                0.2,
+                0.0,
+                0.6,
+                0.0,
+                0.0,
+                0.0,
+                0.2,
+                -0.2,
+                0.0,
+                0.6,
+                0.0,
+                0.0,
+                0.0,
+            ]
+        )
 
     @property
     def base_xpos_offset(self):

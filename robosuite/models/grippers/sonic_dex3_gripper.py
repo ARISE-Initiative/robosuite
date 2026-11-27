@@ -1,6 +1,7 @@
 """Dex3 three-finger grippers of the SonicG1 (7 DOF per side), generated from SONIC's G1 model by
 build_sonic_g1_assets.py."""
 import numpy as np
+
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 

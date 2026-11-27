@@ -19,8 +19,8 @@ import tempfile
 import threading
 import time
 
-import numpy as np
 import mujoco
+import numpy as np
 import pytest
 
 pytest.importorskip("gear_sonic")
@@ -42,15 +42,16 @@ TOLERANCE = 0.04  # rad: the joint tracking error may exceed the recorded one by
 
 sys.path.insert(0, os.path.join(os.environ.get("SONIC_ROBOSUITE_DIR", ""), "tests"))
 try:
-    from golden_common import tracking_metrics, GOLD_DIR as RECORDED_RUNS_DIR  # noqa: E402
+    from golden_common import GOLD_DIR as RECORDED_RUNS_DIR  # noqa: E402
+    from golden_common import tracking_metrics
+
     _HAVE_RECORDED_RUNS = True
 except Exception:
     _HAVE_RECORDED_RUNS = False
 
 _LIVE_OK = os.environ.get("RUN_SONIC_LIVE") == "1" and os.path.exists(SONIC_BINARY) and _HAVE_RECORDED_RUNS
 
-MOTIONS = ["squat_001__A359", "walking_quip_360_R_002__A428",
-           "neutral_kick_R_001__A543", "macarena_001__A545"]
+MOTIONS = ["squat_001__A359", "walking_quip_360_R_002__A428", "neutral_kick_R_001__A543", "macarena_001__A545"]
 
 
 class SonicArenaEnv(ManipulationEnv):
@@ -87,20 +88,36 @@ def _launch_sonic(motion):
     time.sleep(1)
     motion_dir = tempfile.mkdtemp(prefix="sonic_live_")
     os.symlink(os.path.join(REFERENCE_MOTION_DIR, motion), os.path.join(motion_dir, motion))
-    command = ["./target/release/g1_deploy_onnx_ref", "lo", "policy/release/model_decoder.onnx",
-               motion_dir, "--obs-config", "policy/release/observation_config.yaml",
-               "--encoder-file", "policy/release/model_encoder.onnx",
-               "--input-type", "keyboard", "--output-type", "zmq", "--disable-crc-check"]
-    return subprocess.Popen(command, cwd=SONIC_DEPLOY_DIR, stdin=subprocess.PIPE,
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    command = [
+        "./target/release/g1_deploy_onnx_ref",
+        "lo",
+        "policy/release/model_decoder.onnx",
+        motion_dir,
+        "--obs-config",
+        "policy/release/observation_config.yaml",
+        "--encoder-file",
+        "policy/release/model_encoder.onnx",
+        "--input-type",
+        "keyboard",
+        "--output-type",
+        "zmq",
+        "--disable-crc-check",
+    ]
+    return subprocess.Popen(
+        command, cwd=SONIC_DEPLOY_DIR, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
 
 
 def _render(model, data, qpos_frames, video_path, sim_dt, fps=30):
     """Offscreen-render a recorded qpos sequence to mp4 (pelvis-tracking camera; needs EGL)."""
     import imageio
+
     os.environ.setdefault("MUJOCO_GL", "egl")
-    pelvis = next(body for body in range(model.nbody)
-                  if "pelvis" in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) or ""))
+    pelvis = next(
+        body
+        for body in range(model.nbody)
+        if "pelvis" in (mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, body) or "")
+    )
     renderer = mujoco.Renderer(model, 480, 640)
     camera = mujoco.MjvCamera()
     camera.type = mujoco.mjtCamera.mjCAMERA_TRACKING
@@ -125,10 +142,16 @@ def test_sonic_live_dds_tracking(motion):
     if not os.path.exists(os.path.join(REFERENCE_MOTION_DIR, motion)):
         pytest.skip(f"reference motion {motion} not under {REFERENCE_MOTION_DIR}")
 
-    env = SonicArenaEnv(robots=["SonicG1"],
-                        controller_configs=load_composite_controller_config(controller=SONIC_CFG),
-                        has_renderer=False, has_offscreen_renderer=False, use_camera_obs=False,
-                        control_freq=500, hard_reset=False, ignore_done=True)
+    env = SonicArenaEnv(
+        robots=["SonicG1"],
+        controller_configs=load_composite_controller_config(controller=SONIC_CFG),
+        has_renderer=False,
+        has_offscreen_renderer=False,
+        use_camera_obs=False,
+        control_freq=500,
+        hard_reset=False,
+        ignore_done=True,
+    )
     env.reset()
     match_base_sim_physics(env.sim.model._model)
     controller = env.robots[0].composite_controller
@@ -142,11 +165,18 @@ def test_sonic_live_dds_tracking(motion):
     state = {"phase": "load", "recording": False}
 
     def drive():
-        time.sleep(20); sonic_process.stdin.write(b"]"); sonic_process.stdin.flush()   # control active
-        time.sleep(2); controller.release_band()                  # drop the startup band
-        time.sleep(8); sonic_process.stdin.write(b"T"); sonic_process.stdin.flush()    # play the motion
+        time.sleep(20)
+        sonic_process.stdin.write(b"]")
+        sonic_process.stdin.flush()  # control active
+        time.sleep(2)
+        controller.release_band()  # drop the startup band
+        time.sleep(8)
+        sonic_process.stdin.write(b"T")
+        sonic_process.stdin.flush()  # play the motion
         state["recording"] = True
-        time.sleep(16); state["phase"] = "done"
+        time.sleep(16)
+        state["phase"] = "done"
+
     threading.Thread(target=drive, daemon=True).start()
 
     body_q, base_pose, qpos_frames = [], [], []
@@ -157,7 +187,7 @@ def test_sonic_live_dds_tracking(motion):
             env.step(no_command if action is None else action)
             if state["recording"]:
                 body_q.append(data.qpos[motor_map.qpos_adr[BODY]].copy())
-                base_pose.append(data.qpos[motor_map.base_qpos_adr:motor_map.base_qpos_adr + 7].copy())
+                base_pose.append(data.qpos[motor_map.base_qpos_adr : motor_map.base_qpos_adr + 7].copy())
                 if VIDEO_DIR:
                     qpos_frames.append(np.array(data.qpos))
             next_step_time += sim_dt
@@ -166,14 +196,15 @@ def test_sonic_live_dds_tracking(motion):
                 time.sleep(sleep_time)
     finally:
         try:
-            sonic_process.terminate(); sonic_process.wait(timeout=5)
+            sonic_process.terminate()
+            sonic_process.wait(timeout=5)
         except Exception:
             os.system("kill -9 $(pgrep -x g1_deploy_onnx_ref) 2>/dev/null")
 
     assert state["phase"] == "done", "the SONIC C++ controller exited before the motion finished"
     body_q, base_pose = np.asarray(body_q), np.asarray(base_pose)
     assert len(body_q) > 100 and np.all(np.isfinite(body_q)), "no / non-finite live data"
-    achieved_hz = len(body_q) / 16.0   # the record window is 16 s wall-clock
+    achieved_hz = len(body_q) / 16.0  # the record window is 16 s wall-clock
 
     if VIDEO_DIR:
         os.makedirs(VIDEO_DIR, exist_ok=True)
@@ -182,14 +213,19 @@ def test_sonic_live_dds_tracking(motion):
     live = tracking_metrics(body_q, base_pose, motion)
     recorded_run = dict(np.load(os.path.join(RECORDED_RUNS_DIR, motion + ".npz"), allow_pickle=True))
     recorded = tracking_metrics(recorded_run["body_q"], recorded_run["floating_base_pose"], motion)
-    print(f"[live] {motion}: live mean={live['mean']:.4f} drift={live['drift']:.2f}m  vs  recorded "
-          f"mean={recorded['mean']:.4f} drift={recorded['drift']:.2f}m  | {achieved_hz:.0f} Hz (tol={TOLERANCE})",
-          flush=True)
+    print(
+        f"[live] {motion}: live mean={live['mean']:.4f} drift={live['drift']:.2f}m  vs  recorded "
+        f"mean={recorded['mean']:.4f} drift={recorded['drift']:.2f}m  | {achieved_hz:.0f} Hz (tol={TOLERANCE})",
+        flush=True,
+    )
     env.close()
     # SONIC runs on the wall clock, so a sim that falls behind real time (a loaded machine, or a
     # robot that fell) tracks worse for reasons unrelated to the integration: skip, don't fail.
     if achieved_hz < 350:
-        pytest.skip(f"{motion}: the sim ran below real time ({achieved_hz:.0f} Hz), so the tracking "
-                    "comparison is not meaningful")
-    assert live["mean"] <= recorded["mean"] + TOLERANCE, (
-        f"{motion}: live joint error {live['mean']:.4f} exceeds the recorded {recorded['mean']:.4f} + {TOLERANCE}")
+        pytest.skip(
+            f"{motion}: the sim ran below real time ({achieved_hz:.0f} Hz), so the tracking "
+            "comparison is not meaningful"
+        )
+    assert (
+        live["mean"] <= recorded["mean"] + TOLERANCE
+    ), f"{motion}: live joint error {live['mean']:.4f} exceeds the recorded {recorded['mean']:.4f} + {TOLERANCE}"
