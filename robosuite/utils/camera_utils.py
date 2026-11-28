@@ -194,9 +194,11 @@ def transform_from_pixels_to_world(pixels, depth_map, camera_to_world_transform)
 
     # sample from the depth map using the pixel locations with bilinear sampling
     pixels = pixels.astype(float)
-    im_h, im_w = depth_map.shape[-2:]
-    depth_map_reshaped = depth_map.reshape(-1, im_h, im_w, 1)
-    z = bilinear_interpolate(im=depth_map_reshaped, x=pixels[..., 1:2], y=pixels[..., 0:1])
+    im_h, im_w = depth_map.shape[-3:-1]
+    depth_maps = depth_map.reshape(-1, im_h, im_w)
+    image_indices = np.arange(len(depth_maps))
+    flat_pixels = pixels.reshape(-1, 2)
+    z = _bilinear_sample(depth_maps, flat_pixels[:, 1], flat_pixels[:, 0], (image_indices,))
     z = z.reshape(*depth_map_leading_shape, 1)  # shape [..., 1]
 
     # form 4D homogenous camera vector to transform - [x * z, y * z, z, 1]
@@ -217,30 +219,23 @@ def bilinear_interpolate(im, x, y):
     Bilinear sampling for pixel coordinates x and y from source image im.
     Taken from https://stackoverflow.com/questions/12729228/simple-efficient-bilinear-interpolation-of-images-in-numpy-and-python
     """
-    x = np.asarray(x)
-    y = np.asarray(y)
+    return _bilinear_sample(im, x, y, ())
 
+
+def _bilinear_sample(im, x, y, image_indices):
+    height, width = im.shape[len(image_indices) : len(image_indices) + 2]
+    x = np.clip(x, 0, width - 1)
+    y = np.clip(y, 0, height - 1)
     x0 = np.floor(x).astype(int)
-    x1 = x0 + 1
     y0 = np.floor(y).astype(int)
-    y1 = y0 + 1
+    x1 = np.minimum(x0 + 1, width - 1)
+    y1 = np.minimum(y0 + 1, height - 1)
 
-    x0 = np.clip(x0, 0, im.shape[1] - 1)
-    x1 = np.clip(x1, 0, im.shape[1] - 1)
-    y0 = np.clip(y0, 0, im.shape[0] - 1)
-    y1 = np.clip(y1, 0, im.shape[0] - 1)
-
-    Ia = im[y0, x0]
-    Ib = im[y1, x0]
-    Ic = im[y0, x1]
-    Id = im[y1, x1]
-
-    wa = (x1 - x) * (y1 - y)
-    wb = (x1 - x) * (y - y0)
-    wc = (x - x0) * (y1 - y)
-    wd = (x - x0) * (y - y0)
-
-    return wa * Ia + wb * Ib + wc * Ic + wd * Id
+    dx = x - x0
+    dy = y - y0
+    top = (1 - dx) * im[image_indices + (y0, x0)] + dx * im[image_indices + (y0, x1)]
+    bottom = (1 - dx) * im[image_indices + (y1, x0)] + dx * im[image_indices + (y1, x1)]
+    return (1 - dy) * top + dy * bottom
 
 
 class CameraMover:
