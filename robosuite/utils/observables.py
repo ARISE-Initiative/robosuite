@@ -104,6 +104,118 @@ def create_gaussian_noise_corrupter(mean, std, low=-np.inf, high=np.inf):
     return corrupter
 
 
+def create_occlusion_corrupter(min_size, max_size=None, num_patches=1, fill=0):
+    """
+    Creates a corrupter that covers random rectangular patches of an image with a constant value, e.g. to mimic an
+    object or the robot's own arm blocking part of the camera view. A new patch location (and size, if @max_size is
+    given) is sampled on every call.
+
+    Works on any (H, W) or (H, W, C) array, so it can be used for rgb, depth and segmentation observables. The output
+    has the same shape and dtype as the input.
+
+    Args:
+        min_size (float or 2-tuple of float): Smallest patch size as a fraction of the image (height, width), in
+            (0, 1]. A single float is used for both height and width
+        max_size (None or float or 2-tuple of float): Largest patch size as a fraction of the image (height, width).
+            If None, every patch has size @min_size
+        num_patches (int): Number of patches to draw per image
+        fill (float or array): Value written into the patch. Either a scalar or one value per channel
+
+    Returns:
+        function: corrupter
+    """
+    max_size = min_size if max_size is None else max_size
+    min_size = np.broadcast_to(np.array(min_size, dtype=float), (2,))
+    max_size = np.broadcast_to(np.array(max_size, dtype=float), (2,))
+    assert np.all(min_size > 0) and np.all(max_size <= 1), "Patch sizes must be fractions in (0, 1]!"
+    assert np.all(min_size <= max_size), "Inputted min_size must not be larger than max_size!"
+    assert num_patches >= 0, "Inputted num_patches must be non-negative!"
+
+    def corrupter(inp):
+        out = np.array(inp)
+        h, w = out.shape[:2]
+        for _ in range(num_patches):
+            frac = min_size + (max_size - min_size) * np.random.random_sample(2)
+            # Always cover at least one pixel, and never more than the image
+            ph = int(np.clip(np.round(frac[0] * h), 1, h))
+            pw = int(np.clip(np.round(frac[1] * w), 1, w))
+            top = np.random.randint(0, h - ph + 1)
+            left = np.random.randint(0, w - pw + 1)
+            out[top : top + ph, left : left + pw] = fill
+        return out
+
+    return corrupter
+
+
+def create_salt_and_pepper_corrupter(amount, salt_vs_pepper=0.5, low=0, high=255):
+    """
+    Creates a corrupter that sets a random fraction of the pixels of an image to its lowest (pepper) or highest (salt)
+    value, e.g. to mimic dead or hot pixels and transmission errors. All channels of a chosen pixel are set together.
+
+    Works on any (H, W) or (H, W, C) array. The output has the same shape and dtype as the input.
+
+    Args:
+        amount (float): Fraction of pixels to corrupt, in [0, 1]
+        salt_vs_pepper (float): Fraction of the corrupted pixels that are set to @high, in [0, 1]. The rest are set
+            to @low
+        low (float): Pepper value
+        high (float): Salt value
+
+    Returns:
+        function: corrupter
+    """
+    assert 0 <= amount <= 1, "Inputted amount must be in [0, 1]!"
+    assert 0 <= salt_vs_pepper <= 1, "Inputted salt_vs_pepper must be in [0, 1]!"
+
+    def corrupter(inp):
+        out = np.array(inp)
+        # One draw per pixel decides both whether it is corrupted and whether it becomes salt or pepper
+        draw = np.random.random_sample(out.shape[:2])
+        out[draw < amount * salt_vs_pepper] = high
+        out[(draw >= amount * salt_vs_pepper) & (draw < amount)] = low
+        return out
+
+    return corrupter
+
+
+def create_jpeg_corrupter(quality, max_quality=None):
+    """
+    Creates a corrupter that compresses an image to JPEG and decodes it again, which adds the blocking and color
+    artifacts of a compressed camera stream.
+
+    Only works on uint8 images of shape (H, W), (H, W, 1) or (H, W, 3), i.e. rgb observables. The output has the
+    same shape and dtype as the input.
+
+    Args:
+        quality (int): JPEG quality in [1, 100], lower is more compressed
+        max_quality (None or int): If given, the quality is sampled uniformly from [@quality, @max_quality] on
+            every call
+
+    Returns:
+        function: corrupter
+    """
+    max_quality = quality if max_quality is None else max_quality
+    assert 1 <= quality <= max_quality <= 100, "JPEG quality must be in [1, 100] and quality <= max_quality!"
+
+    def corrupter(inp):
+        # Imported here so that this module does not need opencv unless this corrupter is used
+        import cv2
+
+        inp = np.array(inp)
+        assert inp.dtype == np.uint8, "JPEG corrupter only supports uint8 images, got {}".format(inp.dtype)
+        assert inp.ndim == 2 or (inp.ndim == 3 and inp.shape[2] in (1, 3)), "Unsupported image shape {}".format(
+            inp.shape
+        )
+        q = int(np.random.randint(quality, max_quality + 1))
+        # JPEG treats the three channels the same way up to the color transform, so there is no need to convert
+        # between rgb and bgr before and after
+        _, buf = cv2.imencode(".jpg", inp, [int(cv2.IMWRITE_JPEG_QUALITY), q])
+        flag = cv2.IMREAD_GRAYSCALE if inp.ndim == 2 or inp.shape[2] == 1 else cv2.IMREAD_COLOR
+        return cv2.imdecode(buf, flag).reshape(inp.shape)
+
+    return corrupter
+
+
 def create_deterministic_delayer(delay):
     """
     Create a deterministic delayer that always returns the same delay value

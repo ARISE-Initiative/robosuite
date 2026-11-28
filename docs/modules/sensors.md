@@ -30,4 +30,22 @@ For more information on the vision ground-truth sensors supported, please see th
 
 Note that for memory efficiency the `image-state` is not returned by default (this can be toggled in `robosuite/macros.py`).
 
+#### Image Corrupters
+
+Besides the scalar and vector corrupters (`create_deterministic_corrupter`, `create_uniform_noise_corrupter`, `create_gaussian_noise_corrupter`), `robosuite.utils.observables` has corrupters made for camera observables. They keep the shape and dtype of the image, so the result can go straight into a vision policy.
+
+- `create_occlusion_corrupter(min_size, max_size=None, num_patches=1, fill=0)`: covers random rectangles with a constant value. Sizes are fractions of the image height and width. Works on rgb, depth and segmentation.
+- `create_salt_and_pepper_corrupter(amount, salt_vs_pepper=0.5, low=0, high=255)`: sets a random fraction of pixels to `low` or `high`.
+- `create_jpeg_corrupter(quality, max_quality=None)`: compresses the image to JPEG and decodes it again. Only for `uint8` rgb or grayscale images.
+
+```python
+from robosuite.utils.observables import create_jpeg_corrupter, create_occlusion_corrupter
+
+occlude = create_occlusion_corrupter(min_size=0.1, max_size=0.3)
+jpeg = create_jpeg_corrupter(quality=20, max_quality=60)
+
+# corrupters are plain functions, so they can be chained
+env.modify_observable("agentview_image", "corrupter", lambda img: jpeg(occlude(img)))
+```
+
 Observables can also be used to model sensor corruption and delay, and refer the reader to the [Sensor Randomization](../algorithms/sim2real.html#sensors) section for additional information.
